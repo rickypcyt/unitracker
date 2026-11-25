@@ -43,15 +43,15 @@ export const StatusSelector: React.FC<StatusSelectorProps> = ({
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-3 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-colors"
+        className="w-full flex items-center justify-between p-3 rounded-lg border-2 border-(--border-primary) bg-(--bg-secondary) hover:bg-(--bg-primary) transition-colors"
       >
         <div className="flex items-center gap-3">
           <div className={`w-4 h-4 rounded-full ${statusColor.replace('text', 'bg')} opacity-60`}></div>
-          <span className="text-sm font-medium text-[var(--text-primary)]">
+          <span className="text-sm font-medium text-(--text-primary)">
             Status: {statusLabel}
           </span>
         </div>
-        <ChevronDown className={`w-4 h-4 text-[var(--text-secondary)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-(--text-secondary) transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Dropdown Menu */}
@@ -61,19 +61,19 @@ export const StatusSelector: React.FC<StatusSelectorProps> = ({
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg z-20">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg shadow-lg z-20">
             {TASK_STATUSES.map((option) => (
               <button
                 key={option.id}
                 onClick={() => handleSelectStatus(option.id)}
-                className={`w-full flex items-center gap-3 p-3 hover:bg-[var(--bg-secondary)] transition-colors text-left ${
-                  normalizedStatus === option.id ? 'bg-[var(--bg-secondary)]' : ''
+                className={`w-full flex items-center gap-3 p-3 hover:bg-(--bg-secondary) transition-colors text-left ${
+                  normalizedStatus === option.id ? 'bg-(--bg-secondary)' : ''
                 }`}
               >
                 <div className={`w-4 h-4 rounded-full ${option.bgColor} opacity-60`}></div>
-                <span className="text-sm text-[var(--text-primary)]">{option.label}</span>
+                <span className="text-sm text-(--text-primary)">{option.label}</span>
                 {normalizedStatus === option.id && (
-                  <div className="ml-auto w-2 h-2 rounded-full bg-[var(--accent-primary)]"></div>
+                  <div className="ml-auto w-2 h-2 rounded-full bg-(--accent-primary)"></div>
                 )}
               </button>
             ))}

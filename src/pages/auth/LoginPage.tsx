@@ -36,8 +36,8 @@ const GoogleIcon: FC<{ className?: string }> = ({ className }) => (
 
 const LastUsed: FC<{ floating?: boolean }> = ({ floating }) => (
   <span
-    className={`rounded-full bg-[var(--accent-primary)]/15 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-[var(--accent-primary)] ${
-      floating ? 'absolute -top-2.5 right-2 border border-[var(--accent-primary)]/30 bg-black' : 'ml-auto'
+    className={`rounded-full bg-(--accent-primary)/15 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-(--accent-primary) ${
+      floating ? 'absolute -top-2.5 right-2 border border-(--accent-primary)/30 bg-black' : 'ml-auto'
     }`}
   >
     Last used
@@ -85,7 +85,7 @@ const LoginPage: FC = () => {
   };
 
   const providerBtn =
-    'group relative flex w-full items-center justify-center gap-2.5 rounded-lg border-2 border-white/15 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/[0.06] hover:border-white/30 disabled:opacity-60';
+    'group relative flex w-full items-center justify-center gap-2.5 rounded-lg border-2 border-white/15 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/6 hover:border-white/30 disabled:opacity-60';
 
   return (
     <>
@@ -110,7 +110,7 @@ const LoginPage: FC = () => {
 
         <Link
           to="/"
-          className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] text-white/50 transition-colors hover:bg-white/[0.06] hover:text-white sm:left-6 sm:top-6"
+          className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] text-white/50 transition-colors hover:bg-white/6 hover:text-white sm:left-6 sm:top-6"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back
@@ -154,7 +154,7 @@ const LoginPage: FC = () => {
             </div>
 
             {sent ? (
-              <div className="rounded-lg border border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/10 p-4 text-center text-sm text-white/80">
+              <div className="rounded-lg border border-(--accent-primary)/30 bg-(--accent-primary)/10 p-4 text-center text-sm text-white/80">
                 Check your inbox. We sent a login link to <span className="font-semibold text-white">{email}</span>.
                 <button
                   type="button"
@@ -179,13 +179,13 @@ const LoginPage: FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-[var(--accent-primary)]/60 focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]/60"
+                    className="w-full rounded-lg border border-white/10 bg-white/3 px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-(--accent-primary)/60 focus:outline-none focus:ring-1 focus:ring-(--accent-primary)/60"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={!!busy || !email.trim()}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all disabled:opacity-60 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all disabled:opacity-60 border-2 border-(--accent-primary) text-(--accent-primary) hover:bg-(--accent-primary)/10"
                 >
                   {busy === 'email' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
                   Continue with email

@@ -40,11 +40,11 @@ type BucketId = 'overdue' | 'today' | 'tomorrow' | 'thisWeek' | 'nextWeek' | 'la
 const BUCKETS: { id: BucketId; label: string; tone: string }[] = [
   { id: 'overdue', label: 'Overdue', tone: 'text-red-400' },
   { id: 'today', label: 'Today', tone: 'text-green-500' },
-  { id: 'tomorrow', label: 'Tomorrow', tone: 'text-[var(--accent-primary)]' },
-  { id: 'thisWeek', label: 'This week', tone: 'text-[var(--accent-primary)]' },
-  { id: 'nextWeek', label: 'Next week', tone: 'text-[var(--accent-primary)]' },
-  { id: 'later', label: 'Later', tone: 'text-[var(--text-secondary)]' },
-  { id: 'none', label: 'No date', tone: 'text-[var(--text-secondary)]' },
+  { id: 'tomorrow', label: 'Tomorrow', tone: 'text-(--accent-primary)' },
+  { id: 'thisWeek', label: 'This week', tone: 'text-(--accent-primary)' },
+  { id: 'nextWeek', label: 'Next week', tone: 'text-(--accent-primary)' },
+  { id: 'later', label: 'Later', tone: 'text-(--text-secondary)' },
+  { id: 'none', label: 'No date', tone: 'text-(--text-secondary)' },
 ];
 
 const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
@@ -138,16 +138,16 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
     const due = getDueDate(task);
     const overdue = due && isBefore(startOfDay(due), startOfDay(new Date()));
     return (
-      <li key={task.id} className={`group shrink-0 flex items-center gap-1 rounded-lg border pl-0.5 pr-1 py-1 ${overdue ? 'border-red-500/40 bg-red-500/5' : 'border-[var(--border-primary)] bg-[var(--bg-secondary)]/40'}`}>
+      <li key={task.id} className={`group shrink-0 flex items-center gap-1 rounded-lg border pl-0.5 pr-1 py-1 ${overdue ? 'border-red-500/40 bg-red-500/5' : 'border-(--border-primary) bg-(--bg-secondary)/40'}`}>
         <ActionTooltip content={t('session.pendingTasks.completeTooltip')}>
-          <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.completeAria', { title: task.title })} className="shrink-0 min-h-8 min-w-8 flex items-center justify-center text-[var(--accent-primary)] disabled:opacity-50"><Circle size={18} strokeWidth={2.2} /></button>
+          <button onClick={() => void toggleTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.completeAria', { title: task.title })} className="shrink-0 min-h-8 min-w-8 flex items-center justify-center text-(--accent-primary) disabled:opacity-50"><Circle size={18} strokeWidth={2.2} /></button>
         </ActionTooltip>
         <div className="min-w-0 flex-1">
           <ActionTooltip content={t('session.pendingTasks.editTooltip')}>
-            <button onClick={() => editTask(task)} className="block w-full text-sm font-semibold leading-tight text-left text-[var(--text-primary)] break-words">{task.title}</button>
+            <button onClick={() => editTask(task)} className="block w-full text-sm font-semibold leading-tight text-left text-(--text-primary) wrap-break-word">{task.title}</button>
           </ActionTooltip>
           <div className="mt-0.5 flex flex-wrap items-center gap-1">
-            <span className={`inline-flex items-center gap-1 rounded px-1 text-[11px] leading-4 font-medium ${overdue ? 'bg-red-500/10 text-red-400' : due && isToday(due) ? 'bg-green-500/10 text-green-500' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'}`}>
+            <span className={`inline-flex items-center gap-1 rounded px-1 text-[11px] leading-4 font-medium ${overdue ? 'bg-red-500/10 text-red-400' : due && isToday(due) ? 'bg-green-500/10 text-green-500' : 'bg-(--bg-secondary) text-(--text-secondary)'}`}>
               <CalendarDays size={11} />
               {due ? (() => {
                 if (isToday(due)) return t('common.today');
@@ -159,12 +159,12 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
               })() : t('common.noDueDate')}
             </span>
             {showContext && task.assignment && (
-              <span className="inline-flex min-w-0 max-w-[10rem] items-center rounded bg-[var(--accent-primary)]/10 px-1 text-[11px] leading-4 font-medium text-[var(--accent-primary)]" title={task.assignment}>
+              <span className="inline-flex min-w-0 max-w-40 items-center rounded bg-(--accent-primary)/10 px-1 text-[11px] leading-4 font-medium text-(--accent-primary)" title={task.assignment}>
                 <span className="truncate">{task.assignment}</span>
               </span>
             )}
             {showContext && showWorkspace && task.workspace_id && workspaceNames.get(task.workspace_id) && (
-              <span className="inline-flex min-w-0 max-w-[9rem] items-center gap-1 rounded bg-[var(--bg-secondary)] px-1 text-[11px] leading-4 font-medium text-[var(--text-secondary)]" title={workspaceNames.get(task.workspace_id)}>
+              <span className="inline-flex min-w-0 max-w-36 items-center gap-1 rounded bg-(--bg-secondary) px-1 text-[11px] leading-4 font-medium text-(--text-secondary)" title={workspaceNames.get(task.workspace_id)}>
                 <Layers size={11} className="shrink-0" />
                 <span className="truncate">{workspaceNames.get(task.workspace_id)}</span>
               </span>
@@ -174,10 +174,10 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
         {/* Actions: always visible on touch, revealed on hover/focus with a mouse */}
         <div className="flex items-center shrink-0 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:opacity-100 transition-opacity">
           <ActionTooltip content={t('session.pendingTasks.modifyTooltip')}>
-            <button onClick={() => editTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.editAria', { title: task.title })} className="p-1 text-[var(--text-secondary)] disabled:opacity-50"><Pencil size={14} /></button>
+            <button onClick={() => editTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.editAria', { title: task.title })} className="p-1 text-(--text-secondary) disabled:opacity-50"><Pencil size={14} /></button>
           </ActionTooltip>
           <ActionTooltip content={t('session.pendingTasks.ignoreTooltip')}>
-            <button onClick={() => ignoreTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.ignoreAria', { title: task.title })} className="p-1 text-[var(--text-secondary)] disabled:opacity-50"><EyeOff size={14} /></button>
+            <button onClick={() => ignoreTask(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.ignoreAria', { title: task.title })} className="p-1 text-(--text-secondary) disabled:opacity-50"><EyeOff size={14} /></button>
           </ActionTooltip>
           <ActionTooltip content={t('session.pendingTasks.deleteTooltip')}>
             <button onClick={() => requestDelete(task)} disabled={busy !== null} aria-label={t('session.pendingTasks.deleteAria', { title: task.title })} className="p-1 text-red-400 disabled:opacity-50"><Trash2 size={14} /></button>
@@ -188,21 +188,21 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
   };
 
   return (
-    <section aria-labelledby="pending-tasks-title" className={`w-full h-full min-h-0 ${fillHeight ? 'max-h-[700px] xl:max-h-none' : 'max-h-[700px]'} overflow-hidden flex flex-col rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4`}>
-      <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3 mb-4 pb-3 border-b border-[var(--border-primary)]">
+    <section aria-labelledby="pending-tasks-title" className={`w-full h-full min-h-0 ${fillHeight ? 'max-h-[700px] xl:max-h-none' : 'max-h-[700px]'} overflow-hidden flex flex-col rounded-2xl border border-(--border-primary) bg-(--bg-primary) p-4`}>
+      <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3 mb-4 pb-3 border-b border-(--border-primary)">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
-            <ListTodo size={18} className="text-[var(--accent-primary)]" />
+          <div className="p-2 rounded-lg bg-(--accent-primary)/10">
+            <ListTodo size={18} className="text-(--accent-primary)" />
           </div>
-          <h3 id="pending-tasks-title" className="truncate text-base sm:text-lg font-bold tracking-tight text-[var(--text-primary)]">{t('session.pendingTasks.title')}</h3>
-          <span className="shrink-0 text-xs font-semibold rounded-full px-2 py-0.5 bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]">{pending.length}</span>
+          <h3 id="pending-tasks-title" className="truncate text-base sm:text-lg font-bold tracking-tight text-(--text-primary)">{t('session.pendingTasks.title')}</h3>
+          <span className="shrink-0 text-xs font-semibold rounded-full px-2 py-0.5 bg-(--accent-primary)/15 text-(--accent-primary)">{pending.length}</span>
         </div>
         <ActionTooltip content={t('session.pendingTasks.addTask', { defaultValue: 'Add task' })}>
           <button
             type="button"
             onClick={goAddTask}
             aria-label={t('session.pendingTasks.addTask', { defaultValue: 'Add task' })}
-            className="shrink-0 flex h-9 w-9 items-center justify-center rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] transition-colors hover:bg-[var(--accent-primary)]/10"
+            className="shrink-0 flex h-9 w-9 items-center justify-center rounded-lg border-2 border-(--accent-primary) text-(--accent-primary) transition-colors hover:bg-(--accent-primary)/10"
           >
             <Plus size={18} />
           </button>
@@ -210,11 +210,11 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
       </div>
       {hiddenCount > 0 && (
         <ActionTooltip content={t('session.pendingTasks.restoreIgnoredTooltip')}>
-          <button onClick={restoreIgnored} className="mb-3 min-h-11 text-xs text-[var(--accent-primary)]">{t('session.pendingTasks.restoreIgnored', { count: hiddenCount })}</button>
+          <button onClick={restoreIgnored} className="mb-3 min-h-11 text-xs text-(--accent-primary)">{t('session.pendingTasks.restoreIgnored', { count: hiddenCount })}</button>
         </ActionTooltip>
       )}
       {isLoggedIn && error && (
-        <div role="alert" className="flex items-center justify-between gap-2 text-sm text-[var(--text-secondary)] mb-3">
+        <div role="alert" className="flex items-center justify-between gap-2 text-sm text-(--text-secondary) mb-3">
           <span>{t('session.pendingTasks.error')}</span>
           <ActionTooltip content={t('session.pendingTasks.retryTooltip')}>
             <button onClick={() => void fetchTasks(undefined, true)} aria-label={t('session.pendingTasks.retry')} className="p-3 shrink-0"><RefreshCw size={16} /></button>
@@ -222,22 +222,22 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
         </div>
       )}
       {(isAuthLoading || (isLoggedIn && loading)) && pending.length === 0 ? (
-        <p role="status" className="flex-1 py-6 flex items-center justify-center text-sm text-[var(--text-secondary)]">{t('session.pendingTasks.loading')}</p>
+        <p role="status" className="flex-1 py-6 flex items-center justify-center text-sm text-(--text-secondary)">{t('session.pendingTasks.loading')}</p>
       ) : isLoggedIn && tasks.length === 0 ? (
-        <div className="flex-1 py-6 flex flex-col items-center justify-center gap-4 text-center text-[var(--text-secondary)]">
-          <ListTodo size={28} className="text-[var(--accent-primary)]" />
+        <div className="flex-1 py-6 flex flex-col items-center justify-center gap-4 text-center text-(--text-secondary)">
+          <ListTodo size={28} className="text-(--accent-primary)" />
           <p className="max-w-xs text-sm">{t('session.pendingTasks.emptyFirst', { defaultValue: 'No tasks yet. Go to the Tasks page to create your first task.' })}</p>
           <button
             type="button"
             onClick={() => navigateTo('tasks')}
-            className="inline-flex items-center gap-2 rounded-xl border-2 border-[var(--accent-primary)] px-4 py-2 text-sm font-semibold text-[var(--accent-primary)] transition-colors hover:bg-[var(--accent-primary)]/10"
+            className="inline-flex items-center gap-2 rounded-xl border-2 border-(--accent-primary) px-4 py-2 text-sm font-semibold text-(--accent-primary) transition-colors hover:bg-(--accent-primary)/10"
           >
             {t('session.pendingTasks.goToTasks', { defaultValue: 'Go to Tasks' })}
           </button>
         </div>
       ) : pending.length === 0 ? (
-        <div className="flex-1 py-6 flex flex-col items-center justify-center gap-2 text-[var(--text-secondary)]">
-          <CheckCircle2 size={24} className="text-[var(--accent-primary)]" />
+        <div className="flex-1 py-6 flex flex-col items-center justify-center gap-2 text-(--text-secondary)">
+          <CheckCircle2 size={24} className="text-(--accent-primary)" />
           <p className="text-sm">{hiddenCount ? t('session.pendingTasks.allIgnored') : t('session.pendingTasks.allCaughtUp')}</p>
         </div>
       ) : (
@@ -253,12 +253,12 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
                   aria-expanded={!bucketCollapsed}
                   className="flex h-7 w-full items-center gap-2 px-1.5 text-left"
                 >
-                  {bucketCollapsed ? <ChevronRight size={14} className="shrink-0 text-[var(--text-secondary)]" /> : <ChevronDown size={14} className="shrink-0 text-[var(--text-secondary)]" />}
+                  {bucketCollapsed ? <ChevronRight size={14} className="shrink-0 text-(--text-secondary)" /> : <ChevronDown size={14} className="shrink-0 text-(--text-secondary)" />}
                   <span className={`truncate text-xs font-bold uppercase tracking-wider ${bucket.tone}`}>
                     {t(`session.pendingTasks.bucket.${bucket.id}`, { defaultValue: bucket.label })}
                   </span>
-                  <span className="shrink-0 text-xs font-semibold tabular-nums text-[var(--text-secondary)]">{bucket.tasks.length}</span>
-                  <span className="h-px flex-1 bg-[var(--border-primary)]" aria-hidden="true" />
+                  <span className="shrink-0 text-xs font-semibold tabular-nums text-(--text-secondary)">{bucket.tasks.length}</span>
+                  <span className="h-px flex-1 bg-(--border-primary)" aria-hidden="true" />
                 </button>
                 <ul className={`flex flex-col space-y-1 ${bucketCollapsed ? 'hidden' : ''}`}>
                   {bucket.tasks.map(task => renderTask(task, true))}
@@ -266,7 +266,7 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
               </div>
             );
           }) : sections.map(section => (
-            <div key={section.id} className={showWorkspace ? 'flex shrink-0 flex-col gap-2 rounded-xl border-2 border-[var(--border-primary)] p-2' : 'flex shrink-0 flex-col gap-3'}>
+            <div key={section.id} className={showWorkspace ? 'flex shrink-0 flex-col gap-2 rounded-xl border-2 border-(--border-primary) p-2' : 'flex shrink-0 flex-col gap-3'}>
               {showWorkspace && (
                 <button
                   type="button"
@@ -274,10 +274,10 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
                   aria-expanded={!collapsed.includes(`ws:${section.id}`)}
                   className="flex h-8 w-full items-center gap-2 px-1.5 text-left"
                 >
-                  {collapsed.includes(`ws:${section.id}`) ? <ChevronRight size={16} className="shrink-0 text-[var(--text-secondary)]" /> : <ChevronDown size={16} className="shrink-0 text-[var(--text-secondary)]" />}
-                  <Layers size={16} className="shrink-0 text-[var(--accent-primary)]" />
-                  <h4 className="truncate text-sm font-bold text-[var(--text-primary)]">{section.name}</h4>
-                  <span className="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]">{section.tasks.length}</span>
+                  {collapsed.includes(`ws:${section.id}`) ? <ChevronRight size={16} className="shrink-0 text-(--text-secondary)" /> : <ChevronDown size={16} className="shrink-0 text-(--text-secondary)" />}
+                  <Layers size={16} className="shrink-0 text-(--accent-primary)" />
+                  <h4 className="truncate text-sm font-bold text-(--text-primary)">{section.name}</h4>
+                  <span className="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold bg-(--accent-primary)/15 text-(--accent-primary)">{section.tasks.length}</span>
                 </button>
               )}
               {!(showWorkspace && collapsed.includes(`ws:${section.id}`)) && groupByAssignment(section.tasks).map(([assignment, tasks]) => {
@@ -292,12 +292,12 @@ const PendingTasks = ({ fillHeight = false }: { fillHeight?: boolean }) => {
                 aria-expanded={!assignmentCollapsed}
                 className="flex h-7 w-full items-center gap-2 px-1.5 text-left"
               >
-                {assignmentCollapsed ? <ChevronRight size={14} className="shrink-0 text-[var(--text-secondary)]" /> : <ChevronDown size={14} className="shrink-0 text-[var(--text-secondary)]" />}
-                <span className="text-xs font-bold uppercase tracking-wider text-[var(--accent-primary)] truncate">
+                {assignmentCollapsed ? <ChevronRight size={14} className="shrink-0 text-(--text-secondary)" /> : <ChevronDown size={14} className="shrink-0 text-(--text-secondary)" />}
+                <span className="text-xs font-bold uppercase tracking-wider text-(--accent-primary) truncate">
                   {assignment}
                 </span>
-                <span className="shrink-0 text-xs font-semibold tabular-nums text-[var(--text-secondary)]">{tasks.length}</span>
-                <span className="h-px flex-1 bg-[var(--border-primary)]" aria-hidden="true" />
+                <span className="shrink-0 text-xs font-semibold tabular-nums text-(--text-secondary)">{tasks.length}</span>
+                <span className="h-px flex-1 bg-(--border-primary)" aria-hidden="true" />
               </button>
               {/* Tasks List */}
               <ul className={`flex flex-col space-y-1 ${assignmentCollapsed ? 'hidden' : ''}`}>

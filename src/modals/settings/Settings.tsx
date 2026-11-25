@@ -122,7 +122,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
     <>
         <div className="flex flex-col w-full h-full min-w-0 overflow-hidden">
           {/* Tab bar */}
-          <div role="group" aria-label="Settings sections" className="flex shrink-0 w-full items-stretch sm:items-center justify-between gap-1 px-3 sm:px-6 pb-3 sm:pb-4 pt-1 overflow-x-auto border-b border-[var(--border-primary)]/50">
+          <div role="group" aria-label="Settings sections" className="flex shrink-0 w-full items-stretch sm:items-center justify-between gap-1 px-3 sm:px-6 pb-3 sm:pb-4 pt-1 overflow-x-auto border-b border-(--border-primary)/50">
             {TAB_CONFIG.map(({ id, icon: Icon }) => (
               <button
                 key={id}
@@ -130,14 +130,14 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                 aria-pressed={activeTab === id}
                 className={`shrink-0 sm:flex-1 sm:shrink flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors relative ${
                   activeTab === id
-                    ? "bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/50"
+                    ? "bg-(--bg-secondary) text-(--text-primary)"
+                    : "text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-secondary)/50"
                 }`}
               >
                 <Icon size={16} className="shrink-0" />
                 <span className="whitespace-nowrap text-center">{t(`settings.tabs.${id}`)}</span>
                 {id === "whatsNew" && hasNewChanges && (
-                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[var(--accent-primary)]" />
+                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-(--accent-primary)" />
                 )}
               </button>
             ))}
@@ -150,11 +150,11 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                 {/* Theme selector */}
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    {themePreference === "auto" ? <Monitor size={18} className="text-[var(--text-secondary)]" /> : currentTheme === "dark" ? <Moon size={18} className="text-[var(--text-secondary)]" /> : <Sun size={18} className="text-[var(--text-secondary)]" />}
-                    <span className="text-sm font-medium text-[var(--text-primary)]">{t("settings.theme.label")}</span>
+                    {themePreference === "auto" ? <Monitor size={18} className="text-(--text-secondary)" /> : currentTheme === "dark" ? <Moon size={18} className="text-(--text-secondary)" /> : <Sun size={18} className="text-(--text-secondary)" />}
+                    <span className="text-sm font-medium text-(--text-primary)">{t("settings.theme.label")}</span>
                   </div>
                   <div className="relative">
-                    <div className="w-full h-11 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg relative overflow-hidden">
+                    <div className="w-full h-11 bg-(--bg-secondary) border-2 border-(--border-primary) rounded-lg relative overflow-hidden">
                       <div
                         className="absolute top-1 bottom-1 rounded-md border-2 transition-all duration-300 ease-in-out"
                         style={{
@@ -173,24 +173,24 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                         className="absolute left-0 top-0 w-1/3 h-full flex items-center justify-center gap-1.5 transition-colors"
                         aria-label="Light theme"
                       >
-                        <Sun size={17} className={themePreference === "light" ? "text-[var(--accent-primary)]" : "text-[var(--text-secondary)]"} />
-                        <span className={`text-sm ${themePreference === "light" ? "text-[var(--accent-primary)]" : "text-[var(--text-secondary)]"}`}>{t("settings.theme.light")}</span>
+                        <Sun size={17} className={themePreference === "light" ? "text-(--accent-primary)" : "text-(--text-secondary)"} />
+                        <span className={`text-sm ${themePreference === "light" ? "text-(--accent-primary)" : "text-(--text-secondary)"}`}>{t("settings.theme.light")}</span>
                       </button>
                       <button
                         onClick={() => handleThemeChange("auto")}
                         className="absolute left-1/3 top-0 w-1/3 h-full flex items-center justify-center gap-1.5 transition-colors"
                         aria-label="System theme"
                       >
-                        <Monitor size={17} className={themePreference === "auto" ? "text-[var(--accent-primary)]" : "text-[var(--text-secondary)]"} />
-                        <span className={`text-sm ${themePreference === "auto" ? "text-[var(--accent-primary)]" : "text-[var(--text-secondary)]"}`}>{t("settings.theme.system")}</span>
+                        <Monitor size={17} className={themePreference === "auto" ? "text-(--accent-primary)" : "text-(--text-secondary)"} />
+                        <span className={`text-sm ${themePreference === "auto" ? "text-(--accent-primary)" : "text-(--text-secondary)"}`}>{t("settings.theme.system")}</span>
                       </button>
                       <button
                         onClick={() => handleThemeChange("dark")}
                         className="absolute right-0 top-0 w-1/3 h-full flex items-center justify-center gap-1.5 transition-colors"
                         aria-label="Dark theme"
                       >
-                        <Moon size={17} className={themePreference === "dark" ? "text-[var(--accent-primary)]" : "text-[var(--text-secondary)]"} />
-                        <span className={`text-sm ${themePreference === "dark" ? "text-[var(--accent-primary)]" : "text-[var(--text-secondary)]"}`}>{t("settings.theme.dark")}</span>
+                        <Moon size={17} className={themePreference === "dark" ? "text-(--accent-primary)" : "text-(--text-secondary)"} />
+                        <span className={`text-sm ${themePreference === "dark" ? "text-(--accent-primary)" : "text-(--text-secondary)"}`}>{t("settings.theme.dark")}</span>
                       </button>
                     </div>
                   </div>
@@ -200,10 +200,10 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <Palette size={18} className="text-[var(--text-secondary)]" />
-                      <span className="text-sm font-medium text-[var(--text-primary)]">{t("settings.accentColor")}</span>
+                      <Palette size={18} className="text-(--text-secondary)" />
+                      <span className="text-sm font-medium text-(--text-primary)">{t("settings.accentColor")}</span>
                     </div>
-                    <span className="text-xs text-[var(--text-secondary)]">{selectedAccentName}</span>
+                    <span className="text-xs text-(--text-secondary)">{selectedAccentName}</span>
                   </div>
                   <div className="grid grid-cols-6 sm:grid-cols-9 gap-2">
                     {ACCENT_COLORS.map((color: AccentColor) => (
@@ -212,7 +212,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                         onClick={() => handleAccentColorChange(color.value)}
                         className={`relative aspect-square rounded-lg transition-all ${
                           accentPalette === color.value
-                            ? "ring-2 ring-[var(--text-primary)] ring-offset-2 ring-offset-[var(--bg-primary)] scale-110"
+                            ? "ring-2 ring-(--text-primary) ring-offset-2 ring-offset-(--bg-primary) scale-110"
                             : "hover:scale-105 hover:opacity-90"
                         } ${color.class}`}
                         aria-label={t("accentColors.selectAria", { name: t(accentColorI18nKey(color.name)) })}
@@ -227,8 +227,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                 {/* Language */}
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    <Languages size={18} className="text-[var(--text-secondary)]" />
-                    <span className="text-sm font-medium text-[var(--text-primary)]">{t("settings.language")}</span>
+                    <Languages size={18} className="text-(--text-secondary)" />
+                    <span className="text-sm font-medium text-(--text-primary)">{t("settings.language")}</span>
                   </div>
                   <LanguageToggle langs={["en", "es", "hi"]} />
                 </div>
@@ -236,8 +236,8 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                 {/* Timezone */}
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    <Clock size={18} className="text-[var(--text-secondary)]" />
-                    <span className="text-sm font-medium text-[var(--text-primary)]">{t("settings.timezone")}</span>
+                    <Clock size={18} className="text-(--text-secondary)" />
+                    <span className="text-sm font-medium text-(--text-primary)">{t("settings.timezone")}</span>
                   </div>
                   <TimezoneSelector showCurrentTime={true} className="w-full" />
                 </div>
@@ -250,41 +250,41 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     onClick={() => setShowUserModal(true)}
-                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center"
+                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-(--bg-secondary) border-2 border-(--border-primary) text-(--text-primary) hover:border-(--accent-primary)/50 transition-colors text-sm font-medium text-left sm:text-center"
                   >
-                    <User size={20} className="text-[var(--accent-primary)]" />
+                    <User size={20} className="text-(--accent-primary)" />
                     {t("settings.account.userProfile")}
                   </button>
                   <button
                     onClick={() => setShowAddFriendModal(true)}
                     disabled={!isLoggedIn}
                     title={!isLoggedIn ? t("settings.account.signInToSync") : undefined}
-                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[var(--border-primary)]"
+                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-(--bg-secondary) border-2 border-(--border-primary) text-(--text-primary) hover:border-(--accent-primary)/50 transition-colors text-sm font-medium text-left sm:text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-(--border-primary)"
                   >
-                    <Users size={20} className="text-[var(--accent-primary)]" />
+                    <Users size={20} className="text-(--accent-primary)" />
                     {t("settings.account.addFriends")}
                   </button>
                   <button
                     onClick={() => setShowFriendsModal(true)}
                     disabled={!isLoggedIn}
                     title={!isLoggedIn ? t("settings.account.signInToSync") : undefined}
-                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[var(--border-primary)]"
+                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-(--bg-secondary) border-2 border-(--border-primary) text-(--text-primary) hover:border-(--accent-primary)/50 transition-colors text-sm font-medium text-left sm:text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-(--border-primary)"
                   >
-                    <Users size={20} className="text-[var(--accent-primary)]" />
+                    <Users size={20} className="text-(--accent-primary)" />
                     {t("settings.account.manageFriends")}
                   </button>
                 </div>
 
                 {/* User info card */}
-                <div className="flex items-center gap-3 p-4 rounded-xl bg-[var(--bg-secondary)]">
-                  <div className="w-10 h-10 rounded-full bg-[var(--accent-primary)] flex items-center justify-center text-white font-semibold text-sm">
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-(--bg-secondary)">
+                  <div className="w-10 h-10 rounded-full bg-(--accent-primary) flex items-center justify-center text-white font-semibold text-sm">
                     {isLoggedIn && user?.email ? user.email[0].toUpperCase() : "?"}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">
+                    <p className="text-sm font-medium text-(--text-primary) truncate">
                       {isLoggedIn ? user?.email || t("settings.account.loggedIn") : t("settings.account.notSignedIn")}
                     </p>
-                    <p className="text-xs text-[var(--text-secondary)]">
+                    <p className="text-xs text-(--text-secondary)">
                       {isLoggedIn ? t("settings.account.googleAccount") : t("settings.account.signInToSync")}
                     </p>
                   </div>
@@ -298,7 +298,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                   ) : (
                     <button
                       onClick={loginWithGoogle}
-                      className="px-3 py-1.5 text-xs font-medium text-[var(--accent-primary)] border-2 border-[var(--accent-primary)]/30 rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
+                      className="px-3 py-1.5 text-xs font-medium text-(--accent-primary) border-2 border-(--accent-primary)/30 rounded-lg hover:bg-(--accent-primary)/10 transition-colors"
                     >
                       {t("settings.account.logIn")}
                     </button>
@@ -314,32 +314,32 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                     onClick={() => setShowManageAssignmentsModal(true)}
                     disabled={!isLoggedIn}
                     title={!isLoggedIn ? t("settings.account.signInToSync") : undefined}
-                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[var(--border-primary)]"
+                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-(--bg-secondary) border-2 border-(--border-primary) text-(--text-primary) hover:border-(--accent-primary)/50 transition-colors text-sm font-medium text-left sm:text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-(--border-primary)"
                   >
-                    <List size={20} className="text-[var(--accent-primary)]" />
+                    <List size={20} className="text-(--accent-primary)" />
                     {t("settings.data.manageAssignments")}
                   </button>
                   <button
                     onClick={() => setShowSessionsModal(true)}
                     disabled={!isLoggedIn}
                     title={!isLoggedIn ? t("settings.account.signInToSync") : undefined}
-                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[var(--border-primary)]"
+                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-(--bg-secondary) border-2 border-(--border-primary) text-(--text-primary) hover:border-(--accent-primary)/50 transition-colors text-sm font-medium text-left sm:text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-(--border-primary)"
                   >
-                    <Clock size={20} className="text-[var(--accent-primary)]" />
+                    <Clock size={20} className="text-(--accent-primary)" />
                     {t("settings.data.manageSessions")}
                   </button>
                   <button
                     onClick={() => setShowCompletedTasksModal(true)}
                     disabled={!isLoggedIn}
                     title={!isLoggedIn ? t("settings.account.signInToSync") : undefined}
-                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)]/50 transition-colors text-sm font-medium text-left sm:text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-[var(--border-primary)]"
+                    className="flex flex-row items-center justify-start sm:flex-col sm:items-center sm:justify-center gap-2 px-3 py-3 sm:py-4 rounded-xl bg-(--bg-secondary) border-2 border-(--border-primary) text-(--text-primary) hover:border-(--accent-primary)/50 transition-colors text-sm font-medium text-left sm:text-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-(--border-primary)"
                   >
-                    <CheckCircle size={20} className="text-[var(--accent-primary)]" />
+                    <CheckCircle size={20} className="text-(--accent-primary)" />
                     {t("settings.data.manageCompletedTasks")}
                   </button>
                 </div>
 
-                <div className="border-t border-[var(--border-primary)]/50 pt-4">
+                <div className="border-t border-(--border-primary)/50 pt-4">
                   <DataExportImportPanel />
                 </div>
               </div>
@@ -348,10 +348,10 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
             {activeTab === "whatsNew" && (
               <div className="space-y-4">
                 {getLocalizedChangelog(i18n.language).map((entry, index) => (
-                  <div key={index} className="border-2 border-[var(--border-primary)] rounded-lg p-4 bg-[var(--bg-secondary)]/30">
+                  <div key={index} className="border-2 border-(--border-primary) rounded-lg p-4 bg-(--bg-secondary)/30">
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-sm font-semibold text-[var(--text-primary)]">{entry.date}</h4>
-                      <span className="text-xs text-[var(--text-secondary)]">{entry.time}</span>
+                      <h4 className="text-sm font-semibold text-(--text-primary)">{entry.date}</h4>
+                      <span className="text-xs text-(--text-secondary)">{entry.time}</span>
                     </div>
                     <div className="space-y-3">
                       {entry.changes.added && entry.changes.added.length > 0 && (
@@ -362,7 +362,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                           </h5>
                           <ul className="space-y-0.5 ml-0">
                             {entry.changes.added.map((change, i) => (
-                              <li key={i} className="text-sm text-[var(--text-secondary)]">- {change}</li>
+                              <li key={i} className="text-sm text-(--text-secondary)">- {change}</li>
                             ))}
                           </ul>
                         </div>
@@ -375,7 +375,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                           </h5>
                           <ul className="space-y-0.5 ml-0">
                             {entry.changes.improved.map((change, i) => (
-                              <li key={i} className="text-sm text-[var(--text-secondary)]">- {change}</li>
+                              <li key={i} className="text-sm text-(--text-secondary)">- {change}</li>
                             ))}
                           </ul>
                         </div>
@@ -388,7 +388,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                           </h5>
                           <ul className="space-y-0.5 ml-0">
                             {entry.changes.fixed.map((change, i) => (
-                              <li key={i} className="text-sm text-[var(--text-secondary)]">- {change}</li>
+                              <li key={i} className="text-sm text-(--text-secondary)">- {change}</li>
                             ))}
                           </ul>
                         </div>
@@ -401,7 +401,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                           </h5>
                           <ul className="space-y-0.5 ml-0">
                             {entry.changes.soon.map((change, i) => (
-                              <li key={i} className="text-sm text-[var(--text-secondary)]">- {change}</li>
+                              <li key={i} className="text-sm text-(--text-secondary)">- {change}</li>
                             ))}
                           </ul>
                         </div>
@@ -414,7 +414,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                           </h5>
                           <ul className="space-y-0.5 ml-0">
                             {entry.changes.removed.map((change, i) => (
-                              <li key={i} className="text-sm text-[var(--text-secondary)] line-through">{change}</li>
+                              <li key={i} className="text-sm text-(--text-secondary) line-through">{change}</li>
                             ))}
                           </ul>
                         </div>
@@ -428,25 +428,25 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
             {activeTab === "about" && (
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-base font-bold mb-2 text-[var(--text-primary)]">{t("settings.about.theStory")}</h3>
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                  <h3 className="text-base font-bold mb-2 text-(--text-primary)">{t("settings.about.theStory")}</h3>
+                  <p className="text-sm text-(--text-secondary) leading-relaxed">
                     {t("settings.about.storyBody")}
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-base font-bold mb-2 text-[var(--text-primary)]">{t("settings.about.aboutMe")}</h3>
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                  <h3 className="text-base font-bold mb-2 text-(--text-primary)">{t("settings.about.aboutMe")}</h3>
+                  <p className="text-sm text-(--text-secondary) leading-relaxed">
                     {t("settings.about.aboutMeBody")}
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-base font-bold mb-2 text-[var(--text-primary)]">{t("settings.about.getInTouch")}</h3>
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-2">
+                  <h3 className="text-base font-bold mb-2 text-(--text-primary)">{t("settings.about.getInTouch")}</h3>
+                  <p className="text-sm text-(--text-secondary) leading-relaxed mb-2">
                     {t("settings.about.getInTouchBody")}
                   </p>
                   <a
                     href="mailto:info@unitracker.me"
-                    className="flex items-center gap-2 text-[var(--accent-primary)] text-sm font-medium hover:underline"
+                    className="flex items-center gap-2 text-(--accent-primary) text-sm font-medium hover:underline"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25H4.5a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5H4.5a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-.876 1.797l-7.5 5.625a2.25 2.25 0 01-2.748 0l-7.5-5.625A2.25 2.25 0 012.25 6.993V6.75" />
@@ -454,7 +454,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                     info@unitracker.me
                   </a>
                 </div>
-                <div className="border-t border-[var(--border-primary)] pt-4 text-center text-xs text-[var(--text-secondary)]">
+                <div className="border-t border-(--border-primary) pt-4 text-center text-xs text-(--text-secondary)">
                   {t("settings.about.thankYou")}
                 </div>
               </div>

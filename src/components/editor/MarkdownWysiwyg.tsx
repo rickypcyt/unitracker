@@ -49,7 +49,7 @@ const MarkdownWysiwyg = React.forwardRef<{ getCurrentContent: () => string }, Ma
         return {
           placeholder: placeholder || "Describe your task in detail (supports markdown formatting)",
           minHeight: "min-h-[80px] sm:min-h-[100px]",
-          border: "border-2 border-[var(--border-primary)] rounded-lg focus-within:ring-2 focus-within:ring-[var(--accent-primary)]/30 focus-within:border-[var(--accent-primary)] transition-all",
+          border: "border-2 border-(--border-primary) rounded-lg focus-within:ring-2 focus-within:ring-(--accent-primary)/30 focus-within:border-(--accent-primary) transition-all",
           extensions: [StarterKit, Placeholder.configure({ placeholder: placeholder || "Describe your task in detail (supports markdown formatting)" })]
         };
       default:
@@ -132,18 +132,18 @@ const MarkdownWysiwyg = React.forwardRef<{ getCurrentContent: () => string }, Ma
         onMouseDown={(e) => e.preventDefault()}
         onClick={onClick}
         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-colors disabled:opacity-30 ${
-          active ? "bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]" : "text-[var(--text-secondary)]"
+          active ? "bg-(--accent-primary)/15 text-(--accent-primary)" : "text-(--text-secondary)"
         }`}
       >
         {children}
       </button>
     );
-    const Sep = () => <span className="mx-1 h-5 w-px shrink-0 bg-[var(--border-primary)]" aria-hidden="true" />;
+    const Sep = () => <span className="mx-1 h-5 w-px shrink-0 bg-(--border-primary)" aria-hidden="true" />;
     return (
       <div
         role="toolbar"
         aria-label="Formatting"
-        className={`sticky top-0 z-20 mb-2 flex items-center gap-0.5 overflow-x-auto rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]/95 px-1.5 py-1 backdrop-blur-md hide-scrollbar transition-opacity duration-200 ${ui.focused ? "opacity-100" : "pointer-events-none opacity-0"}`}
+        className={`sticky top-0 z-20 mb-2 flex items-center gap-0.5 overflow-x-auto rounded-lg border border-(--border-primary) bg-(--bg-secondary)/95 px-1.5 py-1 backdrop-blur-md hide-scrollbar transition-opacity duration-200 ${ui.focused ? "opacity-100" : "pointer-events-none opacity-0"}`}
       >
         <Btn label="Undo (Ctrl+Z)" disabled={!ui.canUndo} onClick={() => chain().undo().run()}><Undo2 size={16} /></Btn>
         <Btn label="Redo (Ctrl+Y)" disabled={!ui.canRedo} onClick={() => chain().redo().run()}><Redo2 size={16} /></Btn>
@@ -210,7 +210,7 @@ const MarkdownWysiwyg = React.forwardRef<{ getCurrentContent: () => string }, Ma
       {variant === 'notes' && renderToolbar()}
       {showTitleInput && (
         <input
-          className="w-full px-4 py-3 bg-[var(--bg-primary)] text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none text-xl sm:text-2xl font-bold border-b-2 border-transparent focus:border-[var(--accent-primary)] transition-colors"
+          className="w-full px-4 py-3 bg-(--bg-primary) text-(--text-primary) placeholder-(--text-secondary) focus:outline-none text-xl sm:text-2xl font-bold border-b-2 border-transparent focus:border-(--accent-primary) transition-colors"
           type="text"
           placeholder="Note Title"
           value={title}
@@ -221,17 +221,17 @@ const MarkdownWysiwyg = React.forwardRef<{ getCurrentContent: () => string }, Ma
       {/* Editor Content - With proper borders and styling */}
       <div className="flex-1 flex flex-col">
         <div className="relative flex-1">
-          <div className={`relative ${variant === 'notes' ? 'py-2' : 'p-4'} bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus-within:outline-none ${config.minHeight} ${config.border || ''} cursor-text ${!showPlaceholder ? '[&_.ProseMirror_p.is-empty]:hidden [&_.ProseMirror_p.is-editor-empty]:hidden' : ''}`}>
+          <div className={`relative ${variant === 'notes' ? 'py-2' : 'p-4'} bg-(--bg-primary) text-(--text-primary) focus:outline-none focus-within:outline-none ${config.minHeight} ${config.border || ''} cursor-text ${!showPlaceholder ? '[&_.ProseMirror_p.is-empty]:hidden [&_.ProseMirror_p.is-editor-empty]:hidden' : ''}`}>
             <EditorContent
               editor={editor}
-              className="text-[var(--text-primary)] focus:outline-none h-full cursor-text"
+              className="text-(--text-primary) focus:outline-none h-full cursor-text"
             />
             {!editor?.getText()?.trim() && variant === 'tasks' && (
               <div
                 className="absolute top-4 left-4 cursor-text select-none pointer-events-none"
                 onClick={() => editor?.commands.focus()}
               >
-                <span className="text-[var(--text-secondary)] text-base opacity-60">
+                <span className="text-(--text-secondary) text-base opacity-60">
                   Add task description here...
                 </span>
               </div>
@@ -239,7 +239,7 @@ const MarkdownWysiwyg = React.forwardRef<{ getCurrentContent: () => string }, Ma
           </div>
         </div>
         {variant === 'notes' && ui && (
-          <div className="fixed bottom-3 right-4 z-10 flex items-center gap-3 rounded-md bg-[var(--bg-secondary)]/80 px-2 py-1 text-[11px] tabular-nums text-[var(--text-secondary)] backdrop-blur">
+          <div className="fixed bottom-3 right-4 z-10 flex items-center gap-3 rounded-md bg-(--bg-secondary)/80 px-2 py-1 text-[11px] tabular-nums text-(--text-secondary) backdrop-blur">
             <span>{ui.words} {ui.words === 1 ? "word" : "words"}</span>
             <span>{ui.chars} chars</span>
           </div>

@@ -170,7 +170,7 @@ const FocusWidgetPage = () => {
                 transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
                 className="w-24 h-24 rounded-full bg-white/5 border-2 border-white/10 flex items-center justify-center"
               >
-                <Coffee size={48} className="text-[var(--accent-primary)]" />
+                <Coffee size={48} className="text-(--accent-primary)" />
               </motion.div>
               <motion.div
                 animate={{ opacity: [0.2, 0.5, 0.2], scale: [0.9, 1.1, 0.9] }}
@@ -190,7 +190,7 @@ const FocusWidgetPage = () => {
 
             <button
               onClick={() => setIsSessionsModalOpen(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent text-sm font-medium hover:bg-[var(--accent-primary)]/10 transition-colors shadow-lg hover:shadow-xl"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-(--accent-primary) text-(--accent-primary) bg-transparent text-sm font-medium hover:bg-(--accent-primary)/10 transition-colors shadow-lg hover:shadow-xl"
               aria-label="Open Today's Sessions"
             >
               <Plus size={18} />

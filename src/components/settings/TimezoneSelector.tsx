@@ -94,22 +94,22 @@ const TimezoneSelector: React.FC<TimezoneSelectorProps> = ({
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 w-full h-11 px-3 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors text-base text-[var(--text-primary)]"
+        className="flex items-center gap-2 w-full h-11 px-3 bg-(--bg-secondary) border-2 border-(--border-primary) rounded-lg hover:bg-(--bg-tertiary) transition-colors text-base text-(--text-primary)"
         aria-label="Select timezone"
       >
-        <Globe size={18} className="flex-shrink-0" />
+        <Globe size={18} className="shrink-0" />
         <span className="flex-1 min-w-0 truncate text-left">
           {getTimezoneLabel(currentTz)}
         </span>
         {isSystemTimezone && (
-          <span className="text-sm text-[var(--text-secondary)] flex-shrink-0">(System)</span>
+          <span className="text-sm text-(--text-secondary) shrink-0">(System)</span>
         )}
         {showCurrentTime && (
-          <span className="text-sm text-[var(--accent-primary)] font-mono flex-shrink-0">
+          <span className="text-sm text-(--accent-primary) font-mono shrink-0">
             {formatCurrentTime(currentTz)}
           </span>
         )}
-        <ChevronDown size={16} className={`flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown size={16} className={`shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Dropdown */}
@@ -126,43 +126,43 @@ const TimezoneSelector: React.FC<TimezoneSelectorProps> = ({
           
           {/* Dropdown Content */}
           <div 
-            className="fixed z-50 w-80 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg max-h-96 overflow-hidden"
+            className="fixed z-50 w-80 bg-(--bg-secondary) border-2 border-(--border-primary) rounded-lg shadow-lg max-h-96 overflow-hidden"
             style={{
               top: `${getDropdownPosition().top}px`,
               left: `${getDropdownPosition().left}px`,
             }}
           >
             {/* Search Input */}
-            <div className="p-3 border-b border-[var(--border-primary)]">
+            <div className="p-3 border-b border-(--border-primary)">
               <input
                 type="text"
                 placeholder="Search timezone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-md text-sm text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                className="w-full px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-md text-sm text-(--text-primary) placeholder-(--text-secondary) focus:outline-none focus:ring-1 focus:ring-(--accent-primary)"
                 autoFocus
               />
             </div>
 
             {/* System Timezone Option */}
-            <div className="border-b border-[var(--border-primary)]">
+            <div className="border-b border-(--border-primary)">
               <button
                 onClick={() => handleTimezoneSelect(userTz)}
-                className={`w-full px-3 py-2 flex items-center gap-3 hover:bg-[var(--bg-tertiary)] transition-colors text-left ${
+                className={`w-full px-3 py-2 flex items-center gap-3 hover:bg-(--bg-tertiary) transition-colors text-left ${
                   currentTz === userTz ? 'bg-[var(--accent-primary)]10' : ''
                 }`}
               >
-                <Clock size={16} className="text-[var(--text-secondary)]" />
+                <Clock size={16} className="text-(--text-secondary)" />
                 <div className="flex-1">
-                  <div className="text-sm text-[var(--text-primary)] font-medium">
+                  <div className="text-sm text-(--text-primary) font-medium">
                     System Timezone
                   </div>
-                  <div className="text-xs text-[var(--text-secondary)]">
+                  <div className="text-xs text-(--text-secondary)">
                     {getTimezoneLabel(userTz)}
                   </div>
                 </div>
                 {currentTz === userTz && (
-                  <div className="w-2 h-2 bg-[var(--accent-primary)] rounded-full" />
+                  <div className="w-2 h-2 bg-(--accent-primary) rounded-full" />
                 )}
               </button>
             </div>
@@ -173,26 +173,26 @@ const TimezoneSelector: React.FC<TimezoneSelectorProps> = ({
                 <button
                   key={timezone.value}
                   onClick={() => handleTimezoneSelect(timezone.value)}
-                  className={`w-full px-3 py-2 flex items-center gap-3 hover:bg-[var(--bg-tertiary)] transition-colors text-left ${
+                  className={`w-full px-3 py-2 flex items-center gap-3 hover:bg-(--bg-tertiary) transition-colors text-left ${
                     currentTz === timezone.value ? 'bg-[var(--accent-primary)]10' : ''
                   }`}
                 >
                   <div className="flex-1">
-                    <div className="text-sm text-[var(--text-primary)]">
+                    <div className="text-sm text-(--text-primary)">
                       {timezone.label}
                     </div>
-                    <div className="text-xs text-[var(--text-secondary)]">
+                    <div className="text-xs text-(--text-secondary)">
                       {timezone.value}
                     </div>
                   </div>
                   {currentTz === timezone.value && (
-                    <div className="w-2 h-2 bg-[var(--accent-primary)] rounded-full" />
+                    <div className="w-2 h-2 bg-(--accent-primary) rounded-full" />
                   )}
                 </button>
               ))}
 
               {filteredTimezones.length === 0 && (
-                <div className="px-3 py-4 text-center text-sm text-[var(--text-secondary)]">
+                <div className="px-3 py-4 text-center text-sm text-(--text-secondary)">
                   No timezones found matching "{searchTerm}"
                 </div>
               )}
@@ -200,9 +200,9 @@ const TimezoneSelector: React.FC<TimezoneSelectorProps> = ({
 
             {/* Current Time Display */}
             {showCurrentTime && (
-              <div className="p-3 border-t border-[var(--border-primary)] bg-[var(--bg-primary)]">
-                <div className="text-xs text-[var(--text-secondary)] mb-1">Current time in selected timezone:</div>
-                <div className="text-sm font-mono text-[var(--text-primary)]">
+              <div className="p-3 border-t border-(--border-primary) bg-(--bg-primary)">
+                <div className="text-xs text-(--text-secondary) mb-1">Current time in selected timezone:</div>
+                <div className="text-sm font-mono text-(--text-primary)">
                   {formatCurrentTime(currentTz)}
                 </div>
               </div>

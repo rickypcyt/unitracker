@@ -38,17 +38,17 @@ className=""
           <>
             <button
               onClick={handleWeekPrevious || (() => setWeekOffset((prev) => prev + 1))}
-              className="p-1.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
+              className="p-1.5 rounded-lg hover:bg-(--bg-secondary) transition-colors"
               aria-label="Previous week"
             >
               <ChevronLeft size={20} />
             </button>
-            <span className="font-semibold text-lg text-center select-none transition-colors duration-200 text-[var(--accent-primary)]">
+            <span className="font-semibold text-lg text-center select-none transition-colors duration-200 text-(--accent-primary)">
               {`Week ${shownWeekNumber}`}
             </span>
             <button
               onClick={handleWeekNext || (() => setWeekOffset((prev) => prev - 1))}
-              className="p-1.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
+              className="p-1.5 rounded-lg hover:bg-(--bg-secondary) transition-colors"
               aria-label="Next week"
               disabled={weekOffset === 0}
             >

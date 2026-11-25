@@ -55,12 +55,12 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
         {/* Configuración de Pomodoro */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Clock size={20} className="text-[var(--accent-primary)]" />
-            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Pomodoro Settings</h3>
+            <Clock size={20} className="text-(--accent-primary)" />
+            <h3 className="text-lg font-semibold text-(--text-primary)">Pomodoro Settings</h3>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+              <label className="block text-sm font-medium text-(--text-secondary) mb-1">
                 Work (minutes)
               </label>
               <input
@@ -69,11 +69,11 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="120"
                 value={pomodoroSettings.work}
                 onChange={(e) => handlePomodoroChange('work', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+              <label className="block text-sm font-medium text-(--text-secondary) mb-1">
                 Break (minutes)
               </label>
               <input
@@ -82,11 +82,11 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="60"
                 value={pomodoroSettings.break}
                 onChange={(e) => handlePomodoroChange('break', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+              <label className="block text-sm font-medium text-(--text-secondary) mb-1">
                 Long Break (minutes)
               </label>
               <input
@@ -95,11 +95,11 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="120"
                 value={pomodoroSettings.longBreak}
                 onChange={(e) => handlePomodoroChange('longBreak', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+              <label className="block text-sm font-medium text-(--text-secondary) mb-1">
                 Sessions before long break
               </label>
               <input
@@ -108,7 +108,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="10"
                 value={pomodoroSettings.workSessionsBeforeLongBreak}
                 onChange={(e) => handlePomodoroChange('workSessionsBeforeLongBreak', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)"
               />
             </div>
           </div>
@@ -117,12 +117,12 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
         {/* Configuración de Countdown */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Clock size={20} className="text-[var(--accent-primary)]" />
-            <h3 className="text-lg font-semibold text-[var(--text-primary)]">Countdown Default Time</h3>
+            <Clock size={20} className="text-(--accent-primary)" />
+            <h3 className="text-lg font-semibold text-(--text-primary)">Countdown Default Time</h3>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+              <label className="block text-sm font-medium text-(--text-secondary) mb-1">
                 Hours
               </label>
               <input
@@ -131,11 +131,11 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="23"
                 value={countdownSettings.hours}
                 onChange={(e) => handleCountdownChange('hours', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+              <label className="block text-sm font-medium text-(--text-secondary) mb-1">
                 Minutes
               </label>
               <input
@@ -144,11 +144,11 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="59"
                 value={countdownSettings.minutes}
                 onChange={(e) => handleCountdownChange('minutes', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+              <label className="block text-sm font-medium text-(--text-secondary) mb-1">
                 Seconds
               </label>
               <input
@@ -157,7 +157,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="59"
                 value={countdownSettings.seconds}
                 onChange={(e) => handleCountdownChange('seconds', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] border-2 border-[var(--border-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)"
               />
             </div>
           </div>
@@ -167,13 +167,13 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
         <div className="flex gap-3 pt-4">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors border-2 border-[var(--border-primary)]"
+            className="flex-1 px-4 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) hover:bg-(--bg-tertiary) transition-colors border-2 border-(--border-primary)"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="flex-1 px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 transition-colors"
+            className="flex-1 px-4 py-2 rounded-lg border-2 border-(--accent-primary) text-(--accent-primary) bg-transparent hover:bg-(--accent-primary)/10 transition-colors"
           >
             Save Settings
           </button>

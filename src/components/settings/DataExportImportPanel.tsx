@@ -35,20 +35,20 @@ const DataExportImportPanel = () => {
   };
 
   const btnClass = "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all active:scale-95";
-  const secondaryBtn = `${btnClass} border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/50`;
+  const secondaryBtn = `${btnClass} border-2 border-(--border-primary) text-(--text-primary) hover:bg-(--bg-secondary)/50`;
 
   return (
     <div className="space-y-6">
       {/* Export Section */}
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <Download size={18} className="text-[var(--accent-primary)]" />
-          <h4 className="text-sm font-bold text-[var(--text-primary)]">Export Data</h4>
+          <Download size={18} className="text-(--accent-primary)" />
+          <h4 className="text-sm font-bold text-(--text-primary)">Export Data</h4>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Tasks */}
-          <div className="border-2 border-[var(--border-primary)] rounded-xl p-3 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
+          <div className="border-2 border-(--border-primary) rounded-xl p-3 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-(--text-secondary)">
               <FileText size={14} />
               Tasks
             </div>
@@ -63,8 +63,8 @@ const DataExportImportPanel = () => {
           </div>
 
           {/* Sessions */}
-          <div className="border-2 border-[var(--border-primary)] rounded-xl p-3 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
+          <div className="border-2 border-(--border-primary) rounded-xl p-3 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-(--text-secondary)">
               <Clock size={14} />
               Sessions
             </div>
@@ -79,8 +79,8 @@ const DataExportImportPanel = () => {
           </div>
 
           {/* Stats */}
-          <div className="border-2 border-[var(--border-primary)] rounded-xl p-3 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-secondary)]">
+          <div className="border-2 border-(--border-primary) rounded-xl p-3 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-(--text-secondary)">
               <Database size={14} />
               Stats
             </div>
@@ -99,8 +99,8 @@ const DataExportImportPanel = () => {
       {/* Backup / Restore Section */}
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <Database size={18} className="text-[var(--accent-primary)]" />
-          <h4 className="text-sm font-bold text-[var(--text-primary)]">Backup & Restore</h4>
+          <Database size={18} className="text-(--accent-primary)" />
+          <h4 className="text-sm font-bold text-(--text-primary)">Backup & Restore</h4>
         </div>
         <div className="flex gap-3">
           <button
@@ -127,7 +127,7 @@ const DataExportImportPanel = () => {
             className="hidden"
           />
         </div>
-        <p className="text-xs text-[var(--text-secondary)] mt-2">
+        <p className="text-xs text-(--text-secondary) mt-2">
           Full backup includes tasks, study sessions, and workspaces as a JSON file.
         </p>
       </div>

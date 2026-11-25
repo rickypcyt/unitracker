@@ -34,10 +34,10 @@ const FriendDetailModal: React.FC<FriendDetailModalProps> = ({ isOpen, onClose, 
         <img
           src={friend.avatar_url || '/public/assets/apple-touch-icon.png'}
           alt={friend.username || friend.email || 'Avatar'}
-          className="w-20 h-20 rounded-full object-cover border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)]"
+          className="w-20 h-20 rounded-full object-cover border-2 border-(--accent-primary) bg-(--bg-primary)"
         />
-        <div className="text-lg font-semibold text-[var(--text-primary)]">{friend.username || friend.email || friend.id}</div>
-        <div className="text-sm text-[var(--text-secondary)]">{friend.email}</div>
+        <div className="text-lg font-semibold text-(--text-primary)">{friend.username || friend.email || friend.id}</div>
+        <div className="text-sm text-(--text-secondary)">{friend.email}</div>
         
         {onRemoveFriend && (
           <button
@@ -57,7 +57,7 @@ const FriendDetailModal: React.FC<FriendDetailModalProps> = ({ isOpen, onClose, 
             {availableWorkspaces.length > 0 && (
               <button
                 onClick={() => setShowShareModal(true)}
-                className="px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-medium"
+                className="px-4 py-2 rounded-lg border-2 border-(--accent-primary) text-(--accent-primary) font-medium"
               >
                 Share Workspace
               </button>

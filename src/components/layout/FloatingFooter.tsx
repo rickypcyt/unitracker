@@ -99,12 +99,12 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
 
   return (
     <>
-      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[9999] max-w-[calc(100%-1rem)]">
-        <div className="flex items-center gap-2 px-3 py-2 rounded-full border-2 border-[var(--border-primary)]/70 bg-[var(--bg-primary)]/70 backdrop-blur-[12px] shadow-[0_12px_30px_rgba(15,23,42,0.35)] text-[var(--text-secondary)]">
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-9999 max-w-[calc(100%-1rem)]">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-full border-2 border-(--border-primary)/70 bg-(--bg-primary)/70 backdrop-blur-md shadow-[0_12px_30px_rgba(15,23,42,0.35)] text-(--text-secondary)">
           {/* Workspace selector with task badge */}
           <button
             onClick={() => setShowWorkspaceMenu(prev => !prev)}
-            className="flex items-center gap-2 hover:text-[var(--text-primary)] transition-colors"
+            className="flex items-center gap-2 hover:text-(--text-primary) transition-colors"
             aria-label={`Workspace selector. Current workspace: ${activeWorkspace?.name || 'None'}. Click to open workspace selector.`}
             aria-expanded={showWorkspaceMenu}
             title={activeWorkspace?.name || 'Select Workspace'}
@@ -119,13 +119,13 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
             <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showWorkspaceMenu ? 'rotate-180' : ''}`} />
           </button>
 
-          <span className="w-px h-4 bg-[var(--border-primary)]" aria-hidden="true" />
+          <span className="w-px h-4 bg-(--border-primary)" aria-hidden="true" />
 
           <a
             href="https://discord.gg/8sRswbPQQm"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-(--bg-secondary) hover:text-(--text-primary) transition-colors"
             aria-label="Discord"
           >
             <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" aria-hidden="true">
@@ -138,26 +138,26 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
             href="https://github.com/rickypcyt/unitracker"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-(--bg-secondary) hover:text-(--text-primary) transition-colors"
             aria-label="GitHub"
           >
             <Github className="w-4 h-4" />
           </a>
 
-          <span className="w-px h-4 bg-[var(--border-primary)]" aria-hidden="true" />
+          <span className="w-px h-4 bg-(--border-primary)" aria-hidden="true" />
 
           {/* Active Session Timer */}
           {showSessionTimer && (
             <>
-              <span className="w-px h-4 bg-[var(--border-primary)]" aria-hidden="true" />
+              <span className="w-px h-4 bg-(--border-primary)" aria-hidden="true" />
               <button
                 onClick={() => navigateTo('session')}
-                className="flex items-center gap-1.5 px-2 py-0.5 rounded-full hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                className="flex items-center gap-1.5 px-2 py-0.5 rounded-full hover:bg-(--bg-secondary) hover:text-(--text-primary) transition-colors"
                 aria-label="Active study session"
                 title="Go to study session"
               >
-                <span className={`w-2 h-2 rounded-full ${studyState.isRunning ? 'bg-emerald-500 animate-pulse' : 'bg-[var(--text-secondary)]'}`} />
-                <span className="text-xs font-mono tabular-nums text-[var(--text-primary)]">
+                <span className={`w-2 h-2 rounded-full ${studyState.isRunning ? 'bg-emerald-500 animate-pulse' : 'bg-(--text-secondary)'}`} />
+                <span className="text-xs font-mono tabular-nums text-(--text-primary)">
                   {formatHMS(studyTime)}
                 </span>
               </button>
@@ -168,7 +168,7 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-(--bg-secondary) hover:text-(--text-primary) transition-colors"
             aria-label="Toggle theme"
             title="Toggle theme"
           >
@@ -179,12 +179,12 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
             )}
           </button>
 
-          <span className="w-px h-4 bg-[var(--border-primary)]" aria-hidden="true" />
+          <span className="w-px h-4 bg-(--border-primary)" aria-hidden="true" />
 
           {/* Quick Add Task */}
           <button
             onClick={handleQuickAddTask}
-            className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-[var(--bg-secondary)] hover:text-[var(--accent-primary)] transition-colors"
+            className="flex items-center justify-center w-7 h-7 rounded-full hover:bg-(--bg-secondary) hover:text-(--accent-primary) transition-colors"
             aria-label="Quick add task"
             title="Quick add task"
           >
@@ -197,10 +197,10 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
       {showWorkspaceMenu && (
         <>
           <div
-            className="fixed inset-0 z-[9998]"
+            className="fixed inset-0 z-9998"
             onClick={() => setShowWorkspaceMenu(false)}
           />
-          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[9999] w-64 max-w-[calc(100vw-2rem)] rounded-xl border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-xl overflow-hidden">
+          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-9999 w-64 max-w-[calc(100vw-2rem)] rounded-xl border-2 border-(--border-primary) bg-(--bg-primary) shadow-xl overflow-hidden">
             <div className="max-h-64 overflow-y-auto py-1">
               {[{
                 id: 'all',
@@ -220,16 +220,16 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
                     }}
                     className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors ${
                       isActive
-                        ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
-                        : 'text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
+                        ? 'bg-(--accent-primary)/10 text-(--accent-primary)'
+                        : 'text-(--text-primary) hover:bg-(--bg-secondary)'
                     }`}
                   >
-                    <IconComp className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`} />
+                    <IconComp className={`w-4 h-4 shrink-0 ${isActive ? 'text-(--accent-primary)' : 'text-(--text-secondary)'}`} />
                     <span className="flex-1 min-w-0 truncate text-sm font-medium">{ws.name}</span>
                     {(ws.taskCount ?? 0) > 0 && (
-                      <span className="text-xs text-[var(--text-secondary)]">{ws.taskCount}</span>
+                      <span className="text-xs text-(--text-secondary)">{ws.taskCount}</span>
                     )}
-                    {isActive && <Check className="w-4 h-4 flex-shrink-0 text-[var(--accent-primary)]" />}
+                    {isActive && <Check className="w-4 h-4 shrink-0 text-(--accent-primary)" />}
                   </button>
                 );
               })}
@@ -239,7 +239,7 @@ const FloatingFooter: React.FC<FloatingFooterProps> = ({
                 setShowWorkspaceMenu(false);
                 setShowWorkspaceModal(true);
               }}
-              className="w-full flex items-center gap-2.5 px-3 py-2.5 border-t border-[var(--border-primary)] text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+              className="w-full flex items-center gap-2.5 px-3 py-2.5 border-t border-(--border-primary) text-sm font-medium text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-secondary) transition-colors"
             >
               <Settings2 className="w-4 h-4" />
               Manage workspaces

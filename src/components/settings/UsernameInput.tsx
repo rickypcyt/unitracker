@@ -77,13 +77,13 @@ export default function UsernameInput({
 
   return (
     <div className={`w-full flex flex-col gap-1 ${className}`}>
-      <label className="text-sm font-medium text-[var(--text-primary)]">Username</label>
+      <label className="text-sm font-medium text-(--text-primary)">Username</label>
       <input
         type="text"
         value={username}
         onChange={handleChange}
         disabled={disabled}
-        className={`px-3 py-2 rounded-lg border-2 transition-colors bg-[var(--bg-secondary)] border-[var(--border-primary)] focus:border-[var(--accent-primary)] focus:bg-[var(--bg-secondary)] focus:outline-none ${
+        className={`px-3 py-2 rounded-lg border-2 transition-colors bg-(--bg-secondary) border-(--border-primary) focus:border-(--accent-primary) focus:bg-(--bg-secondary) focus:outline-none ${
           error
             ? 'border-red-500'
             : success

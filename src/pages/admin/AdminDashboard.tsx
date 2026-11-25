@@ -116,8 +116,8 @@ const AdminDashboard = () => {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <p className="text-2xl font-bold text-[var(--text-primary)] mb-2">403</p>
-          <p className="text-[var(--text-secondary)]">You don't have access to this page.</p>
+          <p className="text-2xl font-bold text-(--text-primary) mb-2">403</p>
+          <p className="text-(--text-secondary)">You don't have access to this page.</p>
         </div>
       </div>
     );
@@ -126,7 +126,7 @@ const AdminDashboard = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--accent-primary)]" />
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-(--accent-primary)" />
       </div>
     );
   }
@@ -136,10 +136,10 @@ const AdminDashboard = () => {
       <div className="flex items-center justify-center min-h-[60vh] px-4">
         <div className="text-center max-w-md">
           <p className="text-red-500 font-semibold mb-2">Error loading data</p>
-          <p className="text-[var(--text-secondary)] text-sm">{error}</p>
-          <p className="text-[var(--text-secondary)] text-xs mt-4">
-            Make sure the <code className="bg-[var(--bg-secondary)] px-1 rounded">profiles</code> table has a{' '}
-            <code className="bg-[var(--bg-secondary)] px-1 rounded">created_at</code> column.
+          <p className="text-(--text-secondary) text-sm">{error}</p>
+          <p className="text-(--text-secondary) text-xs mt-4">
+            Make sure the <code className="bg-(--bg-secondary) px-1 rounded">profiles</code> table has a{' '}
+            <code className="bg-(--bg-secondary) px-1 rounded">created_at</code> column.
           </p>
         </div>
       </div>
@@ -209,8 +209,8 @@ const AdminDashboard = () => {
           onClick={() => setActiveTab('stats')}
           className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             activeTab === 'stats'
-              ? 'border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
-              : 'border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/30'
+              ? 'border-2 border-(--accent-primary) text-(--accent-primary) bg-(--accent-primary)/10'
+              : 'border-2 border-(--border-primary) text-(--text-primary) hover:bg-(--bg-secondary)/30'
           }`}
         >
           <TrendingUp size={16} />
@@ -220,8 +220,8 @@ const AdminDashboard = () => {
           onClick={() => setActiveTab('email')}
           className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             activeTab === 'email'
-              ? 'border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
-              : 'border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/30'
+              ? 'border-2 border-(--accent-primary) text-(--accent-primary) bg-(--accent-primary)/10'
+              : 'border-2 border-(--border-primary) text-(--text-primary) hover:bg-(--bg-secondary)/30'
           }`}
         >
           <Mail size={16} />
@@ -238,15 +238,15 @@ const AdminDashboard = () => {
         {cards.map((card) => (
           <div
             key={card.label}
-            className="bg-[var(--bg-secondary)]/30 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5"
+            className="bg-(--bg-secondary)/30 border-2 border-(--border-primary)/30 rounded-xl p-4 sm:p-5"
           >
             <div className="flex items-center gap-3 mb-2">
               <div className={`w-10 h-10 rounded-lg ${card.bg} flex items-center justify-center`}>
                 <card.icon className={`w-5 h-5 ${card.color}`} />
               </div>
-              <span className="text-sm text-[var(--text-secondary)] font-medium">{card.label}</span>
+              <span className="text-sm text-(--text-secondary) font-medium">{card.label}</span>
             </div>
-            <p className="text-3xl font-bold text-[var(--text-primary)]">{card.value}</p>
+            <p className="text-3xl font-bold text-(--text-primary)">{card.value}</p>
           </div>
         ))}
       </div>
@@ -256,22 +256,22 @@ const AdminDashboard = () => {
         {signInCards.map((card) => (
           <div
             key={card.label}
-            className="bg-[var(--bg-secondary)]/30 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5"
+            className="bg-(--bg-secondary)/30 border-2 border-(--border-primary)/30 rounded-xl p-4 sm:p-5"
           >
             <div className="flex items-center gap-3 mb-2">
               <div className={`w-10 h-10 rounded-lg ${card.bg} flex items-center justify-center`}>
                 <card.icon className={`w-5 h-5 ${card.color}`} />
               </div>
-              <span className="text-sm text-[var(--text-secondary)] font-medium">{card.label}</span>
+              <span className="text-sm text-(--text-secondary) font-medium">{card.label}</span>
             </div>
-            <p className="text-3xl font-bold text-[var(--text-primary)]">{card.value}</p>
+            <p className="text-3xl font-bold text-(--text-primary)">{card.value}</p>
           </div>
         ))}
       </div>
 
       {/* Chart */}
-      <div className="bg-[var(--bg-secondary)]/20 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-6 mb-6">
-        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
+      <div className="bg-(--bg-secondary)/20 border-2 border-(--border-primary)/30 rounded-xl p-4 sm:p-6 mb-6">
+        <h2 className="text-lg font-semibold text-(--text-primary) mb-4">
           New Users (Last 30 Days)
         </h2>
         <ResponsiveContainer width="100%" height={280}>
@@ -301,26 +301,26 @@ const AdminDashboard = () => {
       </div>
 
       {/* Recent users table */}
-      <div className="bg-[var(--bg-secondary)]/20 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-6">
-        <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">
+      <div className="bg-(--bg-secondary)/20 border-2 border-(--border-primary)/30 rounded-xl p-4 sm:p-6">
+        <h2 className="text-lg font-semibold text-(--text-primary) mb-4">
           Recent Users
         </h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[var(--border-primary)]/30">
-                <th className="text-left py-2 px-3 text-[var(--text-secondary)] font-medium">User</th>
-                <th className="text-left py-2 px-3 text-[var(--text-secondary)] font-medium hidden sm:table-cell">Email</th>
-                <th className="text-left py-2 px-3 text-[var(--text-secondary)] font-medium">Username</th>
-                <th className="text-left py-2 px-3 text-[var(--text-secondary)] font-medium hidden md:table-cell">Joined</th>
-                <th className="text-left py-2 px-3 text-[var(--text-secondary)] font-medium hidden lg:table-cell">Last Sign In</th>
+              <tr className="border-b border-(--border-primary)/30">
+                <th className="text-left py-2 px-3 text-(--text-secondary) font-medium">User</th>
+                <th className="text-left py-2 px-3 text-(--text-secondary) font-medium hidden sm:table-cell">Email</th>
+                <th className="text-left py-2 px-3 text-(--text-secondary) font-medium">Username</th>
+                <th className="text-left py-2 px-3 text-(--text-secondary) font-medium hidden md:table-cell">Joined</th>
+                <th className="text-left py-2 px-3 text-(--text-secondary) font-medium hidden lg:table-cell">Last Sign In</th>
               </tr>
             </thead>
             <tbody>
               {profiles.slice(0, 50).map((p) => (
                 <tr
                   key={p.id}
-                  className="border-b border-[var(--border-primary)]/10 hover:bg-[var(--bg-secondary)]/20 transition-colors"
+                  className="border-b border-(--border-primary)/10 hover:bg-(--bg-secondary)/20 transition-colors"
                 >
                   <td className="py-2 px-3">
                     <div className="flex items-center gap-2">
@@ -328,29 +328,29 @@ const AdminDashboard = () => {
                         <img
                           src={p.avatar_url}
                           alt=""
-                          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                          className="w-8 h-8 rounded-full object-cover shrink-0"
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-sm font-bold text-[var(--accent-primary)] flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-(--bg-secondary) flex items-center justify-center text-sm font-bold text-(--accent-primary) shrink-0">
                           {(p.email?.[0] || '?').toUpperCase()}
                         </div>
                       )}
-                      <span className="text-[var(--text-primary)] truncate max-w-[120px]">
+                      <span className="text-(--text-primary) truncate max-w-[120px]">
                         {p.email?.split('@')[0] || 'Unknown'}
                       </span>
                     </div>
                   </td>
-                  <td className="py-2 px-3 text-[var(--text-secondary)] hidden sm:table-cell">
+                  <td className="py-2 px-3 text-(--text-secondary) hidden sm:table-cell">
                     {p.email || '—'}
                   </td>
                   <td className="py-2 px-3">
                     {p.username ? (
-                      <span className="text-[var(--accent-primary)] font-medium">{p.username}</span>
+                      <span className="text-(--accent-primary) font-medium">{p.username}</span>
                     ) : (
-                      <span className="text-[var(--text-secondary)] italic">not set</span>
+                      <span className="text-(--text-secondary) italic">not set</span>
                     )}
                   </td>
-                  <td className="py-2 px-3 text-[var(--text-secondary)] hidden md:table-cell">
+                  <td className="py-2 px-3 text-(--text-secondary) hidden md:table-cell">
                     {p.created_at
                       ? new Date(p.created_at).toLocaleDateString('en-US', {
                           year: 'numeric',
@@ -361,8 +361,8 @@ const AdminDashboard = () => {
                   </td>
                   <td className="py-2 px-3 hidden lg:table-cell">
                     {p.last_sign_in_at
-                      ? <span className="text-[var(--text-secondary)]">{new Date(p.last_sign_in_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-                      : <span className="text-[var(--text-secondary)] italic">never</span>}
+                      ? <span className="text-(--text-secondary)">{new Date(p.last_sign_in_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                      : <span className="text-(--text-secondary) italic">never</span>}
                   </td>
                 </tr>
               ))}
@@ -370,7 +370,7 @@ const AdminDashboard = () => {
           </table>
         </div>
         {profiles.length > 50 && (
-          <p className="text-center text-[var(--text-secondary)] text-xs mt-4">
+          <p className="text-center text-(--text-secondary) text-xs mt-4">
             Showing 50 of {profiles.length} users
           </p>
         )}

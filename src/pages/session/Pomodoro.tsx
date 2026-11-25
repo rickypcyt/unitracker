@@ -1290,7 +1290,7 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, hideControls = 
   return <div className="flex flex-col h-full w-full">
       {/* Header */}
       {hideHeader ? null : <div className="section-title justify-center relative w-full px-4 py-3">
-        <button type="button" onClick={() => setSyncPomodoroWithTimer(!syncPomodoroWithTimer)} className="absolute left-0 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20" aria-label={syncPomodoroWithTimer ? 'Disable Pomodoro sync' : 'Enable Pomodoro sync'} title={syncPomodoroWithTimer ? 'Sync ON (click to turn OFF)' : 'Sync OFF (click to turn ON)'}>
+        <button type="button" onClick={() => setSyncPomodoroWithTimer(!syncPomodoroWithTimer)} className="absolute left-0 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-(--accent-primary)/10 focus:bg-(--accent-primary)/20" aria-label={syncPomodoroWithTimer ? 'Disable Pomodoro sync' : 'Enable Pomodoro sync'} title={syncPomodoroWithTimer ? 'Sync ON (click to turn OFF)' : 'Sync OFF (click to turn ON)'}>
           {syncPomodoroWithTimer ? <RefreshCw size={20} className="icon" style={{
           color: 'var(--accent-primary)'
         }} /> : <RefreshCwOff size={20} className="icon" style={{
@@ -1300,12 +1300,12 @@ const Pomodoro: React.FC<PomodoroProps> = ({ hideHeader = false, hideControls = 
 
         <SectionTitle title="Pomodoro" tooltip="The Pomodoro Technique is a time management method that uses focused work sessions (typically 25 minutes) followed by short breaks." size="sm" />
 
-        <button onClick={() => setIsSettingsModalOpen(true)} className="absolute right-6 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Configure pomodoro">
+        <button onClick={() => setIsSettingsModalOpen(true)} className="absolute right-6 top-1/2 -translate-y-1/2 p-1 rounded-full text-(--text-secondary) hover:text-(--text-primary) transition-colors" aria-label="Configure pomodoro">
           <MoreVertical size={20} />
         </button>
 
-        <button onClick={toggleAlarm} className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" title={alarmEnabled ? 'Disable alarm sound' : 'Enable alarm sound'} aria-label="Toggle alarm sound">
-          {alarmEnabled ? <Bell size={20} className="text-[var(--text-secondary)]" /> : <BellOff size={20} className="text-[var(--text-secondary)]" />}
+        <button onClick={toggleAlarm} className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-(--text-secondary) hover:text-(--text-primary) transition-colors" title={alarmEnabled ? 'Disable alarm sound' : 'Enable alarm sound'} aria-label="Toggle alarm sound">
+          {alarmEnabled ? <Bell size={20} className="text-(--text-secondary)" /> : <BellOff size={20} className="text-(--text-secondary)" />}
         </button>
       </div>}
 

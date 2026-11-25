@@ -78,19 +78,19 @@ const MonthView = ({ fillHeight = false }: { fillHeight?: boolean }) => {
   const dotColor = (task: Task, day: Date) =>
     task.completed ? '#30d158' : isBefore(startOfDay(day), todayStart) ? '#ff453a' : 'var(--accent-primary)';
 
-  const navBtn = 'flex h-7 w-7 items-center justify-center rounded-full text-[var(--accent-primary)]';
+  const navBtn = 'flex h-7 w-7 items-center justify-center rounded-full text-(--accent-primary)';
 
   return (
-    <section ref={sectionRef} onMouseEnter={cancelClose} onMouseLeave={() => { closeTimer.current = setTimeout(() => setSelectedDay(null), 200); }} aria-labelledby="month-view-title" className={`relative w-full aspect-square xl:aspect-auto xl:h-full ${fillHeight ? '' : 'xl:max-h-[400px]'} flex flex-col rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] px-3 pb-2.5 pt-3`}>
+    <section ref={sectionRef} onMouseEnter={cancelClose} onMouseLeave={() => { closeTimer.current = setTimeout(() => setSelectedDay(null), 200); }} aria-labelledby="month-view-title" className={`relative w-full aspect-square xl:aspect-auto xl:h-full ${fillHeight ? '' : 'xl:max-h-[400px]'} flex flex-col rounded-2xl border border-(--border-primary) bg-(--bg-primary) px-3 pb-2.5 pt-3`}>
       <h3 id="month-view-title" className="sr-only">{t('session.monthView.title')}</h3>
 
       {/* Header: big month name left, Apple-style < Today > right */}
       <div className="mb-2 flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-(--accent-primary)/10 text-(--accent-primary)">
             <CalendarDays size={16} aria-hidden="true" />
           </span>
-          <p aria-live="polite" className="truncate text-lg font-bold leading-none tracking-tight text-[var(--text-primary)]">
+          <p aria-live="polite" className="truncate text-lg font-bold leading-none tracking-tight text-(--text-primary)">
             {capitalizeFirst(format(month, 'MMMM yyyy', { locale: dateLocale }))}
           </p>
         </div>
@@ -98,7 +98,7 @@ const MonthView = ({ fillHeight = false }: { fillHeight?: boolean }) => {
           <button onClick={() => changeMonth(addMonths(month, -1))} aria-label="Previous month" className={navBtn}><ChevronLeft size={18} /></button>
           <button
             onClick={() => changeMonth(startOfMonth(new Date()))}
-            className="rounded-full px-2 py-1 text-xs font-semibold leading-none text-[var(--accent-primary)]"
+            className="rounded-full px-2 py-1 text-xs font-semibold leading-none text-(--accent-primary)"
           >
             {t('session.monthView.today')}
           </button>
@@ -107,9 +107,9 @@ const MonthView = ({ fillHeight = false }: { fillHeight?: boolean }) => {
       </div>
 
       {/* Weekday row */}
-      <div className="grid grid-cols-7 border-b border-[var(--border-primary)] pb-1 text-center">
+      <div className="grid grid-cols-7 border-b border-(--border-primary) pb-1 text-center">
         {weekdays.map((day, index) => (
-          <span key={index} className={`text-[11px] font-semibold uppercase text-[var(--text-secondary)] ${index >= 5 ? 'opacity-60' : ''}`}>{day}</span>
+          <span key={index} className={`text-[11px] font-semibold uppercase text-(--text-secondary) ${index >= 5 ? 'opacity-60' : ''}`}>{day}</span>
         ))}
       </div>
 
@@ -132,18 +132,18 @@ const MonthView = ({ fillHeight = false }: { fillHeight?: boolean }) => {
               aria-current={today ? 'date' : undefined}
               aria-haspopup="dialog"
               aria-expanded={selected}
-              className="flex min-h-0 w-full flex-col items-center justify-center gap-[3px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent-primary)]"
+              className="flex min-h-0 w-full flex-col items-center justify-center gap-[3px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-(--accent-primary)"
             >
               <time
                 dateTime={format(day, 'yyyy-MM-dd')}
                 className={`flex h-[26px] w-[26px] items-center justify-center rounded-full text-[13px] leading-none tabular-nums ${
                   today
-                    ? 'font-bold text-[var(--accent-primary)]'
+                    ? 'font-bold text-(--accent-primary)'
                     : selected
-                      ? 'font-semibold text-[var(--text-primary)] underline decoration-[var(--text-secondary)] decoration-2 underline-offset-4'
+                      ? 'font-semibold text-(--text-primary) underline decoration-(--text-secondary) decoration-2 underline-offset-4'
                       : inMonth
-                        ? weekend ? 'font-medium text-[var(--text-secondary)]' : 'font-medium text-[var(--text-primary)]'
-                        : 'font-medium text-[var(--text-secondary)] opacity-35'
+                        ? weekend ? 'font-medium text-(--text-secondary)' : 'font-medium text-(--text-primary)'
+                        : 'font-medium text-(--text-secondary) opacity-35'
                 }`}
               >
                 {format(day, 'd')}
@@ -160,8 +160,8 @@ const MonthView = ({ fillHeight = false }: { fillHeight?: boolean }) => {
       </div>
 
       {/* Month summary legend */}
-      <div className="mt-1.5 flex items-center justify-center gap-3 border-t border-[var(--border-primary)] pt-2 text-[11px] font-medium tabular-nums text-[var(--text-secondary)]">
-        <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-[var(--accent-primary)]" />{pendingCount} {t('session.monthView.pending', { defaultValue: 'pending' })}</span>
+      <div className="mt-1.5 flex items-center justify-center gap-3 border-t border-(--border-primary) pt-2 text-[11px] font-medium tabular-nums text-(--text-secondary)">
+        <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-(--accent-primary)" />{pendingCount} {t('session.monthView.pending', { defaultValue: 'pending' })}</span>
         <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-[#ff453a]" />{overdueCount} {t('session.monthView.overdue', { defaultValue: 'overdue' })}</span>
         <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-[#30d158]" />{doneCount} {t('session.monthView.done', { defaultValue: 'done' })}</span>
       </div>

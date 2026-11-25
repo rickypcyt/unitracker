@@ -60,22 +60,22 @@ const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({ className = '' })
     };
     
     const IconComp = iconMap[iconName] || Briefcase;
-    return <IconComp className={`w-4 h-4 ${isActive ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`} />;
+    return <IconComp className={`w-4 h-4 ${isActive ? 'text-(--accent-primary)' : 'text-(--text-primary)'}`} />;
   };
 
   return (
     <div className={`relative ${className}`}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-3 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] transition-colors"
+        className="w-full flex items-center justify-between p-3 rounded-lg border-2 border-(--border-primary) bg-(--bg-secondary) hover:bg-(--bg-primary) transition-colors"
       >
         <div className="flex items-center gap-3">
           {getWorkspaceIcon(activeWorkspace?.icon || 'Briefcase', true)}
-          <span className="text-sm font-medium text-[var(--text-primary)]">
+          <span className="text-sm font-medium text-(--text-primary)">
             Workspace: {activeWorkspace?.name || 'Select Workspace'}
           </span>
         </div>
-        <ChevronDown className={`w-4 h-4 text-[var(--text-secondary)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-(--text-secondary) transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
@@ -84,19 +84,19 @@ const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({ className = '' })
             className="fixed inset-0 z-10"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 right-0 mt-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
+          <div className="absolute top-full left-0 right-0 mt-1 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
             {allWorkspaces.map((workspace) => (
               <button
                 key={workspace.id}
                 onClick={() => handleSelectWorkspace(workspace)}
-                className={`w-full flex items-center gap-3 p-3 hover:bg-[var(--bg-secondary)] transition-colors text-left ${
-                  activeWorkspace?.id === workspace.id ? 'bg-[var(--bg-secondary)]' : ''
+                className={`w-full flex items-center gap-3 p-3 hover:bg-(--bg-secondary) transition-colors text-left ${
+                  activeWorkspace?.id === workspace.id ? 'bg-(--bg-secondary)' : ''
                 }`}
               >
                 {getWorkspaceIcon(workspace.icon || 'Briefcase', activeWorkspace?.id === workspace.id)}
-                <span className="text-sm text-[var(--text-primary)]">{workspace.name}</span>
+                <span className="text-sm text-(--text-primary)">{workspace.name}</span>
                 {activeWorkspace?.id === workspace.id && (
-                  <div className="w-2 h-2 bg-[var(--accent-primary)] rounded-full ml-auto" />
+                  <div className="w-2 h-2 bg-(--accent-primary) rounded-full ml-auto" />
                 )}
               </button>
             ))}

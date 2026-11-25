@@ -38,20 +38,20 @@ const NotificationPromptModal = () => {
   return (
     <BaseModal isOpen={isOpen} onClose={close} title={t('notifications.title')}>
       <div className="flex flex-col items-center text-center">
-        <div className="w-14 h-14 rounded-2xl bg-[var(--accent-primary)]/10 flex items-center justify-center mb-4">
-          <Bell size={28} className="text-[var(--accent-primary)]" />
+        <div className="w-14 h-14 rounded-2xl bg-(--accent-primary)/10 flex items-center justify-center mb-4">
+          <Bell size={28} className="text-(--accent-primary)" />
         </div>
-        <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+        <p className="text-sm text-(--text-secondary) leading-relaxed">
           {t('notifications.description')}
         </p>
 
         {showHelp && (
-          <div className="w-full mt-4 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] p-4 text-left">
-            <div className="flex items-center gap-2 mb-2 text-[var(--text-primary)]">
+          <div className="w-full mt-4 rounded-lg border border-(--border-primary) bg-(--bg-secondary) p-4 text-left">
+            <div className="flex items-center gap-2 mb-2 text-(--text-primary)">
               <BellOff size={16} />
               <span className="text-sm font-semibold">{t('notifications.blockedTitle')}</span>
             </div>
-            <ol className="text-sm text-[var(--text-secondary)] space-y-1.5 list-decimal list-inside">
+            <ol className="text-sm text-(--text-secondary) space-y-1.5 list-decimal list-inside">
               <li className="flex items-start gap-1.5">
                 <MousePointerClick size={15} className="mt-0.5 shrink-0" />
                 <span>{t('notifications.step1')}</span>
@@ -68,7 +68,7 @@ const NotificationPromptModal = () => {
         <button
           type="button"
           onClick={close}
-          className="flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold border border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+          className="flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold border border-(--border-primary) text-(--text-primary) hover:bg-(--bg-secondary) transition-colors"
         >
           {t('notifications.notNow')}
         </button>
@@ -76,7 +76,7 @@ const NotificationPromptModal = () => {
           <button
             type="button"
             onClick={handleEnable}
-            className="flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+            className="flex-1 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors border-2 border-(--accent-primary) text-(--accent-primary) hover:bg-(--accent-primary)/10"
           >
             {t('notifications.title')}
           </button>

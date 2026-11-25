@@ -100,22 +100,22 @@ const CustomTooltip = ({ active, payload, label, tasks, data, title }: any) => {
   };
   
   return (
-    <div className="min-w-[180px] rounded-xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-3 text-left shadow-xl">
-      <div className="mb-1.5 text-xs font-bold uppercase tracking-wider text-[var(--accent-primary)]">
+    <div className="min-w-[180px] rounded-xl border border-(--border-primary) bg-(--bg-primary) p-3 text-left shadow-xl">
+      <div className="mb-1.5 text-xs font-bold uppercase tracking-wider text-(--accent-primary)">
         {dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1)}
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-xl font-bold tabular-nums leading-none text-[var(--text-primary)]">{formatMinutesToHMText(entry.minutes)}</span>
+        <span className="text-xl font-bold tabular-nums leading-none text-(--text-primary)">{formatMinutesToHMText(entry.minutes)}</span>
         {getTrendIcon()}
       </div>
-      <div className="mt-2 flex items-center justify-between gap-4 border-t border-[var(--border-primary)] pt-2 text-xs text-[var(--text-secondary)]">
+      <div className="mt-2 flex items-center justify-between gap-4 border-t border-(--border-primary) pt-2 text-xs text-(--text-secondary)">
         <span>Tasks completed</span>
-        <b className="tabular-nums text-[var(--text-primary)]">{dayTasks.length}</b>
+        <b className="tabular-nums text-(--text-primary)">{dayTasks.length}</b>
       </div>
       {tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">
           {tags.map((tag: any, index: number) => (
-            <span key={index} className="rounded-md bg-[var(--bg-secondary)] px-1.5 py-0.5 text-xs text-[var(--text-secondary)]">
+            <span key={index} className="rounded-md bg-(--bg-secondary) px-1.5 py-0.5 text-xs text-(--text-secondary)">
               {tag}
             </span>
           ))}

@@ -174,7 +174,7 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
     return null;
   };
 
-  const actionBtn = "utp-action w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-[var(--text-secondary)]";
+  const actionBtn = "utp-action w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-(--text-secondary)";
 
   const renderActions = (id: TimerId) => {
     if (id === "study") {
@@ -190,8 +190,8 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
       );
     }
     if (id === "pomodoro") {
-      const menuItem = "w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors text-left";
-      const itemIcon = "text-[var(--text-secondary)]";
+      const menuItem = "w-full flex items-center gap-2 px-3 py-2 text-sm text-(--text-primary) hover:bg-(--bg-secondary) transition-colors text-left";
+      const itemIcon = "text-(--text-secondary)";
       return (
         <div className="relative">
           <button
@@ -204,7 +204,7 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
           {pomoMenuOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setPomoMenuOpen(false)} aria-hidden />
-              <div className="absolute right-0 top-full z-50 mt-1 w-44 py-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-lg" role="menu">
+              <div className="absolute right-0 top-full z-50 mt-1 w-44 py-1 rounded-lg border border-(--border-primary) bg-(--bg-primary) shadow-lg" role="menu">
                 <button
                   onClick={() => { openPomoSettings(); setPomoMenuOpen(false); }}
                   className={menuItem} role="menuitem"
@@ -371,22 +371,22 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
         </div>
       </div>
       {idle && (
-        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-5 bg-[var(--bg-primary)] px-6 py-10 text-center">
-          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
+        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-5 bg-(--bg-primary) px-6 py-10 text-center">
+          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-(--accent-primary)/10 text-(--accent-primary)">
             <Play size={28} className="translate-x-0.5" />
           </span>
           <div className="space-y-1.5">
-            <h3 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+            <h3 className="text-2xl font-bold tracking-tight text-(--text-primary)">
               {t("session.unifiedTimer.readyTitle", { defaultValue: "Ready to focus?" })}
             </h3>
-            <p className="mx-auto max-w-sm text-sm text-[var(--text-secondary)]">
+            <p className="mx-auto max-w-sm text-sm text-(--text-secondary)">
               {t("session.unifiedTimer.readyDesc", { defaultValue: "Start a session to track your study time, pomodoros and countdowns together." })}
             </p>
           </div>
           <button
             type="button"
             onClick={() => window.dispatchEvent(new CustomEvent("study-open-start-session"))}
-            className="inline-flex items-center gap-2 rounded-xl border-2 border-[var(--accent-primary)] px-7 py-3 text-base font-semibold text-[var(--accent-primary)]"
+            className="inline-flex items-center gap-2 rounded-xl border-2 border-(--accent-primary) px-7 py-3 text-base font-semibold text-(--accent-primary)"
           >
             <Plus size={18} />
             {t("session.studyTimer.startNewSession")}
@@ -395,7 +395,7 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent("study-open-sessions"))}
-              className="text-sm text-[var(--text-secondary)] underline underline-offset-4"
+              className="text-sm text-(--text-secondary) underline underline-offset-4"
             >
               {t("session.unifiedTimer.resumeSession", { defaultValue: "Resume a previous session" })}
             </button>
@@ -405,7 +405,7 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
       <button
         type="button"
         onClick={() => window.dispatchEvent(new CustomEvent(MINI_PLAYER_OPEN_EVENT))}
-        className="hidden sm:flex absolute bottom-6 right-6 items-center justify-center p-2.5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors z-20"
+        className="hidden sm:flex absolute bottom-6 right-6 items-center justify-center p-2.5 text-(--text-secondary) hover:text-(--text-primary) transition-colors z-20"
         aria-label={t("session.miniPlayer.openAria")}
         title={t("session.miniPlayer.openTitle")}
       >

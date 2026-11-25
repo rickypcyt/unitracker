@@ -308,7 +308,7 @@ const Notes: React.FC = () => {
         {isDesktop ? (
           /* Obsidian-style two-pane layout: file tree left, editor right */
           <div className="flex h-[calc(100dvh-var(--navbar-h)-var(--demo-banner-h,0px))] w-full overflow-hidden">
-            <aside className="relative h-full flex-shrink-0 border-r border-[var(--border-primary)]" style={{ width: sidebarWidth }}>
+            <aside className="relative h-full shrink-0 border-r border-(--border-primary)" style={{ width: sidebarWidth }}>
               <NotesSidepanel
                 notes={notesToShow}
                 loading={loading}
@@ -340,13 +340,13 @@ const Notes: React.FC = () => {
                 />
               ) : (
                 <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
-                  <FileText className="h-12 w-12 text-[var(--accent-primary)] opacity-60" />
-                  <p className="text-sm text-[var(--text-secondary)]">
+                  <FileText className="h-12 w-12 text-(--accent-primary) opacity-60" />
+                  <p className="text-sm text-(--text-secondary)">
                     {notesToShow.length === 0 ? t('notes.emptyDesc') : t('notes.selectNote', { defaultValue: 'Select a note from the sidebar' })}
                   </p>
                   <button
                     onClick={() => openCreate()}
-                    className="inline-flex items-center gap-2 rounded-xl border-2 border-[var(--accent-primary)] px-4 py-2 text-sm font-semibold text-[var(--accent-primary)]"
+                    className="inline-flex items-center gap-2 rounded-xl border-2 border-(--accent-primary) px-4 py-2 text-sm font-semibold text-(--accent-primary)"
                   >
                     <Plus size={16} />
                     {t('notes.newNote')}

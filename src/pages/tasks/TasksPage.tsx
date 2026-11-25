@@ -254,7 +254,7 @@ const TasksPage = memo(() => {
         <meta property="og:url" content="https://unitracker.me/tasks" />
         <link rel="canonical" href="https://unitracker.me/tasks" />
       </Helmet>
-      <div className="tasks-ui w-full pb-24 relative bg-[var(--bg-primary)] z-0" onWheel={handleWheel}>
+      <div className="tasks-ui w-full pb-24 relative bg-(--bg-primary) z-0" onWheel={handleWheel}>
       {/* Mobile Workspace Selector (footer island shows the name from sm up) */}
       <div className="sm:hidden w-full mb-4">
         <WorkspaceSelector />
@@ -263,15 +263,15 @@ const TasksPage = memo(() => {
       {/* Toolbar: title + live summary on the left, search on the right */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <h1 className="m-0 p-0 text-[length:var(--t-page-title,24px)] font-bold leading-none tracking-tight text-[var(--text-primary)]">Tasks</h1>
-          <div className="flex items-center gap-1.5 whitespace-nowrap text-[length:var(--t-meta,12px)] font-semibold leading-none tabular-nums">
-            <span className="rounded-full bg-[var(--accent-primary)]/15 px-3 py-1.5 text-[var(--accent-primary)]">{summary.pending} pending</span>
+          <h1 className="m-0 p-0 text-(length:--t-page-title,24px) font-bold leading-none tracking-tight text-(--text-primary)">Tasks</h1>
+          <div className="flex items-center gap-1.5 whitespace-nowrap text-(length:--t-meta,12px) font-semibold leading-none tabular-nums">
+            <span className="rounded-full bg-(--accent-primary)/15 px-3 py-1.5 text-(--accent-primary)">{summary.pending} pending</span>
             {summary.today > 0 && <span className="rounded-full bg-green-500/15 px-3 py-1.5 text-green-500">{summary.today} today</span>}
             {summary.overdue > 0 && <span className="rounded-full bg-red-500/15 px-3 py-1.5 text-red-400">{summary.overdue} overdue</span>}
           </div>
         </div>
-        <div className="flex h-10 w-full items-center gap-2 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)] px-3 transition-colors focus-within:border-[var(--accent-primary)] sm:w-72 2xl:w-80">
-          <Search size={15} className="shrink-0 text-[var(--text-secondary)]" aria-hidden="true" />
+        <div className="flex h-10 w-full items-center gap-2 rounded-xl border border-(--border-primary) bg-(--bg-secondary) px-3 transition-colors focus-within:border-(--accent-primary) sm:w-72 2xl:w-80">
+          <Search size={15} className="shrink-0 text-(--text-secondary)" aria-hidden="true" />
           <input
             type="text"
             value={query}
@@ -279,10 +279,10 @@ const TasksPage = memo(() => {
             onKeyDown={e => { if (e.key === 'Escape') setQuery(''); }}
             placeholder="Search tasks…"
             aria-label="Search tasks"
-            className="min-w-0 flex-1 border-none bg-transparent text-[length:var(--t-title,14px)] text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/70 !outline-none"
+            className="min-w-0 flex-1 border-none bg-transparent text-(length:--t-title,14px) text-(--text-primary) placeholder:text-(--text-secondary)/70 outline-none!"
           />
           {query && (
-            <button type="button" onClick={() => setQuery('')} className="shrink-0 text-[var(--text-secondary)]" aria-label="Clear search">
+            <button type="button" onClick={() => setQuery('')} className="shrink-0 text-(--text-secondary)" aria-label="Clear search">
               <X size={14} />
             </button>
           )}
@@ -294,7 +294,7 @@ const TasksPage = memo(() => {
       <div className={`fixed ${fabPositionClass[fabPosition]} z-50 flex flex-row items-center gap-2`}>
         <button
           onClick={() => setShowSettings(true)}
-          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-[var(--border-primary)] text-[var(--text-secondary)] bg-[var(--bg-primary)] shadow-lg transition-all duration-300 flex items-center justify-center hover:scale-110 hover:border-[var(--accent-primary)] hover:text-[var(--text-primary)] active:scale-95"
+          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-(--border-primary) text-(--text-secondary) bg-(--bg-primary) shadow-lg transition-all duration-300 flex items-center justify-center hover:scale-110 hover:border-(--accent-primary) hover:text-(--text-primary) active:scale-95"
           aria-label="Task page settings"
           title="Task page settings"
         >
@@ -303,7 +303,7 @@ const TasksPage = memo(() => {
         <button
           data-tour="add-task"
           onClick={handleAddTask}
-          className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent shadow-lg shadow-[var(--accent-primary)]/20 transition-all duration-300 flex items-center justify-center hover:scale-110 active:scale-95 overflow-hidden fab-shine"
+          className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-(--accent-primary) text-(--accent-primary) bg-transparent shadow-lg shadow-(--accent-primary)/20 transition-all duration-300 flex items-center justify-center hover:scale-110 active:scale-95 overflow-hidden fab-shine"
           aria-label="Add new task"
         >
           <Plus className="w-6 h-6 sm:w-7 sm:h-7 transition-transform duration-300" />

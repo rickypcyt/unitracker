@@ -29,7 +29,7 @@ const DeleteSessionModal = ({ isOpen, onClose, onConfirm }: DeleteSessionModalPr
       maxWidth="max-w-md"
     >
       <div className="space-y-4">
-        <p className="text-base text-[var(--text-secondary)]">
+        <p className="text-base text-(--text-secondary)">
           Are you sure you want to delete this session? This action cannot be undone.
         </p>
 

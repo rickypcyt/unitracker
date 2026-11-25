@@ -202,7 +202,7 @@ const FloatingTimerPlayer = () => {
         <motion.div
           drag
           dragMomentum={false}
-          className="fixed bottom-20 right-4 z-[100] w-[320px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] cursor-grab active:cursor-grabbing rounded-2xl border border-[var(--border-primary)]/50 bg-[var(--bg-primary)]/90 backdrop-blur-md shadow-xl"
+          className="fixed bottom-20 right-4 z-100 w-[320px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] cursor-grab active:cursor-grabbing rounded-2xl border border-(--border-primary)/50 bg-(--bg-primary)/90 backdrop-blur-md shadow-xl"
           style={{ resize: "both", overflow: "auto", minWidth: 240, minHeight: 120 }}
         >
           <MiniTimerPlayer

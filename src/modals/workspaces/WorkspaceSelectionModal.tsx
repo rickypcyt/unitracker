@@ -46,8 +46,8 @@ const WorkspaceSelectionModal: React.FC<WorkspaceSelectionModalProps> = ({
     >
       <div className="space-y-4">
         <div className="text-center mb-4">
-          <p className="text-[var(--text-secondary)]">
-            Move assignment <span className="font-semibold text-[var(--text-primary)]">"{assignment}"</span> to:
+          <p className="text-(--text-secondary)">
+            Move assignment <span className="font-semibold text-(--text-primary)">"{assignment}"</span> to:
           </p>
         </div>
         
@@ -58,15 +58,15 @@ const WorkspaceSelectionModal: React.FC<WorkspaceSelectionModalProps> = ({
               onClick={() => handleWorkspaceSelect(workspace)}
               className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all duration-200 ${
                 activeWorkspace?.id === workspace.id
-                  ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
-                  : 'border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/5'
+                  ? 'border-(--accent-primary) bg-(--accent-primary)/10'
+                  : 'border-(--border-primary) bg-(--bg-secondary) hover:border-(--accent-primary) hover:bg-(--accent-primary)/5'
               }`}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                   activeWorkspace?.id === workspace.id
-                    ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]'
-                    : 'border-[var(--border-primary)]'
+                    ? 'border-(--accent-primary) bg-(--accent-primary)'
+                    : 'border-(--border-primary)'
                 }`}>
                   {activeWorkspace?.id === workspace.id && (
                     <Check size={12} className="text-white" />
@@ -74,15 +74,15 @@ const WorkspaceSelectionModal: React.FC<WorkspaceSelectionModalProps> = ({
                 </div>
                 <span className={`font-medium ${
                   activeWorkspace?.id === workspace.id
-                    ? 'text-[var(--accent-primary)]'
-                    : 'text-[var(--text-primary)]'
+                    ? 'text-(--accent-primary)'
+                    : 'text-(--text-primary)'
                 }`}>
-                  {workspace.name} <span className="text-sm text-[var(--text-secondary)]">({getTaskCountByWorkspace(workspace.id)})</span>
+                  {workspace.name} <span className="text-sm text-(--text-secondary)">({getTaskCountByWorkspace(workspace.id)})</span>
                 </span>
               </div>
               
               {activeWorkspace?.id === workspace.id && (
-                <span className="text-sm text-[var(--accent-primary)] font-medium">
+                <span className="text-sm text-(--accent-primary) font-medium">
                   Current
                 </span>
               )}
@@ -93,7 +93,7 @@ const WorkspaceSelectionModal: React.FC<WorkspaceSelectionModalProps> = ({
         <div className="flex justify-end gap-2 pt-2 pb-4">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="px-4 py-2 rounded-lg border-2 border-(--border-primary) text-(--text-secondary) hover:text-(--text-primary) transition-colors"
           >
             Cancel
           </button>

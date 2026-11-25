@@ -24,7 +24,7 @@ const Switch = ({ checked, onChange, label }: { checked: boolean; onChange: (v: 
     aria-checked={checked}
     aria-label={label}
     onClick={() => onChange(!checked)}
-    className={`relative w-9 h-5 rounded-full transition-colors duration-200 shrink-0 ${checked ? 'bg-[var(--accent-primary)]' : 'bg-[var(--text-secondary)]/30'}`}
+    className={`relative w-9 h-5 rounded-full transition-colors duration-200 shrink-0 ${checked ? 'bg-(--accent-primary)' : 'bg-(--text-secondary)/30'}`}
   >
     <span
       className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${checked ? 'translate-x-4' : 'translate-x-0'}`}
@@ -34,17 +34,17 @@ const Switch = ({ checked, onChange, label }: { checked: boolean; onChange: (v: 
 
 const Row = ({ icon, label, hint, children }: { icon?: React.ReactNode; label: string; hint?: string; children: React.ReactNode }) => (
   <div className="flex items-center gap-3 px-3.5 py-2.5">
-    {icon && <span className="text-[var(--accent-primary)] shrink-0">{icon}</span>}
+    {icon && <span className="text-(--accent-primary) shrink-0">{icon}</span>}
     <div className="flex-1 min-w-0">
-      <div className="text-sm font-medium text-[var(--text-primary)]">{label}</div>
-      {hint && <div className="text-xs text-[var(--text-secondary)]">{hint}</div>}
+      <div className="text-sm font-medium text-(--text-primary)">{label}</div>
+      {hint && <div className="text-xs text-(--text-secondary)">{hint}</div>}
     </div>
     {children}
   </div>
 );
 
 const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
-  <div className={`rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)]/50 divide-y divide-[var(--border-primary)]/60 ${className}`}>
+  <div className={`rounded-xl border border-(--border-primary) bg-(--bg-secondary)/50 divide-y divide-(--border-primary)/60 ${className}`}>
     {children}
   </div>
 );
@@ -117,15 +117,15 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
   };
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose} title="" showHeader={false} padding="none" maxWidth="max-w-[92vw]" className="!w-auto">
+    <BaseModal isOpen={isOpen} onClose={onClose} title="" showHeader={false} padding="none" maxWidth="max-w-[92vw]" className="w-auto!">
       <div className="p-4">
         <div className="relative flex items-center justify-center mb-3">
-          <h2 className="text-base font-semibold text-[var(--text-primary)] text-center">
+          <h2 className="text-base font-semibold text-(--text-primary) text-center">
             Pomodoro Settings
           </h2>
           <button
             onClick={onClose}
-            className="absolute right-0 p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="absolute right-0 p-1 text-(--text-secondary) hover:text-(--text-primary) transition-colors"
             aria-label="Close"
           >
             <X size={20} />
@@ -137,10 +137,10 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
           <div className="space-y-3">
           {/* Daily goal — hover to edit, no card */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Goal</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-(--text-secondary) mb-1.5">Goal</h3>
             <div className="flex items-center gap-3 px-1 py-1">
-              <Target size={18} className="text-[var(--accent-primary)] shrink-0" />
-              <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">Daily goal</span>
+              <Target size={18} className="text-(--accent-primary) shrink-0" />
+              <span className="flex-1 text-sm font-medium text-(--text-primary)">Daily goal</span>
               <input
                 type="number"
                 min="1"
@@ -148,15 +148,15 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
                 value={pomodoroSettings.dailyGoal}
                 onChange={(e) => handleSettingsChange('dailyGoal', parseInt(e.target.value) || 1)}
                 aria-label="Daily pomodoro goal"
-                className="no-spinners w-14 px-1.5 py-1 rounded-md bg-transparent text-right text-sm font-semibold text-[var(--text-primary)] border border-transparent hover:border-[var(--border-primary)] focus:border-[var(--accent-primary)] focus:outline-none transition-colors"
+                className="no-spinners w-14 px-1.5 py-1 rounded-md bg-transparent text-right text-sm font-semibold text-(--text-primary) border border-transparent hover:border-(--border-primary) focus:border-(--accent-primary) focus:outline-none transition-colors"
               />
-              <span className="text-sm text-[var(--text-secondary)]">/ day</span>
+              <span className="text-sm text-(--text-secondary)">/ day</span>
             </div>
           </div>
 
           {/* Mode presets — stacked horizontal cards */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Mode</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-(--text-secondary) mb-1.5">Mode</h3>
             <div className="grid grid-cols-3 gap-2">
               {predefinedModes.map((mode, index) => {
                 const active = matchedPresetIndex === index;
@@ -167,27 +167,27 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
                     onClick={() => applyPreset(mode)}
                     className={`flex flex-col items-stretch gap-2 rounded-xl border px-3 py-3 text-left transition-all ${
                       active
-                        ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 shadow-sm'
-                        : 'border-[var(--border-primary)] bg-[var(--bg-secondary)]/50 hover:border-[var(--accent-primary)]/40 hover:bg-[var(--bg-secondary)]'
+                        ? 'border-(--accent-primary) bg-(--accent-primary)/10 shadow-sm'
+                        : 'border-(--border-primary) bg-(--bg-secondary)/50 hover:border-(--accent-primary)/40 hover:bg-(--bg-secondary)'
                     }`}
                   >
                     <div>
-                      <div className={`text-sm font-bold tracking-tight ${active ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+                      <div className={`text-sm font-bold tracking-tight ${active ? 'text-(--accent-primary)' : 'text-(--text-primary)'}`}>
                         {mode.label}
                       </div>
-                      <div className="text-[11px] text-[var(--text-secondary)] leading-snug mt-0.5">
+                      <div className="text-[11px] text-(--text-secondary) leading-snug mt-0.5">
                         {mode.description}
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-1 pt-2 border-t border-[var(--border-primary)]/60">
+                    <div className="grid grid-cols-3 gap-1 pt-2 border-t border-(--border-primary)/60">
                       {([
                         ['Focus', mode.work],
                         ['Break', mode.break],
                         ['Long', mode.longBreak],
                       ] as const).map(([k, sec]) => (
                         <div key={k} className="text-center">
-                          <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{k}</div>
-                          <div className="text-xs font-bold text-[var(--text-primary)] tabular-nums">{sec / 60}m</div>
+                          <div className="text-[10px] font-semibold uppercase tracking-wide text-(--text-secondary)">{k}</div>
+                          <div className="text-xs font-bold text-(--text-primary) tabular-nums">{sec / 60}m</div>
                         </div>
                       ))}
                     </div>
@@ -195,22 +195,22 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
                 );
               })}
               {isCustom && (
-                <div className="flex flex-col items-stretch gap-2 rounded-xl border border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 px-3 py-3 shadow-sm">
+                <div className="flex flex-col items-stretch gap-2 rounded-xl border border-(--accent-primary) bg-(--accent-primary)/10 px-3 py-3 shadow-sm">
                   <div>
-                    <div className="text-sm font-bold tracking-tight text-[var(--accent-primary)]">Custom</div>
-                    <div className="text-[11px] text-[var(--text-secondary)] leading-snug mt-0.5">
+                    <div className="text-sm font-bold tracking-tight text-(--accent-primary)">Custom</div>
+                    <div className="text-[11px] text-(--text-secondary) leading-snug mt-0.5">
                       Your personalized settings
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-1 pt-2 border-t border-[var(--border-primary)]/60">
+                  <div className="grid grid-cols-3 gap-1 pt-2 border-t border-(--border-primary)/60">
                     {([
                       ['Focus', workMin],
                       ['Break', breakMin],
                       ['Long', longBreakMin],
                     ] as const).map(([k, v]) => (
                       <div key={k} className="text-center">
-                        <div className="text-[10px] font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{k}</div>
-                        <div className="text-xs font-bold text-[var(--text-primary)] tabular-nums">{v || '—'}m</div>
+                        <div className="text-[10px] font-semibold uppercase tracking-wide text-(--text-secondary)">{k}</div>
+                        <div className="text-xs font-bold text-(--text-primary) tabular-nums">{v || '—'}m</div>
                       </div>
                     ))}
                   </div>
@@ -224,7 +224,7 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
           <div className="space-y-3">
           {/* Times */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Times</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-(--text-secondary) mb-1.5">Times</h3>
             <Card>
               {([
                 { label: 'Focus', value: workMin, set: setWorkMin, field: 'Focus minutes' },
@@ -232,16 +232,16 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
                 { label: 'Long break', value: longBreakMin, set: setLongBreakMin, field: 'Long break minutes' },
               ] as const).map(({ label, value, set, field }) => (
                 <div key={label} className="flex items-center gap-3 px-3.5 py-2.5">
-                  <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">{label}</span>
+                  <span className="flex-1 text-sm font-medium text-(--text-primary)">{label}</span>
                   <input
                     type="number"
                     min="1"
                     value={value}
                     onChange={(e) => { set(e.target.value); setError(''); }}
                     aria-label={field}
-                    className="no-spinners w-14 px-1.5 py-1 rounded-md bg-transparent text-right text-sm font-semibold text-[var(--text-primary)] border border-transparent hover:border-[var(--border-primary)] focus:border-[var(--accent-primary)] focus:outline-none transition-colors"
+                    className="no-spinners w-14 px-1.5 py-1 rounded-md bg-transparent text-right text-sm font-semibold text-(--text-primary) border border-transparent hover:border-(--border-primary) focus:border-(--accent-primary) focus:outline-none transition-colors"
                   />
-                  <span className="text-sm text-[var(--text-secondary)] w-8">min</span>
+                  <span className="text-sm text-(--text-secondary) w-8">min</span>
                 </div>
               ))}
             </Card>
@@ -250,24 +250,24 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
 
           {/* Volume — own section, prominent slider */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Volume</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-(--text-secondary) mb-1.5">Volume</h3>
             <Card>
               <div className="px-4 py-3">
                 <div className="flex items-center gap-3 mb-3">
-                  <Volume2 size={18} className="text-[var(--accent-primary)] shrink-0" />
-                  <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">Alarm volume</span>
-                  <span className="text-sm font-bold text-[var(--accent-primary)] tabular-nums w-10 text-right">
+                  <Volume2 size={18} className="text-(--accent-primary) shrink-0" />
+                  <span className="flex-1 text-sm font-medium text-(--text-primary)">Alarm volume</span>
+                  <span className="text-sm font-bold text-(--accent-primary) tabular-nums w-10 text-right">
                     {Math.round(pomodoroSettings.volume * 100)}%
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <ReactSlider
-                    className="h-3 flex-1 bg-[var(--border-primary)] rounded-full"
-                    thumbClassName="h-6 w-6 rounded-full bg-[var(--accent-primary)] border-[3px] border-[var(--bg-primary)] shadow-lg cursor-pointer -translate-y-1.5 transition-transform hover:scale-110 active:scale-95 focus:outline-none"
+                    className="h-3 flex-1 bg-(--border-primary) rounded-full"
+                    thumbClassName="h-6 w-6 rounded-full bg-(--accent-primary) border-[3px] border-(--bg-primary) shadow-lg cursor-pointer -translate-y-1.5 transition-transform hover:scale-110 active:scale-95 focus:outline-none"
                     trackClassName="h-3 rounded-full"
                     renderTrack={(props: { key?: React.Key } & React.HTMLProps<HTMLDivElement>) => {
                       const { key, ...rest } = props;
-                      return <div key={key} {...rest} className="h-3 rounded-full bg-[var(--accent-primary)]" />;
+                      return <div key={key} {...rest} className="h-3 rounded-full bg-(--accent-primary)" />;
                     }}
                     renderThumb={(props: { key?: React.Key } & React.HTMLProps<HTMLDivElement>) => {
                       const { key, ...rest } = props;
@@ -285,7 +285,7 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
                       onClick={testAlarm}
                       aria-label="Test sound"
                       title="Test sound"
-                      className="shrink-0 w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center hover:bg-[var(--accent-primary)]/20 transition-colors"
+                      className="shrink-0 w-8 h-8 rounded-full bg-(--accent-primary)/10 text-(--accent-primary) flex items-center justify-center hover:bg-(--accent-primary)/20 transition-colors"
                     >
                       <Play size={14} className="ml-0.5" />
                     </button>
@@ -297,7 +297,7 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
 
           {/* Sound — stacked horizontal cards */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">Sound</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-(--text-secondary) mb-1.5">Sound</h3>
             <Card>
               <Row icon={<Bell size={18} />} label="Timer sounds" hint="Play a sound when a session ends">
                 <Switch checked={pomodoroSettings.soundEnabled} onChange={(v) => handleSettingsChange('soundEnabled', v)} label="Timer sounds" />
@@ -311,16 +311,16 @@ const PomodoroSettingsModal: React.FC<PomodoroSettingsModalProps> = ({ isOpen, o
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-2 pt-3 mt-3 border-t border-[var(--border-primary)]">
+        <div className="flex justify-end gap-2 pt-3 mt-3 border-t border-(--border-primary)">
           <button
             onClick={onClose}
-            className="px-3.5 py-1.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            className="px-3.5 py-1.5 rounded-lg text-sm text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-secondary) transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-opacity border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+            className="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-opacity border-2 border-(--accent-primary) text-(--accent-primary) hover:bg-(--accent-primary)/10"
           >
             Apply
           </button>

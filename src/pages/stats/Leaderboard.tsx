@@ -21,7 +21,7 @@ const RankBadge = ({ rank }: { rank: number }) => {
   if (rank === 1) return <Crown size={18} className="text-yellow-400" />;
   if (rank === 2) return <Medal size={18} className="text-gray-300" />;
   if (rank === 3) return <Medal size={18} className="text-amber-600" />;
-  return <span className="text-sm font-semibold tabular-nums text-[var(--text-secondary)]">{rank}</span>;
+  return <span className="text-sm font-semibold tabular-nums text-(--text-secondary)">{rank}</span>;
 };
 
 const Leaderboard = () => {
@@ -41,18 +41,18 @@ const Leaderboard = () => {
 
   const top = data?.[0]?.total_seconds ?? 0;
   // Two columns of five on large screens, filled column by column (1-5 left, 6-10 right)
-  const gridClass = 'grid grid-cols-1 gap-px bg-[var(--border-primary)] lg:grid-flow-col lg:grid-cols-2 lg:grid-rows-5';
+  const gridClass = 'grid grid-cols-1 gap-px bg-(--border-primary) lg:grid-flow-col lg:grid-cols-2 lg:grid-rows-5';
 
   return (
     <section
       aria-labelledby="leaderboard-title"
-      className="overflow-hidden rounded-2xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)]"
+      className="overflow-hidden rounded-2xl border-2 border-(--border-primary) bg-(--bg-secondary)"
     >
       {/* Card header */}
-      <div className="grid gap-3 border-b border-[var(--border-primary)] px-4 py-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+      <div className="grid gap-3 border-b border-(--border-primary) px-4 py-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
         <div className="flex items-center gap-2">
-          <Trophy size={16} className="text-[var(--accent-primary)]" />
-          <h3 id="leaderboard-title" className="text-sm font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+          <Trophy size={16} className="text-(--accent-primary)" />
+          <h3 id="leaderboard-title" className="text-sm font-bold uppercase tracking-wider text-(--text-secondary)">
             {t('leaderboard.title')}
           </h3>
         </div>
@@ -60,7 +60,7 @@ const Leaderboard = () => {
         <div
           role="tablist"
           aria-label={t('leaderboard.title')}
-          className="flex w-full items-center gap-1 rounded-xl bg-[var(--bg-primary)] p-1 sm:w-auto"
+          className="flex w-full items-center gap-1 rounded-xl bg-(--bg-primary) p-1 sm:w-auto"
         >
           {PERIODS.map((p) => (
             <button
@@ -70,8 +70,8 @@ const Leaderboard = () => {
               onClick={() => setPeriod(p)}
               className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors sm:flex-none sm:px-4 ${
                 period === p
-                  ? 'bg-[var(--bg-secondary)] text-[var(--text-primary)] shadow-sm'
-                  : 'text-[var(--text-secondary)]'
+                  ? 'bg-(--bg-secondary) text-(--text-primary) shadow-sm'
+                  : 'text-(--text-secondary)'
               }`}
             >
               {t(`leaderboard.periods.${p}`)}
@@ -83,17 +83,17 @@ const Leaderboard = () => {
       {isLoading && (
         <ul className={gridClass} aria-busy="true">
           {Array.from({ length: TOP_N }).map((_, i) => (
-            <li key={i} className="h-[68px] animate-pulse bg-[var(--bg-secondary)]" />
+            <li key={i} className="h-[68px] animate-pulse bg-(--bg-secondary)" />
           ))}
         </ul>
       )}
 
       {isError && (
         <div className="px-4 py-8 text-center">
-          <p className="mb-3 text-sm text-[var(--text-secondary)]">{t('leaderboard.error')}</p>
+          <p className="mb-3 text-sm text-(--text-secondary)">{t('leaderboard.error')}</p>
           <button
             onClick={() => refetch()}
-            className="rounded-lg px-4 py-2 text-sm font-semibold border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+            className="rounded-lg px-4 py-2 text-sm font-semibold border-2 border-(--accent-primary) text-(--accent-primary) hover:bg-(--accent-primary)/10"
           >
             {t('leaderboard.retry')}
           </button>
@@ -101,7 +101,7 @@ const Leaderboard = () => {
       )}
 
       {!isLoading && !isError && data?.length === 0 && (
-        <p className="px-4 py-10 text-center text-sm text-[var(--text-secondary)]">{t('leaderboard.empty')}</p>
+        <p className="px-4 py-10 text-center text-sm text-(--text-secondary)">{t('leaderboard.empty')}</p>
       )}
 
       {!isLoading && !isError && !!data?.length && (
@@ -113,7 +113,7 @@ const Leaderboard = () => {
               <li
                 key={entry.user_id}
                 className={`flex flex-col justify-center gap-2 px-4 py-3 ${
-                  isMe ? 'bg-[color-mix(in_srgb,var(--accent-primary)_8%,var(--bg-secondary))]' : 'bg-[var(--bg-secondary)]'
+                  isMe ? 'bg-[color-mix(in_srgb,var(--accent-primary)_8%,var(--bg-secondary))]' : 'bg-(--bg-secondary)'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -129,17 +129,17 @@ const Leaderboard = () => {
                     }}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
+                    <p className="truncate text-sm font-semibold text-(--text-primary)">
                       {entry.username}
                       {isMe && (
-                        <span className="ml-2 text-xs font-semibold text-[var(--accent-primary)]">{t('leaderboard.you')}</span>
+                        <span className="ml-2 text-xs font-semibold text-(--accent-primary)">{t('leaderboard.you')}</span>
                       )}
                     </p>
-                    <p className="text-xs tabular-nums text-[var(--text-secondary)]">
+                    <p className="text-xs tabular-nums text-(--text-secondary)">
                       {t('leaderboard.sessions', { count: entry.sessions })}
                     </p>
                   </div>
-                  <span className="shrink-0 text-lg font-bold tabular-nums text-[var(--text-primary)]">
+                  <span className="shrink-0 text-lg font-bold tabular-nums text-(--text-primary)">
                     {formatHours(entry.total_seconds)}
                   </span>
                 </div>
@@ -148,7 +148,7 @@ const Leaderboard = () => {
                   style={{ backgroundColor: 'color-mix(in srgb, var(--accent-primary) 15%, transparent)' }}
                 >
                   <div
-                    className="h-full rounded-full bg-[var(--accent-primary)] transition-all duration-500 ease-out"
+                    className="h-full rounded-full bg-(--accent-primary) transition-all duration-500 ease-out"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -160,20 +160,20 @@ const Leaderboard = () => {
             <li
               key={`empty-${k}`}
               aria-hidden="true"
-              className="flex flex-col justify-center gap-2 bg-[var(--bg-secondary)] px-4 py-3"
+              className="flex flex-col justify-center gap-2 bg-(--bg-secondary) px-4 py-3"
             >
               <div className="flex items-center gap-3">
-                <span className="flex w-6 shrink-0 justify-center text-sm font-semibold tabular-nums text-[var(--text-secondary)]/30">
+                <span className="flex w-6 shrink-0 justify-center text-sm font-semibold tabular-nums text-(--text-secondary)/30">
                   {data.length + k + 1}
                 </span>
-                <span className="h-9 w-9 shrink-0 rounded-full bg-[var(--bg-primary)]" />
+                <span className="h-9 w-9 shrink-0 rounded-full bg-(--bg-primary)" />
                 <div className="min-w-0 flex-1 space-y-1.5">
-                  <span className="block h-3 w-24 rounded bg-[var(--bg-primary)]" />
-                  <span className="block h-2.5 w-14 rounded bg-[var(--bg-primary)]/70" />
+                  <span className="block h-3 w-24 rounded bg-(--bg-primary)" />
+                  <span className="block h-2.5 w-14 rounded bg-(--bg-primary)/70" />
                 </div>
-                <span className="block h-4 w-12 shrink-0 rounded bg-[var(--bg-primary)]" />
+                <span className="block h-4 w-12 shrink-0 rounded bg-(--bg-primary)" />
               </div>
-              <div className="h-1 w-full rounded-full bg-[var(--bg-primary)]" />
+              <div className="h-1 w-full rounded-full bg-(--bg-primary)" />
             </li>
           ))}
         </ol>

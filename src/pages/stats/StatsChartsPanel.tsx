@@ -60,20 +60,20 @@ interface PeriodNavProps {
 }
 
 const PeriodNav = ({ label, onPrevious, onNext, isNextDisabled }: PeriodNavProps) => (
-  <div className="flex items-center gap-1 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)] p-1">
+  <div className="flex items-center gap-1 rounded-xl border border-(--border-primary) bg-(--bg-secondary) p-1">
     <button
       onClick={onPrevious}
-      className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-secondary)]"
+      className="flex h-8 w-8 items-center justify-center rounded-lg text-(--text-secondary)"
       aria-label="Previous"
     >
       <ChevronLeft size={18} />
     </button>
-    <span className="min-w-[96px] select-none text-center text-sm font-semibold text-[var(--text-primary)] sm:min-w-[132px]">
+    <span className="min-w-[96px] select-none text-center text-sm font-semibold text-(--text-primary) sm:min-w-[132px]">
       {label}
     </span>
     <button
       onClick={onNext}
-      className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-secondary)] disabled:cursor-not-allowed disabled:opacity-30"
+      className="flex h-8 w-8 items-center justify-center rounded-lg text-(--text-secondary) disabled:cursor-not-allowed disabled:opacity-30"
       aria-label="Next"
       disabled={isNextDisabled}
     >
@@ -89,7 +89,7 @@ const PeriodSelector = ({
   period: 'week' | 'month' | 'year';
   onChange: (period: 'week' | 'month' | 'year') => void;
 }) => (
-  <div className="flex w-full items-center gap-1 rounded-xl bg-[var(--bg-secondary)] p-1 sm:w-auto" role="tablist" aria-label="Chart period">
+  <div className="flex w-full items-center gap-1 rounded-xl bg-(--bg-secondary) p-1 sm:w-auto" role="tablist" aria-label="Chart period">
     {(['week', 'month', 'year'] as const).map(option => (
       <button
         key={option}
@@ -98,8 +98,8 @@ const PeriodSelector = ({
         onClick={() => onChange(option)}
         className={`flex-1 rounded-lg px-3 py-1.5 text-sm font-semibold capitalize transition-colors sm:flex-none sm:px-4 ${
           period === option
-            ? 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm'
-            : 'text-[var(--text-secondary)]'
+            ? 'bg-(--bg-primary) text-(--text-primary) shadow-sm'
+            : 'text-(--text-secondary)'
         }`}
       >
         {option}
@@ -111,14 +111,14 @@ const PeriodSelector = ({
 const fmtHM = (minutes: number) => `${Math.floor(minutes / 60)}h ${String(Math.round(minutes % 60)).padStart(2, '0')}m`;
 
 const SummaryStat = ({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: 'up' | 'down' }) => (
-  <div className="min-w-0 rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)] px-3 py-2.5">
-    <div className="truncate text-[11px] font-semibold uppercase tracking-wider text-[var(--text-secondary)]">{label}</div>
+  <div className="min-w-0 rounded-xl border border-(--border-primary) bg-(--bg-secondary) px-3 py-2.5">
+    <div className="truncate text-[11px] font-semibold uppercase tracking-wider text-(--text-secondary)">{label}</div>
     <div className={`mt-0.5 truncate text-lg font-bold tabular-nums leading-tight sm:text-xl ${
-      tone === 'up' ? 'text-green-500' : tone === 'down' ? 'text-red-500' : 'text-[var(--text-primary)]'
+      tone === 'up' ? 'text-green-500' : tone === 'down' ? 'text-red-500' : 'text-(--text-primary)'
     }`}>
       {value}
     </div>
-    {sub && <div className="truncate text-xs text-[var(--text-secondary)]">{sub}</div>}
+    {sub && <div className="truncate text-xs text-(--text-secondary)">{sub}</div>}
   </div>
 );
 
@@ -342,8 +342,8 @@ const StatsChartsPanel = memo(() => {
         header={
           <div className="grid w-full gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
             <div className="flex items-center gap-2">
-              <BarChart3 size={16} className="text-[var(--accent-primary)]" />
-              <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-secondary)]">Charts</h3>
+              <BarChart3 size={16} className="text-(--accent-primary)" />
+              <h3 className="text-sm font-bold uppercase tracking-wider text-(--text-secondary)">Charts</h3>
             </div>
             <PeriodSelector period={period} onChange={setPeriod} />
             <div className="flex sm:justify-self-end">

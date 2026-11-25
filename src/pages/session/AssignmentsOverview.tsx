@@ -114,19 +114,19 @@ const AssignmentsOverview = () => {
       >
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <BookOpen size={18} className="text-[var(--accent-primary)]" />
-            <h2 className="font-semibold text-[var(--text-primary)] text-base sm:text-lg">
+            <BookOpen size={18} className="text-(--accent-primary)" />
+            <h2 className="font-semibold text-(--text-primary) text-base sm:text-lg">
               Assignments
             </h2>
             {totalAssignments > 0 && (
-              <span className="text-sm text-[var(--text-secondary)]">
+              <span className="text-sm text-(--text-secondary)">
                 {totalAssignments} · {totalPending} pending
               </span>
             )}
           </div>
           <button
             onClick={handleAddClick}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/20 transition-colors text-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--accent-primary)/10 text-(--accent-primary) hover:bg-(--accent-primary)/20 transition-colors text-sm"
           >
             <Plus size={16} />
             <span>Add</span>
@@ -135,15 +135,15 @@ const AssignmentsOverview = () => {
 
         {tasksLoading ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <Loader2 size={24} className="text-[var(--accent-primary)] mb-2 animate-spin" />
-            <p className="text-[var(--text-secondary)] text-sm">
+            <Loader2 size={24} className="text-(--accent-primary) mb-2 animate-spin" />
+            <p className="text-(--text-secondary) text-sm">
               Loading assignments...
             </p>
           </div>
         ) : assignments.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <BookOpen size={32} className="text-[var(--text-secondary)] mb-2 opacity-50" />
-            <p className="text-[var(--text-secondary)] text-sm">
+            <BookOpen size={32} className="text-(--text-secondary) mb-2 opacity-50" />
+            <p className="text-(--text-secondary) text-sm">
               No assignments yet. Click "Add" to create one.
             </p>
           </div>
@@ -160,21 +160,21 @@ const AssignmentsOverview = () => {
                 <div
                   key={assignment.name}
                   onClick={() => handleAssignmentClick()}
-                  className="group cursor-pointer flex flex-col gap-2 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-xl p-4 hover:border-[var(--accent-primary)] hover:shadow-lg transition-all duration-200"
+                  className="group cursor-pointer flex flex-col gap-2 bg-(--bg-secondary) border-2 border-(--border-primary) rounded-xl p-4 hover:border-(--accent-primary) hover:shadow-lg transition-all duration-200"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <h3
-                      className="font-medium text-[var(--text-primary)] truncate flex-1 text-sm"
+                      className="font-medium text-(--text-primary) truncate flex-1 text-sm"
                       title={assignment.name}
                     >
                       {assignment.name}
                     </h3>
                     <ChevronRight
                       size={16}
-                      className="text-[var(--text-secondary)] group-hover:text-[var(--accent-primary)] transition-colors flex-shrink-0"
+                      className="text-(--text-secondary) group-hover:text-(--accent-primary) transition-colors shrink-0"
                     />
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-[var(--text-secondary)]">
+                  <div className="flex items-center gap-3 text-xs text-(--text-secondary)">
                     {assignment.pending > 0 && (
                       <span className="flex items-center gap-1">
                         <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
@@ -183,20 +183,20 @@ const AssignmentsOverview = () => {
                     )}
                     {assignment.completed > 0 && (
                       <span className="flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 bg-[var(--text-secondary)] rounded-full" />
+                        <span className="w-1.5 h-1.5 bg-(--text-secondary) rounded-full" />
                         {assignment.completed} done
                       </span>
                     )}
                   </div>
                   {assignment.total > 0 && (
                     <div className="flex items-center gap-2">
-                      <div className="h-1.5 flex-1 rounded-full bg-[var(--bg-primary)] overflow-hidden">
+                      <div className="h-1.5 flex-1 rounded-full bg-(--bg-primary) overflow-hidden">
                         <div
-                          className="h-full rounded-full transition-all duration-300 bg-[var(--accent-primary)]"
+                          className="h-full rounded-full transition-all duration-300 bg-(--accent-primary)"
                           style={{ width: `${progressPct}%` }}
                         />
                       </div>
-                      <span className="text-xs text-[var(--text-secondary)] flex-shrink-0 w-8 text-right">
+                      <span className="text-xs text-(--text-secondary) shrink-0 w-8 text-right">
                         {progressPct}%
                       </span>
                     </div>
@@ -208,7 +208,7 @@ const AssignmentsOverview = () => {
           {assignments.length > 6 && (
             <button
               onClick={() => setShowAllAssignments(!showAllAssignments)}
-              className="mt-3 text-sm text-[var(--accent-primary)] hover:underline"
+              className="mt-3 text-sm text-(--accent-primary) hover:underline"
             >
               {showAllAssignments ? 'Show less' : `Show all (${assignments.length})`}
             </button>

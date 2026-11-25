@@ -131,7 +131,7 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div
         ref={menuRef}
-        className="min-w-[320px] max-w-md rounded-lg bg-[var(--bg-primary)] p-4 shadow-xl border-2 border-[var(--border-primary)]"
+        className="min-w-[320px] max-w-md rounded-lg bg-(--bg-primary) p-4 shadow-xl border-2 border-(--border-primary)"
         style={{
           maxHeight: '80vh',
           overflowY: 'auto',
@@ -140,12 +140,12 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Calendar size={20} className="text-[var(--text-primary)]" />
-          <span className="font-medium text-[var(--text-primary)]">Set Date & Time</span>
+          <Calendar size={20} className="text-(--text-primary)" />
+          <span className="font-medium text-(--text-primary)">Set Date & Time</span>
         </div>
         <button
           onClick={onClose}
-          className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          className="text-(--text-secondary) hover:text-(--text-primary) transition-colors"
         >
           <X size={16} />
         </button>
@@ -159,7 +159,7 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
           dateFormat="dd/MM/yyyy"
           placeholderText="Select date"
           inline
-          calendarClassName="bg-[var(--bg-primary)] border-0 text-[var(--text-primary)] w-full"
+          calendarClassName="bg-(--bg-primary) border-0 text-(--text-primary) w-full"
           dayClassName={(date: Date) =>
             date.getDay() === 0 || date.getDay() === 6 ? 'text-red-500' : ''
           }
@@ -171,7 +171,7 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
       <div className="mb-4">
         <button
           onClick={handleClearDate}
-          className="w-full px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md transition-colors"
+          className="w-full px-3 py-2 text-sm text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-secondary) rounded-md transition-colors"
         >
           Clear Date
         </button>
@@ -179,22 +179,22 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
 
       {/* Time - Only show if date is selected */}
       {selectedDate && (
-        <div className="border-t border-[var(--border-primary)] pt-4">
+        <div className="border-t border-(--border-primary) pt-4">
           <div className="flex items-center gap-2 mb-3">
-            <Clock size={16} className="text-[var(--text-primary)]" />
-            <span className="text-sm font-medium text-[var(--text-primary)]">Task Time</span>
+            <Clock size={16} className="text-(--text-primary)" />
+            <span className="text-sm font-medium text-(--text-primary)">Task Time</span>
           </div>
           
           <div className="max-w-xs mx-auto space-y-3">
             {/* Task Start Time */}
             <div>
-              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+              <label className="block text-xs font-medium text-(--text-secondary) mb-1">
                 Task Start Time
               </label>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setStartTime(decrementTime(startTime))}
-                  className="p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded transition-colors"
+                  className="p-1 text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-secondary) rounded transition-colors"
                 >
                   −
                 </button>
@@ -202,12 +202,12 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
                   type="text"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="flex-1 px-2 py-1 text-sm bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] text-center"
+                  className="flex-1 px-2 py-1 text-sm bg-(--bg-primary) border-2 border-(--border-primary) rounded text-(--text-primary) text-center"
                   placeholder="8:00 AM"
                 />
                 <button
                   onClick={() => setStartTime(incrementTime(startTime))}
-                  className="p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded transition-colors"
+                  className="p-1 text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-secondary) rounded transition-colors"
                 >
                   +
                 </button>
@@ -216,13 +216,13 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
 
             {/* Task End Time */}
             <div>
-              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">
+              <label className="block text-xs font-medium text-(--text-secondary) mb-1">
                 Task End Time
               </label>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setEndTime(decrementTime(endTime))}
-                  className="p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded transition-colors"
+                  className="p-1 text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-secondary) rounded transition-colors"
                 >
                   −
                 </button>
@@ -230,12 +230,12 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
                   type="text"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="flex-1 px-2 py-1 text-sm bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded text-[var(--text-primary)] text-center"
+                  className="flex-1 px-2 py-1 text-sm bg-(--bg-primary) border-2 border-(--border-primary) rounded text-(--text-primary) text-center"
                   placeholder="9:00 AM"
                 />
                 <button
                   onClick={() => setEndTime(incrementTime(endTime))}
-                  className="p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded transition-colors"
+                  className="p-1 text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-secondary) rounded transition-colors"
                 >
                   +
                 </button>
@@ -246,16 +246,16 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
       )}
 
       {/* Action Buttons */}
-      <div className="flex gap-2 mt-4 pt-4 border-t border-[var(--border-primary)]">
+      <div className="flex gap-2 mt-4 pt-4 border-t border-(--border-primary)">
         <button
           onClick={onClose}
-          className="flex-1 px-3 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md transition-colors"
+          className="flex-1 px-3 py-2 text-sm text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-secondary) rounded-md transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={handleSave}
-          className="flex-1 px-3 py-2 text-sm text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 rounded-md transition-colors"
+          className="flex-1 px-3 py-2 text-sm text-(--accent-primary) border-2 border-(--accent-primary) bg-transparent hover:bg-(--accent-primary)/10 rounded-md transition-colors"
         >
           Save
         </button>

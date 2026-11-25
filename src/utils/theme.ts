@@ -21,7 +21,7 @@ export const accentColorDescI18nKey = (name: string): string => {
 
 export const ACCENT_COLORS: AccentColor[] = [
   // Primary Colors (Blue first as default)
-  { name: "Blue", value: "#0A84FF", class: "bg-[#0A84FF]" },
+  { name: "Blue", value: "#0A84FF", class: "bg-accent-primary" },
   { name: "Matrix Green", value: "#00FF41", class: "bg-[#00FF41]" },
   { name: "Neon Red", value: "#FF003C", class: "bg-[#FF003C]" },
   { name: "Purple", value: "#BF5AF2", class: "bg-[#BF5AF2]" },

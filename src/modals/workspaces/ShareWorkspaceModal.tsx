@@ -65,23 +65,23 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
     <BaseModal isOpen={isOpen} onClose={onClose} title="Share Workspace" maxWidth="max-w-md">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1 text-[var(--text-primary)]">
+          <label className="block text-sm font-medium mb-1 text-(--text-primary)">
             Workspace to Share
           </label>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
               <button
-                className="w-full px-3 py-2 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)] flex items-center justify-between hover:border-[var(--accent-primary)] transition-colors focus:outline-none focus:border-[var(--accent-primary)]"
+                className="w-full px-3 py-2 rounded-lg border-2 border-(--border-primary) bg-(--bg-secondary) text-(--text-primary) flex items-center justify-between hover:border-(--accent-primary) transition-colors focus:outline-none focus:border-(--accent-primary)"
               >
-                <span className={selectedWorkspace ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}>
+                <span className={selectedWorkspace ? 'text-(--text-primary)' : 'text-(--text-secondary)'}>
                   {selectedWorkspace ? selectedWorkspace.name : 'Select a workspace'}
                 </span>
-                <ChevronDown className="w-4 h-4 text-[var(--text-secondary)]" />
+                <ChevronDown className="w-4 h-4 text-(--text-secondary)" />
               </button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
               <DropdownMenu.Content
-                className="min-w-[200px] max-h-[300px] rounded-lg p-1 border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10001] animate-in fade-in zoom-in-95 antialiased overflow-y-auto"
+                className="min-w-[200px] max-h-[300px] rounded-lg p-1 border-2 border-(--border-primary) bg-(--bg-primary) z-10001 animate-in fade-in zoom-in-95 antialiased overflow-y-auto"
                 sideOffset={5}
                 align="start"
                 collisionPadding={10}
@@ -92,13 +92,13 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
                     onClick={() => setSelectedWorkspace(ws)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer outline-none transition-colors ${
                       selectedWorkspace?.id === ws.id
-                        ? 'text-[var(--accent-primary)] bg-[var(--accent-primary)]/10 border-2 border-[var(--accent-primary)]'
-                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] hover:border-2 hover:border-[var(--accent-primary)] border-2 border-transparent'
+                        ? 'text-(--accent-primary) bg-(--accent-primary)/10 border-2 border-(--accent-primary)'
+                        : 'text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-primary) hover:border-2 hover:border-(--accent-primary) border-2 border-transparent'
                     }`}
                   >
                     <span>{ws.name}</span>
                     {selectedWorkspace?.id === ws.id && (
-                      <div className="w-2 h-2 rounded-full bg-[var(--accent-primary)] ml-auto" />
+                      <div className="w-2 h-2 rounded-full bg-(--accent-primary) ml-auto" />
                     )}
                   </DropdownMenu.Item>
                 ))}
@@ -108,15 +108,15 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
         </div>
         
         <div>
-          <label className="block text-sm font-medium mb-1 text-[var(--text-primary)]">
+          <label className="block text-sm font-medium mb-1 text-(--text-primary)">
             Share With
           </label>
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
               <button
-                className="w-full px-3 py-2 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] text-[var(--text-primary)] flex items-center justify-between hover:border-[var(--accent-primary)] transition-colors focus:outline-none focus:border-[var(--accent-primary)]"
+                className="w-full px-3 py-2 rounded-lg border-2 border-(--border-primary) bg-(--bg-secondary) text-(--text-primary) flex items-center justify-between hover:border-(--accent-primary) transition-colors focus:outline-none focus:border-(--accent-primary)"
               >
-                <span className={selectedFriend ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}>
+                <span className={selectedFriend ? 'text-(--text-primary)' : 'text-(--text-secondary)'}>
                   {selectedFriend 
                     ? selectedFriend.username || selectedFriend.email || selectedFriend.id
                     : friends.length > 0 
@@ -124,12 +124,12 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
                       : 'No friends available'
                   }
                 </span>
-                <ChevronDown className="w-4 h-4 text-[var(--text-secondary)]" />
+                <ChevronDown className="w-4 h-4 text-(--text-secondary)" />
               </button>
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
               <DropdownMenu.Content
-                className="min-w-[200px] max-h-[300px] rounded-lg p-1 border-2 border-[var(--border-primary)] bg-[var(--bg-primary)] z-[10001] animate-in fade-in zoom-in-95 antialiased overflow-y-auto"
+                className="min-w-[200px] max-h-[300px] rounded-lg p-1 border-2 border-(--border-primary) bg-(--bg-primary) z-10001 animate-in fade-in zoom-in-95 antialiased overflow-y-auto"
                 sideOffset={5}
                 align="start"
                 collisionPadding={10}
@@ -141,25 +141,25 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
                       onClick={() => setSelectedFriend(friend)}
                       className={`flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer outline-none transition-colors ${
                         selectedFriend?.id === friend.id
-                          ? 'text-[var(--accent-primary)] bg-[var(--accent-primary)]/10 border-2 border-[var(--accent-primary)]'
-                          : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] hover:border-2 hover:border-[var(--accent-primary)] border-2 border-transparent'
+                          ? 'text-(--accent-primary) bg-(--accent-primary)/10 border-2 border-(--accent-primary)'
+                          : 'text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-primary) hover:border-2 hover:border-(--accent-primary) border-2 border-transparent'
                       }`}
                     >
                       <img
                         src={friend.avatar_url || '/public/assets/apple-touch-icon.png'}
                         alt={friend.username || friend.email || friend.id}
-                        className="w-6 h-6 rounded-full object-cover border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)]"
+                        className="w-6 h-6 rounded-full object-cover border-2 border-(--accent-primary) bg-(--bg-primary)"
                       />
                       <span>{friend.username || friend.email || friend.id}</span>
                       {selectedFriend?.id === friend.id && (
-                        <div className="w-2 h-2 rounded-full bg-[var(--accent-primary)] ml-auto" />
+                        <div className="w-2 h-2 rounded-full bg-(--accent-primary) ml-auto" />
                       )}
                     </DropdownMenu.Item>
                   ))
                 ) : (
                   <DropdownMenu.Item
                     onClick={onAddFriend || (() => {})}
-                    className="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer outline-none transition-colors text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--bg-primary)] hover:border-2 hover:border-[var(--accent-primary)] border-2 border-transparent"
+                    className="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer outline-none transition-colors text-(--accent-primary) hover:text-(--accent-primary)/80 hover:bg-(--bg-primary) hover:border-2 hover:border-(--accent-primary) border-2 border-transparent"
                   >
                     <span>Add a friend to share workspace</span>
                   </DropdownMenu.Item>
@@ -171,7 +171,7 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
         
         <div className="flex justify-end">
           <button
-            className="px-4 py-2 rounded-lg text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] bg-transparent font-semibold hover:bg-[var(--accent-primary)]/10 transition-colors"
+            className="px-4 py-2 rounded-lg text-(--accent-primary) border-2 border-(--accent-primary) bg-transparent font-semibold hover:bg-(--accent-primary)/10 transition-colors"
             onClick={handleShare}
           >
             Share Workspace

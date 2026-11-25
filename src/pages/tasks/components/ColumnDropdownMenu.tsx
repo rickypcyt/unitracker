@@ -56,8 +56,8 @@ const ColumnDropdownMenu = ({
           onMouseLeave={() => setIsMenuButtonHovered(false)}
           className={`p-2 rounded-lg transition-all duration-200 relative group hover:scale-105 active:scale-95 ${
             columnMenu 
-              ? 'text-[var(--accent-primary)] bg-transparent shadow-lg scale-105' 
-              : 'bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              ? 'text-(--accent-primary) bg-transparent shadow-lg scale-105' 
+              : 'bg-(--bg-secondary) hover:bg-(--bg-primary) text-(--text-secondary) hover:text-(--text-primary)'
           }`}
           title="More options"
         >
@@ -74,42 +74,42 @@ const ColumnDropdownMenu = ({
           
           {/* Active indicator */}
           {columnMenu && (
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-[var(--accent-primary)] rounded-full animate-pulse"></span>
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-(--accent-primary) rounded-full animate-pulse"></span>
           )}
         </button>
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          className="min-w-[220px] bg-[var(--bg-secondary)] rounded-lg p-1 shadow-lg border-2 border-[var(--border-primary)] z-[9999] animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
+          className="min-w-[220px] bg-(--bg-secondary) rounded-lg p-1 shadow-lg border-2 border-(--border-primary) z-9999 animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
           sideOffset={5}
           align="end"
           collisionPadding={10}
         >
           <DropdownMenu.Item
             onClick={handleEditClick}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors focus:bg-[var(--bg-primary)] focus:text-[var(--text-primary)]"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-(--text-primary) hover:bg-(--bg-primary) rounded-md cursor-pointer outline-none transition-colors focus:bg-(--bg-primary) focus:text-(--text-primary)"
           >
-            <Edit2 size={16} className="text-[var(--text-secondary)]" />
+            <Edit2 size={16} className="text-(--text-secondary)" />
             Edit assignment name
           </DropdownMenu.Item>
 
           <DropdownMenu.Item
             onClick={handleSortClick}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors focus:bg-[var(--bg-primary)] focus:text-[var(--text-primary)]"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-(--text-primary) hover:bg-(--bg-primary) rounded-md cursor-pointer outline-none transition-colors focus:bg-(--bg-primary) focus:text-(--text-primary)"
           >
-            <ListOrdered size={16} className="text-[var(--text-secondary)]" />
+            <ListOrdered size={16} className="text-(--text-secondary)" />
             Sort by
           </DropdownMenu.Item>
 
-          <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />
+          <DropdownMenu.Separator className="h-px bg-(--border-primary) my-1" />
 
           {onTogglePin && (
             <DropdownMenu.Item
               onClick={() => { onTogglePin(); setOpen(false); }}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors focus:bg-[var(--bg-primary)] focus:text-[var(--text-primary)]"
+              className="flex items-center gap-2 px-3 py-2 text-sm text-(--text-primary) hover:bg-(--bg-primary) rounded-md cursor-pointer outline-none transition-colors focus:bg-(--bg-primary) focus:text-(--text-primary)"
             >
-              {isPinned ? <PinOff size={16} className="text-[var(--text-secondary)]" /> : <Pin size={16} className="text-[var(--text-secondary)]" />}
+              {isPinned ? <PinOff size={16} className="text-(--text-secondary)" /> : <Pin size={16} className="text-(--text-secondary)" />}
               {isPinned ? 'Unpin column' : 'Pin column'}
             </DropdownMenu.Item>
           )}
@@ -117,9 +117,9 @@ const ColumnDropdownMenu = ({
           {onToggleMinimize && (
             <DropdownMenu.Item
               onClick={() => { onToggleMinimize(); setOpen(false); }}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors focus:bg-[var(--bg-primary)] focus:text-[var(--text-primary)]"
+              className="flex items-center gap-2 px-3 py-2 text-sm text-(--text-primary) hover:bg-(--bg-primary) rounded-md cursor-pointer outline-none transition-colors focus:bg-(--bg-primary) focus:text-(--text-primary)"
             >
-              {isMinimized ? <ChevronUp size={16} className="text-[var(--text-secondary)]" /> : <ChevronDown size={16} className="text-[var(--text-secondary)]" />}
+              {isMinimized ? <ChevronUp size={16} className="text-(--text-secondary)" /> : <ChevronDown size={16} className="text-(--text-secondary)" />}
               {isMinimized ? 'Expand tasks' : 'Collapse tasks'}
             </DropdownMenu.Item>
           )}
@@ -129,13 +129,13 @@ const ColumnDropdownMenu = ({
               onMoveToWorkspace(assignment);
               setOpen(false);
             }}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-primary)] rounded-md cursor-pointer outline-none transition-colors focus:bg-[var(--bg-primary)] focus:text-[var(--text-primary)]"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-(--text-primary) hover:bg-(--bg-primary) rounded-md cursor-pointer outline-none transition-colors focus:bg-(--bg-primary) focus:text-(--text-primary)"
           >
-            <Move size={16} className="text-[var(--text-secondary)]" />
+            <Move size={16} className="text-(--text-secondary)" />
             Move to another workspace
           </DropdownMenu.Item>
           
-          <DropdownMenu.Separator className="h-px bg-[var(--border-primary)] my-1" />
+          <DropdownMenu.Separator className="h-px bg-(--border-primary) my-1" />
           <DropdownMenu.Item
             onClick={() => {
               onDeleteAssignment?.(assignment);

@@ -329,12 +329,12 @@ const TaskForm = ({
   const modalTitle = initialTask ? 'Edit Task' : initialAssignment ? `Add Task for ${initialAssignment}` : 'Add Task';
   // Render Components
   const renderTabSelector = () => <div className="w-full flex justify-center mb-4">
-      <div className="flex items-center gap-1 bg-[var(--bg-secondary)] rounded-lg p-1">
-        <span className="flex items-center gap-1.5 px-4 py-2 rounded-md text-base font-medium bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm">
+      <div className="flex items-center gap-1 bg-(--bg-secondary) rounded-lg p-1">
+        <span className="flex items-center gap-1.5 px-4 py-2 rounded-md text-base font-medium bg-(--bg-primary) text-(--text-primary) shadow-sm">
           <Wand2 size={16} />
           Manual
         </span>
-        <button type="button" className="flex items-center gap-1.5 px-4 py-2 rounded-md text-base font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" onClick={() => onSwitchToAI?.()}>
+        <button type="button" className="flex items-center gap-1.5 px-4 py-2 rounded-md text-base font-medium text-(--text-secondary) hover:text-(--text-primary) transition-colors" onClick={() => onSwitchToAI?.()}>
           <Sparkles size={16} />
           Auto (AI)
         </button>
@@ -342,11 +342,11 @@ const TaskForm = ({
     </div>;
   const renderDifficultySelector = () => {
     return <div>
-        <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5">Difficulty</label>
-        <div className="flex rounded-lg border-2 border-[var(--border-primary)] overflow-hidden divide-x divide-[var(--border-primary)]">
+        <label className="block text-sm font-medium text-(--text-secondary) mb-1.5">Difficulty</label>
+        <div className="flex rounded-lg border-2 border-(--border-primary) overflow-hidden divide-x divide-(--border-primary)">
           {DIFFICULTY_OPTIONS.map(option => {
             const isSelected = option.value === formData.difficulty;
-            return <button key={option.value} type="button" onClick={() => handleChange('difficulty', option.value)} className={`flex-1 px-3 py-2 text-sm font-medium transition-all ${isSelected ? `${option.activeClass} font-semibold` : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'}`}>
+            return <button key={option.value} type="button" onClick={() => handleChange('difficulty', option.value)} className={`flex-1 px-3 py-2 text-sm font-medium transition-all ${isSelected ? `${option.activeClass} font-semibold` : 'text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-secondary)'}`}>
               {option.label}
             </button>;
           })}
@@ -400,7 +400,7 @@ const TaskForm = ({
   };
   const renderDeadlinePicker = () => <div className="w-full">
       <div className="relative flex items-center w-full">
-        <input id="deadline" type="text" readOnly value={deadlineDisplayFull()} placeholder="None" onClick={openDeadlinePicker} className={`w-full pl-11 pr-3 py-2 bg-[var(--bg-primary)] border-2 ${displayErrors.deadline ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all leading-6`} />
+        <input id="deadline" type="text" readOnly value={deadlineDisplayFull()} placeholder="None" onClick={openDeadlinePicker} className={`w-full pl-11 pr-3 py-2 bg-(--bg-primary) border-2 ${displayErrors.deadline ? 'border-red-500' : 'border-(--border-primary)'} rounded-lg text-(--text-primary) placeholder-(--text-secondary) cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-(--accent-primary)/30 focus:border-(--accent-primary) transition-all leading-6`} />
         <input ref={hiddenDeadlineDateTimeRef} type="datetime-local" tabIndex={-1} aria-hidden="true" value={deadlineToLocal()} onChange={e => {
         const v = e.target.value; // YYYY-MM-DDTHH:MM
         if (v) {
@@ -416,7 +416,7 @@ const TaskForm = ({
           clearDeadline();
         }
       }} className="absolute inset-0 w-full h-full opacity-0 pointer-events-none" />
-        <button type="button" onClick={openDeadlinePicker} className="absolute left-2 top-0 bottom-0 w-8 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer" tabIndex={-1} title="Pick date">
+        <button type="button" onClick={openDeadlinePicker} className="absolute left-2 top-0 bottom-0 w-8 flex items-center justify-center text-(--text-secondary) hover:text-(--text-primary) cursor-pointer" tabIndex={-1} title="Pick date">
           <Calendar size={20} />
         </button>
       </div>
@@ -432,20 +432,20 @@ const TaskForm = ({
         handleChange('isRecurring', e.target.checked);
       }} className="opacity-0 absolute h-6 w-6" />
         <div className={`w-6 h-6 border-2 rounded flex items-center justify-center transition-colors duration-200
-          ${formData.isRecurring ? 'bg-transparent border-[var(--accent-primary)]' : 'bg-transparent border-[var(--border-primary)]'}`}>
-          {formData.isRecurring && <svg className="w-4 h-4 text-[var(--accent-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          ${formData.isRecurring ? 'bg-transparent border-(--accent-primary)' : 'bg-transparent border-(--border-primary)'}`}>
+          {formData.isRecurring && <svg className="w-4 h-4 text-(--accent-primary)" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
             </svg>}
         </div>
       </div>
-      <span className="text-[var(--text-primary)] font-medium text-base whitespace-nowrap">Repeat weekly</span>
+      <span className="text-(--text-primary) font-medium text-base whitespace-nowrap">Repeat weekly</span>
     </label>;
 
   const renderRecurrenceSection = () => <div>
       {formData.isRecurring && <div>
-          <p className="text-sm text-[var(--text-secondary)] mb-2">Repeat on:</p>
+          <p className="text-sm text-(--text-secondary) mb-2">Repeat on:</p>
           <div className="flex flex-wrap gap-1">
-            {WEEKDAY_VALUES.map((d, i) => <label key={d} className={`inline-flex items-center justify-center w-12 h-12 rounded-lg cursor-pointer transition-all text-base font-medium ${(formData.recurrence_weekdays || []).includes(d) ? 'border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-semibold bg-transparent' : 'border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'}`}>
+            {WEEKDAY_VALUES.map((d, i) => <label key={d} className={`inline-flex items-center justify-center w-12 h-12 rounded-lg cursor-pointer transition-all text-base font-medium ${(formData.recurrence_weekdays || []).includes(d) ? 'border-2 border-(--accent-primary) text-(--accent-primary) font-semibold bg-transparent' : 'border-2 border-(--border-primary) text-(--text-secondary) hover:bg-(--bg-secondary) hover:text-(--text-primary)'}`}>
                 <input type="checkbox" className="sr-only" checked={(formData.recurrence_weekdays || []).includes(d)} onChange={e => {
             form.clearErrors('recurrence' as keyof TaskFormValues);
             const current = (formData.recurrence_weekdays || []) as number[];
@@ -533,7 +533,7 @@ const TaskForm = ({
   }, [focusOnDate]);
   const renderStartTimeInput = () => {
     return <div className="w-full">
-        <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Start time</label>
+        <label className="block text-sm font-medium text-(--text-secondary) mb-1">Start time</label>
         <div className="relative flex items-center w-full">
           <input type="time" onClick={e => { try { e.currentTarget.showPicker(); } catch { /* picker already open or unsupported */ } }} value={formData.start_at ? formData.start_at.slice(0, 5) : ''} onChange={e => {
           const v = e.target.value; // HH:MM (24h)
@@ -541,14 +541,14 @@ const TaskForm = ({
           handleChange('start_at', v ? `${v}:00` : null);
           setDisplayStartTime(v ? to12Hour(v) : '');
           setTimeout(() => setIsManualTimeUpdate(false), 100);
-        }} className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all leading-6" />
+        }} className="w-full px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)/30 focus:border-(--accent-primary) transition-all leading-6" />
         </div>
         {displayErrors.start_at && <p className="mt-1 text-base text-red-500">{displayErrors.start_at}</p>}
       </div>;
   };
   const renderEndTimeInput = () => {
     return <div className="w-full">
-        <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">{formData.isRecurring ? 'End Time' : 'Deadline'}</label>
+        <label className="block text-sm font-medium text-(--text-secondary) mb-1">{formData.isRecurring ? 'End Time' : 'Deadline'}</label>
         <div className="relative flex items-center w-full">
           <input type="time" onClick={e => { try { e.currentTarget.showPicker(); } catch { /* picker already open or unsupported */ } }} value={formData.end_at ? formData.end_at.slice(0, 5) : ''} onChange={e => {
           const v = e.target.value;
@@ -556,7 +556,7 @@ const TaskForm = ({
           handleChange('end_at', v ? `${v}:00` : null);
           setDisplayEndTime(v ? to12Hour(v) : '');
           setTimeout(() => setIsManualTimeUpdate(false), 100);
-        }} className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all leading-6" />
+        }} className="w-full px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)/30 focus:border-(--accent-primary) transition-all leading-6" />
         </div>
         {displayErrors.end_at && <p className="mt-1 text-base text-red-500">{displayErrors.end_at}</p>}
       </div>;
@@ -587,15 +587,15 @@ const TaskForm = ({
           {/* Title and Subject */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className={initialAssignment ? 'sm:col-span-2' : ''}>
-              <label htmlFor="title" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+              <label htmlFor="title" className="block text-sm font-medium text-(--text-secondary) mb-1">
                 Title:
               </label>
-              <textarea id="title" ref={titleRef} rows={1} value={formData.title} onChange={e => handleChange('title', e.target.value)} className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${displayErrors.title ? 'border-red-500' : 'border-[var(--border-primary)]'} rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all resize-none overflow-hidden leading-6`} required placeholder="Enter task title" />
+              <textarea id="title" ref={titleRef} rows={1} value={formData.title} onChange={e => handleChange('title', e.target.value)} className={`w-full px-3 py-2 bg-(--bg-primary) border-2 ${displayErrors.title ? 'border-red-500' : 'border-(--border-primary)'} rounded-lg text-(--text-primary) placeholder-(--text-secondary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)/30 focus:border-(--accent-primary) transition-all resize-none overflow-hidden leading-6`} required placeholder="Enter task title" />
               {displayErrors.title && <p className="mt-1 text-base text-red-500">{displayErrors.title}</p>}
             </div>
 
             {!initialAssignment && <div>
-                <label htmlFor="assignment" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+                <label htmlFor="assignment" className="block text-sm font-medium text-(--text-secondary) mb-1">
                   Assignment:
                 </label>
                 <AutocompleteInput id="assignment" value={formData.assignment} onChange={value => handleChange('assignment', value)} error={displayErrors.assignment} required placeholder="Enter assignment name" suggestions={uniqueAssignments} />
@@ -604,13 +604,13 @@ const TaskForm = ({
 
           {/* Workspace (new tasks only) */}
           {!initialTask && selectableWorkspaces.length > 0 && <div>
-              <label htmlFor="workspace" className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+              <label htmlFor="workspace" className="block text-sm font-medium text-(--text-secondary) mb-1">
                 Workspace:
               </label>
               <select id="workspace" value={selectedWorkspace?.id ?? ''} onChange={e => {
             const ws = selectableWorkspaces.find((w: any) => w.id === e.target.value);
             if (ws) setSelectedWorkspace(ws);
-          }} className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all leading-6">
+          }} className="w-full px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)/30 focus:border-(--accent-primary) transition-all leading-6">
                 {selectableWorkspaces.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
               </select>
             </div>}
@@ -623,7 +623,7 @@ const TaskForm = ({
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <div className="sm:flex-1">
-                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">Deadline</label>
+                    <label className="block text-sm font-medium text-(--text-secondary) mb-1">Deadline</label>
                     {renderDeadlinePicker()}
                   </div>
                   {renderRecurrenceToggle()}
@@ -661,7 +661,7 @@ const TaskForm = ({
             const next = focusables[idx + (e.shiftKey ? -1 : 1)] ?? focusables[e.shiftKey ? focusables.length - 1 : 0];
             next?.focus();
           }}>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-1">
+            <label className="block text-sm font-medium text-(--text-secondary) mb-1">
               Description (Supports Markdown)
             </label>
             <MarkdownWysiwyg initialTitle={formData.title} initialBody={formData.description} onChange={({
@@ -673,10 +673,10 @@ const TaskForm = ({
         </div>
 
         <div className="flex justify-end gap-2 mt-6 mb-4">
-          <button type="button" onClick={handleCancel} className="px-4 py-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors text-base font-medium">
+          <button type="button" onClick={handleCancel} className="px-4 py-2 rounded-lg text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-secondary) transition-colors text-base font-medium">
             Cancel
           </button>
-          <button type="submit" className="px-5 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors text-base font-semibold flex items-center gap-2">
+          <button type="submit" className="px-5 py-2 rounded-lg border-2 border-(--accent-primary) text-(--accent-primary) hover:bg-(--accent-primary)/10 transition-colors text-base font-semibold flex items-center gap-2">
             {initialTask ? 'Save Changes' : 'Add Task'}
           </button>
         </div>

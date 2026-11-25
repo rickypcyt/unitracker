@@ -14,10 +14,10 @@ const Navbar = () => {
   const { t } = useTranslation();
 
   return (
-    <header className="sticky top-[var(--demo-banner-h,0px)] h-[var(--navbar-h)] flex-shrink-0 z-[10000] bg-[var(--bg-primary)] border-b border-[var(--border-primary)] grid grid-cols-[auto_minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center page-gutter gap-2 lg:gap-6" data-tour="navbar">
+    <header className="sticky top-(--demo-banner-h,0px) h-(--navbar-h) shrink-0 z-10000 bg-(--bg-primary) border-b border-(--border-primary) grid grid-cols-[auto_minmax(0,1fr)_auto] lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center page-gutter gap-2 lg:gap-6" data-tour="navbar">
       <button onClick={() => navigateTo('session')} className="justify-self-start text-lg font-bold shrink-0 select-none min-h-11 flex items-center" aria-label={t('nav.home')}>
-        <span className="text-[var(--text-primary)]">U<span className="hidden lg:inline">ni</span></span>
-        <span className="text-[var(--accent-primary)]">T<span className="hidden lg:inline">racker</span></span>
+        <span className="text-(--text-primary)">U<span className="hidden lg:inline">ni</span></span>
+        <span className="text-(--accent-primary)">T<span className="hidden lg:inline">racker</span></span>
       </button>
 
       <nav aria-label="Main navigation" className="min-w-0 h-full overflow-x-auto overscroll-x-contain hide-scrollbar">
@@ -30,8 +30,8 @@ const Navbar = () => {
             onClick={() => navigateTo(page)}
             className={`min-w-9 min-h-11 sm:min-w-11 shrink-0 flex items-center justify-center gap-2 rounded-lg px-1.5 sm:px-2 lg:px-4 text-sm font-bold transition-colors ${
               activePage === page
-                ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
-                : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'
+                ? 'bg-(--accent-primary)/10 text-(--accent-primary)'
+                : 'text-(--text-secondary) hover:bg-(--bg-secondary) hover:text-(--text-primary)'
             }`}
             title={label}
             aria-label={label}
@@ -47,7 +47,7 @@ const Navbar = () => {
 
       <button
         onClick={openSettings}
-        className="justify-self-end shrink-0 flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-primary)] hover:text-[var(--text-primary)] transition-colors"
+        className="justify-self-end shrink-0 flex h-11 w-11 items-center justify-center rounded-xl bg-(--bg-secondary) text-(--text-secondary) hover:bg-(--bg-primary) hover:text-(--text-primary) transition-colors"
         title={t('nav.settings')}
         aria-label={t('nav.settings')}
       >

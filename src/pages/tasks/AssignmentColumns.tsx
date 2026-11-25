@@ -143,7 +143,7 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: R
   const renderColumn = (column: { id: string; title: string; tasks: any[]; assignmentName: string }) => (
           <div
             key={column.id}
-            className="mb-3 w-full break-inside-avoid rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-secondary)]/40 p-2.5"
+            className="mb-3 w-full break-inside-avoid rounded-2xl border border-(--border-primary) bg-(--bg-secondary)/40 p-2.5"
             onDoubleClick={() => onAssignmentDoubleClick?.(column.assignmentName)}
           >
             <AssignmentCard
@@ -180,7 +180,7 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: R
           const canAdd = !!onAddTaskToWorkspace && section.id !== 'none' && section.icon !== undefined;
           return (
             <section key={section.id} aria-label={section.name} className="flex flex-col gap-3">
-              <div className="flex h-9 w-full items-center gap-2 border-b border-[var(--border-primary)]">
+              <div className="flex h-9 w-full items-center gap-2 border-b border-(--border-primary)">
                 <button
                   type="button"
                   onClick={() => toggleSection(section.id)}
@@ -188,17 +188,17 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: R
                   className="flex h-full min-w-0 flex-1 items-center gap-2 px-1 text-left"
                 >
                   {open
-                    ? <ChevronDown size={16} className="shrink-0 text-[var(--text-secondary)]" />
-                    : <ChevronRight size={16} className="shrink-0 text-[var(--text-secondary)]" />}
-                  <WorkspaceIcon size={16} className="shrink-0 text-[var(--accent-primary)]" />
-                  <h2 className="truncate text-[length:var(--t-title,16px)] font-bold tracking-tight text-[var(--text-primary)]">{section.name}</h2>
-                  <span className="shrink-0 rounded-full bg-[var(--accent-primary)]/15 px-2 py-0.5 text-xs font-semibold tabular-nums text-[var(--accent-primary)]">{total}</span>
+                    ? <ChevronDown size={16} className="shrink-0 text-(--text-secondary)" />
+                    : <ChevronRight size={16} className="shrink-0 text-(--text-secondary)" />}
+                  <WorkspaceIcon size={16} className="shrink-0 text-(--accent-primary)" />
+                  <h2 className="truncate text-(length:--t-title,16px) font-bold tracking-tight text-(--text-primary)">{section.name}</h2>
+                  <span className="shrink-0 rounded-full bg-(--accent-primary)/15 px-2 py-0.5 text-xs font-semibold tabular-nums text-(--accent-primary)">{total}</span>
                 </button>
                 {canAdd && (
                   <button
                     type="button"
                     onClick={() => onAddTaskToWorkspace?.(section.id)}
-                    className="ml-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--text-secondary)] hover:text-[var(--accent-primary)] active:scale-95"
+                    className="ml-auto flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-(--text-secondary) hover:text-(--accent-primary) active:scale-95"
                     title={`Add task to ${section.name}`}
                     aria-label={`Add task to ${section.name}`}
                   >

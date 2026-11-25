@@ -134,16 +134,16 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
         onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${
-          error ? 'border-red-500' : 'border-[var(--border-primary)]'
-        } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/30 focus:border-[var(--accent-primary)] transition-all resize-none overflow-hidden leading-6 ${inputClassName}`}
+        className={`w-full px-3 py-2 bg-(--bg-primary) border-2 ${
+          error ? 'border-red-500' : 'border-(--border-primary)'
+        } rounded-lg text-(--text-primary) placeholder-(--text-secondary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)/30 focus:border-(--accent-primary) transition-all resize-none overflow-hidden leading-6 ${inputClassName}`}
         autoComplete="off"
         {...props}
       />
       {showSuggestions && filtered.length > 0 && (
         <ul
           ref={listRef}
-          className="absolute z-[9999] mt-1 w-full bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg max-h-48 overflow-y-auto"
+          className="absolute z-9999 mt-1 w-full bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg shadow-lg max-h-48 overflow-y-auto"
         >
           {filtered.map((suggestion, idx) => (
             <li
@@ -151,8 +151,8 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
               key={suggestion}
               className={`px-4 py-2 cursor-pointer select-none ${
                 idx === activeIndex
-                  ? 'text-[var(--accent-primary)] border-l-2 border-[var(--accent-primary)]'
-                  : 'text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
+                  ? 'text-(--accent-primary) border-l-2 border-(--accent-primary)'
+                  : 'text-(--text-primary) hover:bg-(--bg-secondary)'
               }`}
               onMouseDown={() => handleSuggestionClick(suggestion)}
               onMouseEnter={() => setActiveIndex(idx)}

@@ -57,7 +57,7 @@ const BaseModal = ({
   hasUnsavedChanges = false,
   showCloseButton = true,
   maxWidth = "max-w-md",
-  zIndex = "z-[10001]",
+  zIndex = "z-10001",
   closeOnEsc = true,
   closeOnOverlayClick = true,
   showHeader = true,
@@ -186,17 +186,17 @@ const BaseModal = ({
           <Drawer.Content
             aria-describedby={undefined}
             onEscapeKeyDown={(e) => { if (!closeOnEsc) e.preventDefault(); }}
-            className={`BaseModal fixed inset-x-0 bottom-0 ${zIndex} flex max-h-[92dvh] ${height !== "h-auto" ? height : ""} flex-col rounded-t-2xl border-t-2 border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-xl outline-none pb-[env(safe-area-inset-bottom)] ${className}`}
+            className={`BaseModal fixed inset-x-0 bottom-0 ${zIndex} flex max-h-[92dvh] ${height !== "h-auto" ? height : ""} flex-col rounded-t-2xl border-t-2 border-(--border-primary) bg-(--bg-primary) shadow-xl outline-none pb-[env(safe-area-inset-bottom)] ${className}`}
           >
-            <div aria-hidden className="mx-auto mt-2.5 mb-1 h-1.5 w-10 shrink-0 rounded-full bg-[var(--border-primary)]" />
+            <div aria-hidden className="mx-auto mt-2.5 mb-1 h-1.5 w-10 shrink-0 rounded-full bg-(--border-primary)" />
             {showHeader ? (
               <header className="flex items-center justify-between px-2 pb-2">
                 <div className="shrink-0 w-9" />
-                <Drawer.Title className="text-lg font-semibold text-[var(--text-primary)] truncate flex-1 text-center">
+                <Drawer.Title className="text-lg font-semibold text-(--text-primary) truncate flex-1 text-center">
                   {title ?? ''}
                 </Drawer.Title>
                 {showCloseButton ? (
-                  <button type="button" onClick={handleClose} aria-label="Close modal" title="Close" className="shrink-0 p-2 rounded-md text-[var(--text-secondary)]">
+                  <button type="button" onClick={handleClose} aria-label="Close modal" title="Close" className="shrink-0 p-2 rounded-md text-(--text-secondary)">
                     <X size={22} />
                   </button>
                 ) : <div className="shrink-0 w-9" />}
@@ -231,7 +231,7 @@ const BaseModal = ({
   `.trim();
 
   const modalClasses = `
-    bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] 
+    bg-(--bg-primary) border-2 border-(--border-primary) 
     sm:border-2 rounded-lg sm:rounded-xl 
     ${paddingClass} w-full ${maxWidth} mx-auto ${className} 
     shadow-xl ${maxHeight} ${height}
@@ -241,19 +241,19 @@ const BaseModal = ({
   `.trim();
 
   const headerClasses = `
-    relative bg-[var(--bg-primary)] grid grid-cols-[3.5rem_1fr_3.5rem] items-center
+    relative bg-(--bg-primary) grid grid-cols-[3.5rem_1fr_3.5rem] items-center
     p-0 mt-3 sm:mt-0 mb-2 sm:mb-4
   `.trim();
 
   const titleClasses = `
     text-lg font-semibold 
-    text-[var(--text-primary)] truncate min-w-0 text-center
+    text-(--text-primary) truncate min-w-0 text-center
   `.trim();
 
   const closeButtonClasses = `
     shrink-0 mr-3 justify-self-end p-2 sm:p-2.5 rounded-md
-    text-[var(--text-secondary)] hover:text-[var(--text-primary)] 
-    hover:bg-[var(--bg-secondary)]
+    text-(--text-secondary) hover:text-(--text-primary) 
+    hover:bg-(--bg-secondary)
   `.trim();
 
   return createPortal(

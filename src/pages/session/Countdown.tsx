@@ -834,7 +834,7 @@ const Countdown: React.FC<CountdownProps> = ({
   };
   return <div className="flex flex-col h-full w-full">
       {hideHeader ? null : <div className="section-title justify-center relative w-full px-4 py-3">
-        <button type="button" onClick={() => setSyncCountdownWithTimer(!syncCountdownWithTimer)} className="absolute left-0 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-[var(--accent-primary)]/10 focus:bg-[var(--accent-primary)]/20" aria-label={syncCountdownWithTimer ? 'Disable Countdown sync' : 'Enable Countdown sync'} title={syncCountdownWithTimer ? 'Sync ON (click to turn OFF)' : 'Sync OFF (click to turn ON)'}>
+        <button type="button" onClick={() => setSyncCountdownWithTimer(!syncCountdownWithTimer)} className="absolute left-0 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-(--accent-primary)/10 focus:bg-(--accent-primary)/20" aria-label={syncCountdownWithTimer ? 'Disable Countdown sync' : 'Enable Countdown sync'} title={syncCountdownWithTimer ? 'Sync ON (click to turn OFF)' : 'Sync OFF (click to turn ON)'}>
           {syncCountdownWithTimer ? <RefreshCw size={20} className="icon" style={{
           color: 'var(--accent-primary)'
         }} /> : <RefreshCwOff size={20} className="icon" style={{
@@ -842,8 +842,8 @@ const Countdown: React.FC<CountdownProps> = ({
         }} />}
         </button>
         <SectionTitle title="Countdown" tooltip="A countdown timer that counts down from a set time. Perfect for timed exams, presentations, or any activity with a specific duration limit." size="sm" />
-        <button onClick={toggleAlarm} className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" title={alarmEnabled ? 'Disable alarm sound' : 'Enable alarm sound'} aria-label="Toggle alarm sound">
-          {alarmEnabled ? <Bell size={20} className="text-[var(--text-secondary)]" /> : <BellOff size={20} className="text-[var(--text-secondary)]" />}
+        <button onClick={toggleAlarm} className="absolute right-0 top-1/2 -translate-y-1/2 p-1 rounded-full text-(--text-secondary) hover:text-(--text-primary) transition-colors" title={alarmEnabled ? 'Disable alarm sound' : 'Enable alarm sound'} aria-label="Toggle alarm sound">
+          {alarmEnabled ? <Bell size={20} className="text-(--text-secondary)" /> : <BellOff size={20} className="text-(--text-secondary)" />}
         </button>
       </div>}
 
@@ -951,12 +951,12 @@ const Countdown: React.FC<CountdownProps> = ({
                       onChange={e => handleInputChange(field, e.target.value)}
                       onKeyDown={e => handleInputKeyDown(e, field)}
                       className={`countdown-time-input w-6 text-center text-base font-mono font-bold tabular-nums bg-transparent border-none outline-none ring-0 focus:ring-0 focus:outline-none focus:border-transparent transition-all duration-150 leading-none ${
-                        isFocused || isCountdownRunning ? 'text-green-500' : 'text-[var(--text-primary)]'
+                        isFocused || isCountdownRunning ? 'text-green-500' : 'text-(--text-primary)'
                       }`}
                       tabIndex={idx + 1}
                       disabled={isCountdownRunning}
                     />
-                    {idx < fields.length - 1 && <span className="text-sm font-mono font-bold leading-none text-[var(--text-secondary)]">:</span>}
+                    {idx < fields.length - 1 && <span className="text-sm font-mono font-bold leading-none text-(--text-secondary)">:</span>}
                   </React.Fragment>;
               })}
               </div>

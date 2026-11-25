@@ -132,7 +132,7 @@ const TaskSelectionPanel = ({
         ? "task-item-active"
         : isActive
         ? "task-item-active"
-        : "bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)]"
+        : "bg-(--bg-secondary) border-2 border-(--border-primary)"
     }`;
 
     let borderColor = "";
@@ -145,18 +145,18 @@ const TaskSelectionPanel = ({
       return (
         <div
           key={task.id}
-          className={`task-item-base task-item-flex px-2 py-1 min-h-0 w-full overflow-x-auto border-2 rounded-md ${borderColor} bg-[var(--bg-secondary)]`}
+          className={`task-item-base task-item-flex px-2 py-1 min-h-0 w-full overflow-x-auto border-2 rounded-md ${borderColor} bg-(--bg-secondary)`}
         >
           <div className="flex items-center gap-2 w-full">
-            <span className="font-medium text-base text-[var(--text-primary)] truncate">
+            <span className="font-medium text-base text-(--text-primary) truncate">
               {task.title}
             </span>
             <button
               onClick={() => onMoveTask(task, false)}
-              className="flex-shrink-0 p-0.5 hover:bg-[var(--bg-hover)] rounded transition-colors ml-auto"
+              className="shrink-0 p-0.5 hover:bg-(--bg-hover) rounded transition-colors ml-auto"
               title="Move to Available Tasks"
             >
-              <ArrowRight size={18} className="text-[var(--text-secondary)]" />
+              <ArrowRight size={18} className="text-(--text-secondary)" />
             </button>
           </div>
         </div>
@@ -170,23 +170,23 @@ const TaskSelectionPanel = ({
           className={`task-item-base task-item-flex ${
             isActive
               ? borderColor + " border-2"
-              : "bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)]"
+              : "bg-(--bg-secondary) border-2 border-(--border-primary)"
           }`}
           onClick={() => onTaskSelect ? onTaskSelect(task.id) : null}
         >
           <div className="flex items-center justify-between">
             <div>
-              <div className="font-medium text-base text-[var(--text-primary)]">
+              <div className="font-medium text-base text-(--text-primary)">
                 {task.title}
               </div>
               {task.assignment && (
-                <div className="text-sm text-[var(--text-secondary)] mt-0.5">
+                <div className="text-sm text-(--text-secondary) mt-0.5">
                   {task.assignment}
                 </div>
               )}
             </div>
             {selectedTasks.includes(task.id) && (
-              <Check size={20} className="text-[var(--accent-primary)]" />
+              <Check size={20} className="text-(--accent-primary)" />
             )}
           </div>
         </div>
@@ -211,12 +211,12 @@ const TaskSelectionPanel = ({
                 e.stopPropagation();
                 onMoveTask(task, true);
               }}
-              className="flex-shrink-0 p-0.5 hover:bg-[var(--bg-hover)] rounded transition-colors"
+              className="shrink-0 p-0.5 hover:bg-(--bg-hover) rounded transition-colors"
               title="Move to Active Tasks"
             >
-              <ArrowLeft size={18} className="text-[var(--text-secondary)]" />
+              <ArrowLeft size={18} className="text-(--text-secondary)" />
             </button>
-            <div className="font-medium text-base text-[var(--text-primary)] truncate">
+            <div className="font-medium text-base text-(--text-primary) truncate">
               {task.title}
             </div>
           </div>
@@ -234,7 +234,7 @@ const TaskSelectionPanel = ({
           {isActive ? (
             <>
               <div className="flex-1 min-w-0">
-                <div className="font-medium text-base text-[var(--text-primary)]">
+                <div className="font-medium text-base text-(--text-primary)">
                   {task.title}
                 </div>
               </div>
@@ -243,22 +243,22 @@ const TaskSelectionPanel = ({
                   e.stopPropagation();
                   onMoveTask(task, false);
                 }}
-                className="flex-shrink-0 p-1 hover:bg-[var(--bg-hover)] rounded-full transition-colors"
+                className="shrink-0 p-1 hover:bg-(--bg-hover) rounded-full transition-colors"
                 title="Move to Available Tasks"
               >
                 <ArrowRight
                   size={20}
-                  className="text-[var(--text-secondary)]"
+                  className="text-(--text-secondary)"
                 />
               </button>
             </>
           ) : (
             <>
-              <div className="flex-shrink-0 mr-2">
-                <ArrowLeft size={20} className="text-[var(--text-secondary)]" />
+              <div className="shrink-0 mr-2">
+                <ArrowLeft size={20} className="text-(--text-secondary)" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-medium text-base text-[var(--text-primary)]">
+                <div className="font-medium text-base text-(--text-primary)">
                   {task.title}
                 </div>
               </div>
@@ -276,7 +276,7 @@ const TaskSelectionPanel = ({
     >
       {validActiveTasks.map((task) => renderTaskCard(task, true))}
       {validActiveTasks.length === 0 && (
-        <div className="text-center text-[var(--text-secondary)] py-4">
+        <div className="text-center text-(--text-secondary) py-4">
           {mode === "select" ? "No tasks selected" : "No active tasks"}
         </div>
       )}
@@ -308,29 +308,29 @@ const TaskSelectionPanel = ({
           {sortedAssignments.map((assignment) => (
             <div
               key={assignment}
-              className="border-2 border-[var(--border-primary)] rounded-lg overflow-hidden"
+              className="border-2 border-(--border-primary) rounded-lg overflow-hidden"
             >
               <button
                 onClick={() => toggleGroup(assignment)}
-                className="w-full px-4 py-2 flex items-center justify-between bg-[var(--bg-secondary)] hover:bg-[var(--bg-hover)] transition-colors"
+                className="w-full px-4 py-2 flex items-center justify-between bg-(--bg-secondary) hover:bg-(--bg-hover) transition-colors"
               >
-                <span className="font-medium text-[var(--text-primary)]">
+                <span className="font-medium text-(--text-primary)">
                   {assignment}
                 </span>
                 {expandedGroups[assignment] ? (
                   <ChevronDown
                     size={20}
-                    className="text-[var(--text-secondary)]"
+                    className="text-(--text-secondary)"
                   />
                 ) : (
                   <ChevronRight
                     size={20}
-                    className="text-[var(--text-secondary)]"
+                    className="text-(--text-secondary)"
                   />
                 )}
               </button>
               {expandedGroups[assignment] && (
-                <div className="p-2 space-y-2 bg-[var(--bg-primary)] border-t border-[var(--border-primary)]">
+                <div className="p-2 space-y-2 bg-(--bg-primary) border-t border-(--border-primary)">
                   {tasksByAssignment[assignment]?.map((task: Task) =>
                     renderTaskCard(
                       task,
@@ -343,7 +343,7 @@ const TaskSelectionPanel = ({
             </div>
           ))}
           {validAvailableTasks.length === 0 && (
-            <div className="text-center text-[var(--text-secondary)] py-4">
+            <div className="text-center text-(--text-secondary) py-4">
               No available tasks
             </div>
           )}
@@ -358,10 +358,10 @@ const TaskSelectionPanel = ({
       {/* Left Column - Active Tasks */}
       <div className="flex flex-col">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium text-[var(--text-primary)]">
+          <h3 className="text-lg font-medium text-(--text-primary)">
             {activeTitle}
           </h3>
-          <span className="text-md text-[var(--text-secondary)]">
+          <span className="text-md text-(--text-secondary)">
             {validActiveTasks.length} tasks
           </span>
         </div>
@@ -371,13 +371,13 @@ const TaskSelectionPanel = ({
       {/* Right Column - Available Tasks */}
       <div className="flex flex-col">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium text-[var(--text-primary)]">
+          <h3 className="text-lg font-medium text-(--text-primary)">
             {availableTitle}
           </h3>
           {showNewTaskButton && (
             <button
               onClick={handleAddTask}
-              className="flex items-center gap-1 text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80"
+              className="flex items-center gap-1 text-(--accent-primary) hover:text-(--accent-primary)/80"
             >
               <Plus size={20} />
               New Task

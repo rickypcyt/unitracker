@@ -81,9 +81,9 @@ const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onCl
             maxWidth="max-w-2xl"
             className="overflow-visible"
         >
-            <div className="text-[var(--text-primary)]">
+            <div className="text-(--text-primary)">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] p-4 text-white">
+                <div className="bg-linear-to-r from-(--accent-primary) to-(--accent-secondary) p-4 text-white">
                     <div className="flex items-start justify-between">
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-1">
@@ -158,90 +158,90 @@ const SessionDetailsModal: React.FC<SessionDetailsModalProps> = ({ session, onCl
                     {/* Description */}
                     {isEditing ? (
                         <div>
-                            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                            <label className="block text-sm font-medium text-(--text-secondary) mb-2">
                                 Description
                             </label>
                             <textarea
                                 value={editedSession.description || ''}
                                 onChange={(e) => handleEditChange('description', e.target.value)}
-                                className="w-full p-3 border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-secondary)] text-[var(--text-primary)] resize-none"
+                                className="w-full p-3 border-2 border-(--border-primary) rounded-lg bg-(--bg-secondary) text-(--text-primary) resize-none"
                                 rows={3}
                                 placeholder="Add session description..."
                             />
                         </div>
                     ) : (
                         session.description && (
-                            <div className="bg-[var(--bg-secondary)] rounded-lg p-4">
-                                <h3 className="text-sm font-medium text-[var(--text-secondary)] mb-2">Description</h3>
-                                <p className="text-[var(--text-primary)] whitespace-pre-wrap">{session.description}</p>
+                            <div className="bg-(--bg-secondary) rounded-lg p-4">
+                                <h3 className="text-sm font-medium text-(--text-secondary) mb-2">Description</h3>
+                                <p className="text-(--text-primary) whitespace-pre-wrap">{session.description}</p>
                             </div>
                         )
                     )}
 
                     {/* Session Information List */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4 lg:col-span-2">Session Information</h3>
+                        <h3 className="text-lg font-semibold text-(--text-primary) mb-4 lg:col-span-2">Session Information</h3>
                         
                         {/* Duration */}
-                        <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
+                        <div className="flex items-center justify-between p-4 bg-(--bg-secondary) rounded-lg border-2 border-(--border-primary) hover:bg-(--bg-tertiary) transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
                                     <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <div>
-                                    <div className="font-medium text-[var(--text-primary)]">Duration</div>
-                                    <div className="text-sm text-[var(--text-secondary)]">Total session time</div>
+                                    <div className="font-medium text-(--text-primary)">Duration</div>
+                                    <div className="text-sm text-(--text-secondary)">Total session time</div>
                                 </div>
                             </div>
-                            <div className="text-lg font-semibold text-[var(--text-primary)]">
+                            <div className="text-lg font-semibold text-(--text-primary)">
                                 {formatDuration(session.duration)}
                             </div>
                         </div>
 
                         {/* Tasks Completed */}
-                        <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
+                        <div className="flex items-center justify-between p-4 bg-(--bg-secondary) rounded-lg border-2 border-(--border-primary) hover:bg-(--bg-tertiary) transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="bg-green-100 dark:bg-green-900/30 p-2 rounded-lg">
                                     <Target className="w-5 h-5 text-green-600 dark:text-green-400" />
                                 </div>
                                 <div>
-                                    <div className="font-medium text-[var(--text-primary)]">Tasks Completed</div>
-                                    <div className="text-sm text-[var(--text-secondary)]">Tasks finished during session</div>
+                                    <div className="font-medium text-(--text-primary)">Tasks Completed</div>
+                                    <div className="text-sm text-(--text-secondary)">Tasks finished during session</div>
                                 </div>
                             </div>
-                            <div className="text-lg font-semibold text-[var(--text-primary)]">
+                            <div className="text-lg font-semibold text-(--text-primary)">
                                 {session.tasks_completed}
                             </div>
                         </div>
 
                         {/* Pomodoros */}
-                        <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
+                        <div className="flex items-center justify-between p-4 bg-(--bg-secondary) rounded-lg border-2 border-(--border-primary) hover:bg-(--bg-tertiary) transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg">
                                     <Flame className="w-5 h-5 text-orange-600 dark:text-orange-400" />
                                 </div>
                                 <div>
-                                    <div className="font-medium text-[var(--text-primary)]">Pomodoros Completed</div>
-                                    <div className="text-sm text-[var(--text-secondary)]">Focus sessions completed</div>
+                                    <div className="font-medium text-(--text-primary)">Pomodoros Completed</div>
+                                    <div className="text-sm text-(--text-secondary)">Focus sessions completed</div>
                                 </div>
                             </div>
-                            <div className="text-lg font-semibold text-[var(--text-primary)]">
+                            <div className="text-lg font-semibold text-(--text-primary)">
                                 {session.pomodoros_completed || 0}
                             </div>
                         </div>
 
                         {/* Session Date */}
-                        <div className="flex items-center justify-between p-4 bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] transition-colors">
+                        <div className="flex items-center justify-between p-4 bg-(--bg-secondary) rounded-lg border-2 border-(--border-primary) hover:bg-(--bg-tertiary) transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="bg-indigo-100 dark:bg-indigo-900/30 p-2 rounded-lg">
                                     <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                                 </div>
                                 <div>
-                                    <div className="font-medium text-[var(--text-primary)]">Session Date</div>
-                                    <div className="text-sm text-[var(--text-secondary)]">When the session took place</div>
+                                    <div className="font-medium text-(--text-primary)">Session Date</div>
+                                    <div className="text-sm text-(--text-secondary)">When the session took place</div>
                                 </div>
                             </div>
-                            <div className="text-lg font-semibold text-[var(--text-primary)]">
+                            <div className="text-lg font-semibold text-(--text-primary)">
                                 {formatDate(session.created_at)}
                             </div>
                         </div>

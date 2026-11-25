@@ -83,7 +83,7 @@ const SessionPage = memo(() => {
       {!isLoggedIn && (
         <button
           onClick={() => loginWithGoogle()}
-          className="lg:hidden mb-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-[var(--accent-primary)] py-2.5 text-sm font-semibold text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+          className="lg:hidden mb-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-(--accent-primary) py-2.5 text-sm font-semibold text-(--accent-primary) hover:bg-(--accent-primary)/10 transition-colors"
         >
           <LogIn size={16} />
           {t("session.loginToSync")}
@@ -112,14 +112,14 @@ const SessionPage = memo(() => {
   //   row height, so calendar and noise are the same square size; every other block is
   //   absolute in its cell (fills it, scrolls inside). Pending tasks spans both rows.
   const timersMonthRow = (
-    <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-[repeat(5,minmax(0,1fr))] 2xl:grid-rows-2 gap-4 items-stretch">
+    <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-5 2xl:grid-rows-2 gap-4 items-stretch">
       {/* Timers: full width; on 2xl the cards are placed directly in this grid (row 1, cols 2-4) */}
       <motion.div variants={item} className="min-w-0 order-1 md:col-span-2 2xl:contents">
         {renderTimers(true)}
       </motion.div>
       {/* Scratchpad */}
       <motion.div variants={item} className="min-w-0 min-h-0 order-2 md:order-5 2xl:col-start-2 2xl:col-span-3 2xl:row-start-2 2xl:relative">
-        <div className="md:h-full md:[&>*]:max-h-none 2xl:absolute 2xl:inset-0 2xl:[&>*]:min-h-0">
+        <div className="md:h-full md:*:max-h-none 2xl:absolute 2xl:inset-0 2xl:*:min-h-0">
           <ScratchPad />
         </div>
       </motion.div>
@@ -206,7 +206,7 @@ const SessionPage = memo(() => {
           variants={container}
           initial="hidden"
           animate="show"
-          className="w-full max-w-[90rem] lg:max-w-none mx-auto flex flex-col gap-4"
+          className="w-full max-w-360 lg:max-w-none mx-auto flex flex-col gap-4"
         >
           {layout === "planning" ? (
             <>

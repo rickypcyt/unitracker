@@ -81,16 +81,16 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 md:hidden">
-      <div className="fixed inset-x-0 bottom-0 top-16 bg-[var(--bg-primary)] border-t border-[var(--border-primary)] flex flex-col">
+      <div className="fixed inset-x-0 bottom-0 top-16 bg-(--bg-primary) border-t border-(--border-primary) flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-[var(--border-primary)]">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
+        <div className="flex items-center justify-between p-4 border-b border-(--border-primary)">
+          <h2 className="text-lg font-semibold text-(--text-primary) flex items-center gap-2">
             <FileText size={20} />
             {t('notes.titleWithCount', { count: notes.length })}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            className="p-2 rounded-lg text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-secondary) transition-colors"
           >
             <X size={20} />
           </button>
@@ -101,24 +101,24 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
           {loading && notes.length === 0 ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)] mx-auto mb-4"></div>
-                <p className="text-[var(--text-secondary)]">{t('notes.loadingNotes')}</p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-(--accent-primary) mx-auto mb-4"></div>
+                <p className="text-(--text-secondary)">{t('notes.loadingNotes')}</p>
               </div>
             </div>
           ) : error ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <div className="text-red-500 mb-4">{error}</div>
-                <p className="text-[var(--text-secondary)]">{t('notes.loadFailed')}</p>
+                <p className="text-(--text-secondary)">{t('notes.loadFailed')}</p>
               </div>
             </div>
           ) : Object.keys(notesByAssignment).length === 0 ? (
             <div className="text-center py-8">
-              <FileText className="mx-auto mb-4 w-12 h-12 text-[var(--text-secondary)] opacity-50" />
-              <p className="text-[var(--text-secondary)] mb-4">{t('notes.noNotesYet')}</p>
+              <FileText className="mx-auto mb-4 w-12 h-12 text-(--text-secondary) opacity-50" />
+              <p className="text-(--text-secondary) mb-4">{t('notes.noNotesYet')}</p>
               <button
                 onClick={onCreateNote}
-                className="inline-flex items-center gap-2 px-4 py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 border-2 border-(--accent-primary) text-(--accent-primary) bg-transparent rounded-lg hover:bg-(--accent-primary)/10 transition-colors"
               >
                 <Plus size={16} />
                 {t('notes.createFirstNote')}
@@ -127,29 +127,29 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
           ) : (
             <div className="p-4 space-y-3">
               {Object.entries(notesByAssignment).map(([assignment, assignmentNotes]) => (
-                <div key={assignment} className="border-2 border-[var(--border-primary)] rounded-xl overflow-hidden bg-[var(--bg-secondary)]">
+                <div key={assignment} className="border-2 border-(--border-primary) rounded-xl overflow-hidden bg-(--bg-secondary)">
                   <button
                     onClick={() => toggleAssignment(assignment)}
-                    className="w-full px-4 py-3 bg-[var(--bg-primary)] hover:bg-[var(--bg-secondary)] transition-colors flex items-center justify-between text-left"
+                    className="w-full px-4 py-3 bg-(--bg-primary) hover:bg-(--bg-secondary) transition-colors flex items-center justify-between text-left"
                   >
                     <div className="flex items-center gap-2">
                       {expandedAssignments.has(assignment) ? (
-                        <ChevronDown size={16} className="text-[var(--text-secondary)]" />
+                        <ChevronDown size={16} className="text-(--text-secondary)" />
                       ) : (
-                        <ChevronRight size={16} className="text-[var(--text-secondary)]" />
+                        <ChevronRight size={16} className="text-(--text-secondary)" />
                       )}
-                      <Folder size={16} className="text-[var(--accent-primary)]" />
-                      <span className="text-sm font-medium text-[var(--text-primary)]">
+                      <Folder size={16} className="text-(--accent-primary)" />
+                      <span className="text-sm font-medium text-(--text-primary)">
                         {assignment}
                       </span>
                     </div>
-                    <span className="text-xs text-[var(--text-secondary)] bg-[var(--bg-secondary)] px-2 py-0.5 rounded-full">
+                    <span className="text-xs text-(--text-secondary) bg-(--bg-secondary) px-2 py-0.5 rounded-full">
                       {assignmentNotes.length}
                     </span>
                   </button>
                   
                   {expandedAssignments.has(assignment) && (
-                    <div className="divide-y divide-[var(--border-primary)]">
+                    <div className="divide-y divide-(--border-primary)">
                       {assignmentNotes.map((note) => {
                         const noteKey = note.id || `${note.title.trim().toLowerCase()}-${note.date}`;
                         return (
@@ -161,17 +161,17 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
                             }}
                             className={`px-4 py-3 cursor-pointer transition-colors ${
                               selectedNoteId === note.id
-                                ? 'bg-[var(--accent-primary)]/10 border-l-2 border-l-[var(--accent-primary)]'
-                                : 'hover:bg-[var(--bg-primary)]/50'
+                                ? 'bg-(--accent-primary)/10 border-l-2 border-l-(--accent-primary)'
+                                : 'hover:bg-(--bg-primary)/50'
                             }`}
                           >
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex-1 min-w-0">
-                                <h4 className="text-sm font-medium text-[var(--text-primary)] truncate mb-1">
+                                <h4 className="text-sm font-medium text-(--text-primary) truncate mb-1">
                                   {note.title}
                                 </h4>
                                 <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-1 text-xs text-[var(--text-secondary)]">
+                                  <div className="flex items-center gap-1 text-xs text-(--text-secondary)">
                                     <Calendar size={12} />
                                     <span>{note.date ? new Date(note.date).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' }) : ''}</span>
                                   </div>
@@ -201,13 +201,13 @@ const MobileNotesSelector: React.FC<MobileNotesSelectorProps> = ({
 
         {/* Create Note Button */}
         {notes.length > 0 && (
-          <div className="p-4 border-t border-[var(--border-primary)]">
+          <div className="p-4 border-t border-(--border-primary)">
             <button
               onClick={() => {
                 onCreateNote();
                 onClose();
               }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-(--accent-primary) text-(--accent-primary) bg-transparent rounded-lg hover:bg-(--accent-primary)/10 transition-colors"
             >
               <Plus size={16} />
               {t('notes.createNewNote')}

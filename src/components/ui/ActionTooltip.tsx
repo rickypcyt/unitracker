@@ -33,7 +33,7 @@ const ActionTooltip = ({ content, children }: Props) => {
     <span className="inline-flex" onMouseEnter={event => show(event.currentTarget)} onMouseLeave={() => setAnchor(null)} onFocusCapture={event => show(event.currentTarget)} onBlurCapture={() => setAnchor(null)} onClickCapture={() => setAnchor(null)} onKeyDown={event => { if (event.key === 'Escape') setAnchor(null); }}>
       {cloneElement(children, { 'aria-describedby': anchor ? [children.props['aria-describedby'], id].filter(Boolean).join(' ') : children.props['aria-describedby'] })}
       {anchor && createPortal(
-        <span id={id} role="tooltip" className="fixed z-[100000] pointer-events-none rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] px-3 py-2 text-xs leading-relaxed text-[var(--text-primary)] shadow-lg" style={{ left: anchor.left, top: anchor.top, width: 'min(240px, calc(100vw - 16px))', transform: anchor.below ? undefined : 'translateY(-100%)' }}>{content}</span>,
+        <span id={id} role="tooltip" className="fixed z-100000 pointer-events-none rounded-lg border border-(--border-primary) bg-(--bg-secondary) px-3 py-2 text-xs leading-relaxed text-(--text-primary) shadow-lg" style={{ left: anchor.left, top: anchor.top, width: 'min(240px, calc(100vw - 16px))', transform: anchor.below ? undefined : 'translateY(-100%)' }}>{content}</span>,
         document.body,
       )}
     </span>

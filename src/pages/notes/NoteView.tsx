@@ -9,7 +9,7 @@ const MarkdownWysiwyg = lazy(() => import('@/components/editor/MarkdownWysiwyg')
 // Loading component for the editor
 const EditorLoader: React.FC = () => (
   <div className="flex items-center justify-center h-32">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)]"></div>
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-(--accent-primary)"></div>
   </div>
 );
 
@@ -216,11 +216,11 @@ const NoteView: React.FC<NoteViewProps> = ({
     return (
       <div className="h-full flex flex-col relative">
         {/* Edit Header */}
-        <div className="border-b border-[var(--border-primary)] p-3 sm:p-6">
+        <div className="border-b border-(--border-primary) p-3 sm:p-6">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <button
               onClick={handleCancel}
-              className="flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors text-sm sm:text-base"
+              className="flex items-center gap-2 text-(--text-secondary) hover:text-(--text-primary) transition-colors text-sm sm:text-base"
             >
               <X size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="hidden sm:inline">{t('common.cancel')}</span>
@@ -237,7 +237,7 @@ const NoteView: React.FC<NoteViewProps> = ({
               <button
                 onClick={handleSave}
                 disabled={!hasUnsavedChanges || isSaving}
-                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
+                className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 border-2 border-(--accent-primary) text-(--accent-primary) bg-transparent rounded-lg hover:bg-(--accent-primary)/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
               >
                 <Save size={14} className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
                 <span className="hidden xs:inline">{isSaving ? t('notes.saving') : t('common.save')}</span>
@@ -254,7 +254,7 @@ const NoteView: React.FC<NoteViewProps> = ({
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] text-lg sm:text-xl font-bold transition-colors"
+                  className="w-full px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) placeholder-(--text-secondary) focus:outline-none focus:border-(--accent-primary) text-lg sm:text-xl font-bold transition-colors"
                   placeholder={t('notes.noteTitlePlaceholder')}
                 />
               </div>
@@ -263,14 +263,14 @@ const NoteView: React.FC<NoteViewProps> = ({
                   type="text"
                   value={assignment}
                   onChange={(e) => setAssignment(e.target.value)}
-                  className="px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] transition-colors text-sm sm:text-base"
+                  className="px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) placeholder-(--text-secondary) focus:outline-none focus:border-(--accent-primary) transition-colors text-sm sm:text-base"
                   placeholder={t('notes.assignmentPlaceholder')}
                 />
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-colors text-sm sm:text-base"
+                  className="px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:border-(--accent-primary) transition-colors text-sm sm:text-base"
                 />
               </div>
             </div>
@@ -278,12 +278,12 @@ const NoteView: React.FC<NoteViewProps> = ({
         </div>
 
         {/* Note Title Header */}
-        <div className="sticky top-0 z-30 px-4 py-3 bg-[var(--bg-primary)]/95 backdrop-blur-md border-b border-[var(--border-primary)]">
+        <div className="sticky top-0 z-30 px-4 py-3 bg-(--bg-primary)/95 backdrop-blur-md border-b border-(--border-primary)">
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-transparent text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none text-xl sm:text-2xl font-bold transition-colors"
+            className="w-full bg-transparent text-(--text-primary) placeholder-(--text-secondary) focus:outline-none text-xl sm:text-2xl font-bold transition-colors"
             placeholder={t('notes.noteTitlePlaceholder')}
           />
         </div>
@@ -302,7 +302,7 @@ const NoteView: React.FC<NoteViewProps> = ({
               />
             </Suspense>
           </div>
-          <div className="mx-4 sm:mx-6 border-t border-[var(--border-primary)]/60" />
+          <div className="mx-4 sm:mx-6 border-t border-(--border-primary)/60" />
           <div className="h-20" />
         </div>
       </div>
@@ -311,14 +311,14 @@ const NoteView: React.FC<NoteViewProps> = ({
 
   // Render view mode — Obsidian-style: slim header, inline title, readable column
   return (
-    <div className="h-full flex flex-col relative bg-[var(--bg-primary)]">
+    <div className="h-full flex flex-col relative bg-(--bg-primary)">
       {/* Slim header: breadcrumb left, status + actions right */}
-      <div className="flex h-10 flex-shrink-0 items-center justify-between gap-3 border-b border-[var(--border-primary)] px-3 sm:px-4 text-xs text-[var(--text-secondary)]">
+      <div className="flex h-10 shrink-0 items-center justify-between gap-3 border-b border-(--border-primary) px-3 sm:px-4 text-xs text-(--text-secondary)">
         <div className="flex min-w-0 items-center gap-2">
           {onBack && (
             <button
               onClick={onBack}
-              className="-ml-2 flex h-10 w-10 flex-shrink-0 items-center justify-center font-medium md:ml-0 md:h-7 md:w-7"
+              className="-ml-2 flex h-10 w-10 shrink-0 items-center justify-center font-medium md:ml-0 md:h-7 md:w-7"
               title={t('notes.backToNotes')}
               aria-label={t('notes.backToNotes')}
             >
@@ -328,10 +328,10 @@ const NoteView: React.FC<NoteViewProps> = ({
           <span className="truncate">
             {assignment.trim() || t('notes.unassigned')}
             <span className="mx-1.5 opacity-50">/</span>
-            <span className="text-[var(--text-primary)]">{title || t('notes.noteTitlePlaceholder')}</span>
+            <span className="text-(--text-primary)">{title || t('notes.noteTitlePlaceholder')}</span>
           </span>
         </div>
-        <div className="flex flex-shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           <span className="mr-1 tabular-nums" aria-live="polite">
             {isSaving ? t('notes.saving') : hasUnsavedChanges ? 'Unsaved' : 'Saved'}
           </span>
@@ -357,10 +357,10 @@ const NoteView: React.FC<NoteViewProps> = ({
 
       {/* Document */}
       <div className="flex-1 overflow-y-auto">
-        <div className="obsidian-doc mx-auto w-full max-w-[46rem] px-6 pb-24 pt-10 sm:px-10">
+        <div className="obsidian-doc mx-auto w-full max-w-184 px-6 pb-24 pt-10 sm:px-10">
           {/* Assignment: editable inline (saved with the note) */}
-          <div className="mb-3 flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-            <Folder size={15} className="shrink-0 text-[var(--accent-primary)]" aria-hidden="true" />
+          <div className="mb-3 flex items-center gap-2 text-sm text-(--text-secondary)">
+            <Folder size={15} className="shrink-0 text-(--accent-primary)" aria-hidden="true" />
             <input
               type="text"
               list="note-assignment-options"
@@ -368,7 +368,7 @@ const NoteView: React.FC<NoteViewProps> = ({
               onChange={(e) => setAssignment(e.target.value)}
               placeholder={t('notes.assignmentPlaceholder')}
               aria-label={t('notes.assignmentPlaceholder')}
-              className="min-w-0 flex-1 rounded-md border-none bg-transparent py-1 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/70 !outline-none"
+              className="min-w-0 flex-1 rounded-md border-none bg-transparent py-1 text-sm text-(--text-primary) placeholder:text-(--text-secondary)/70 outline-none!"
             />
             <datalist id="note-assignment-options">
               {assignmentSuggestions.map(option => <option key={option} value={option} />)}
@@ -379,7 +379,7 @@ const NoteView: React.FC<NoteViewProps> = ({
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="mb-4 w-full border-none bg-transparent text-3xl font-extrabold tracking-tight text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:ring-0 sm:text-4xl"
+            className="mb-4 w-full border-none bg-transparent text-3xl font-extrabold tracking-tight text-(--text-primary) placeholder-(--text-secondary) focus:outline-none focus:ring-0 sm:text-4xl"
             placeholder={t('notes.noteTitlePlaceholder')}
             aria-label={t('notes.noteTitlePlaceholder')}
           />

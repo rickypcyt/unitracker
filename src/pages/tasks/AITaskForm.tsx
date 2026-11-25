@@ -426,11 +426,11 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
         {/* Tab Selector */}
         <div className="w-full flex justify-center items-center select-none mb-4 sm:mb-4 px-4">
           <div className="flex items-center gap-2 sm:gap-3">
-            <span className="cursor-pointer font-semibold transition-colors duration-150 text-base sm:text-lg text-[var(--text-secondary)] hover:text-[var(--accent-primary)]" onClick={onSwitchToManual}>
+            <span className="cursor-pointer font-semibold transition-colors duration-150 text-base sm:text-lg text-(--text-secondary) hover:text-(--accent-primary)" onClick={onSwitchToManual}>
               Manual
             </span>
-            <span className="text-[var(--border-primary)] font-bold text-base sm:text-lg mx-2">|</span>
-            <span className="cursor-pointer font-semibold transition-colors duration-150 text-base sm:text-lg text-[var(--accent-primary)]">
+            <span className="text-(--border-primary) font-bold text-base sm:text-lg mx-2">|</span>
+            <span className="cursor-pointer font-semibold transition-colors duration-150 text-base sm:text-lg text-(--accent-primary)">
               Auto (AI)
             </span>
           </div>
@@ -441,13 +441,13 @@ EN:[{"task":"Do math","description":"Exercises","date":"2025-11-30","subject":"M
             <textarea id="aiPrompt" ref={aiTextareaRef} value={aiPrompt} onChange={e => {
             setAiPrompt(e.target.value);
             localStorage.setItem('aiPromptDraft', e.target.value);
-          }} className="w-full min-h-[150px] sm:min-h-[120px] px-3 py-2 text-sm sm:text-base bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]" placeholder="Example: Create tasks for: finish math worksheet by tomorrow (medium), study biology chapter 4 next Wednesday (hard), and write a short English essay this weekend (easy)." disabled={aiLoading} />
+          }} className="w-full min-h-[150px] sm:min-h-[120px] px-3 py-2 text-sm sm:text-base bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)" placeholder="Example: Create tasks for: finish math worksheet by tomorrow (medium), study biology chapter 4 next Wednesday (hard), and write a short English essay this weekend (easy)." disabled={aiLoading} />
           </div>
 
           {aiError && <div className="text-red-500 text-xs sm:text-sm text-center">{aiError}</div>}
 
           <div className="w-full">
-            <button type="submit" onClick={aiLoading ? handleCancelAI : handleAISubmit} disabled={false} title={aiLoading ? "Click to cancel" : "Send"} className={`w-full px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 text-base sm:text-lg shadow-none ${aiLoading ? 'border-red-500 bg-transparent text-red-500 hover:text-red-600 focus:text-red-600' : 'border-[var(--accent-primary)] bg-transparent text-[var(--accent-primary)] hover:bg-transparent hover:text-[var(--accent-primary)] focus:bg-transparent focus:text-[var(--accent-primary)] disabled:opacity-70'}`}>
+            <button type="submit" onClick={aiLoading ? handleCancelAI : handleAISubmit} disabled={false} title={aiLoading ? "Click to cancel" : "Send"} className={`w-full px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 text-base sm:text-lg shadow-none ${aiLoading ? 'border-red-500 bg-transparent text-red-500 hover:text-red-600 focus:text-red-600' : 'border-(--accent-primary) bg-transparent text-(--accent-primary) hover:bg-transparent hover:text-(--accent-primary) focus:bg-transparent focus:text-(--accent-primary) disabled:opacity-70'}`}>
               {aiLoading ? 'Cancel' : 'Send'}
             </button>
           </div>

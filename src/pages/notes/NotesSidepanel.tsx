@@ -157,24 +157,24 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
     }
   };
 
-  const iconBtn = `flex items-center justify-center rounded-md text-[var(--text-secondary)] ${roomy ? 'h-10 w-10' : 'h-7 w-7'}`;
+  const iconBtn = `flex items-center justify-center rounded-md text-(--text-secondary) ${roomy ? 'h-10 w-10' : 'h-7 w-7'}`;
   const iconSize = roomy ? 20 : 16;
   const rowText = roomy ? 'text-base' : 'text-[13px]';
   const rowPad = roomy ? 'py-2.5' : 'py-1';
 
   if (error) {
     return (
-      <div className="h-full w-full bg-[var(--bg-secondary)] p-4">
+      <div className="h-full w-full bg-(--bg-secondary) p-4">
         <div className="text-sm text-red-500">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-full w-full flex-col bg-[var(--bg-secondary)]">
+    <div className="flex h-full w-full flex-col bg-(--bg-secondary)">
       {/* Toolbar */}
       <div className={`flex items-center gap-1 px-2 pt-2 ${roomy ? 'justify-end' : 'justify-center'}`}>
-        <button onClick={() => onCreateNote()} className={`${iconBtn} text-[var(--accent-primary)]`} aria-label={t('notes.createNote')} title={t('notes.createNote')}>
+        <button onClick={() => onCreateNote()} className={`${iconBtn} text-(--accent-primary)`} aria-label={t('notes.createNote')} title={t('notes.createNote')}>
           <Plus size={iconSize + 1} />
         </button>
         <button
@@ -198,8 +198,8 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
 
       {/* Search */}
       <div className="px-2 py-2">
-        <div className={`flex items-center gap-2 rounded-md border border-[var(--border-primary)] bg-[var(--bg-primary)] px-2 transition-colors focus-within:border-[var(--accent-primary)] ${roomy ? 'h-11 px-3' : 'h-7'}`}>
-          <Search size={roomy ? 17 : 13} className="flex-shrink-0 text-[var(--text-secondary)]" />
+        <div className={`flex items-center gap-2 rounded-md border border-(--border-primary) bg-(--bg-primary) px-2 transition-colors focus-within:border-(--accent-primary) ${roomy ? 'h-11 px-3' : 'h-7'}`}>
+          <Search size={roomy ? 17 : 13} className="shrink-0 text-(--text-secondary)" />
           <input
             type="text"
             value={searchQuery}
@@ -212,10 +212,10 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
               }
             }}
             placeholder={t('notes.searchPlaceholderShort')}
-            className={`min-w-0 flex-1 border-none bg-transparent text-[var(--text-primary)] outline-none placeholder-[var(--text-secondary)] focus:outline-none focus:ring-0 ${roomy ? 'text-base' : 'text-sm'}`}
+            className={`min-w-0 flex-1 border-none bg-transparent text-(--text-primary) outline-none placeholder-(--text-secondary) focus:outline-none focus:ring-0 ${roomy ? 'text-base' : 'text-sm'}`}
           />
           {searching && (
-            <button onClick={() => setSearchQuery('')} className="flex-shrink-0 text-[var(--text-secondary)]" aria-label={t('common.cancel')}>
+            <button onClick={() => setSearchQuery('')} className="shrink-0 text-(--text-secondary)" aria-label={t('common.cancel')}>
               <X size={13} />
             </button>
           )}
@@ -226,8 +226,8 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
       <div ref={treeRef} onKeyDown={handleTreeKeyDown} className="flex-1 overflow-y-auto px-2 pb-20 pt-1">
         {folders.length === 0 ? (
           <div className="py-8 text-center">
-            <FileText className="mx-auto mb-2 h-8 w-8 text-[var(--text-secondary)] opacity-50" />
-            <p className={`text-[var(--text-secondary)] ${roomy ? 'text-base' : 'text-sm'}`}>
+            <FileText className="mx-auto mb-2 h-8 w-8 text-(--text-secondary) opacity-50" />
+            <p className={`text-(--text-secondary) ${roomy ? 'text-base' : 'text-sm'}`}>
               {searching ? t('notes.noMatch') : t('notes.noNotesYet')}
             </p>
           </div>
@@ -246,16 +246,16 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
                       className={`flex min-w-0 flex-1 items-center gap-1.5 rounded px-1 text-left ${rowPad}`}
                     >
                       {open
-                        ? <ChevronDown size={roomy ? 16 : 13} className="flex-shrink-0 text-[var(--text-secondary)]" />
-                        : <ChevronRight size={roomy ? 16 : 13} className="flex-shrink-0 text-[var(--text-secondary)]" />}
+                        ? <ChevronDown size={roomy ? 16 : 13} className="shrink-0 text-(--text-secondary)" />
+                        : <ChevronRight size={roomy ? 16 : 13} className="shrink-0 text-(--text-secondary)" />}
                       {open
-                        ? <FolderOpen size={roomy ? 18 : 14} className="flex-shrink-0 text-[var(--text-secondary)]" />
-                        : <Folder size={roomy ? 18 : 14} className="flex-shrink-0 text-[var(--text-secondary)]" />}
-                      <span className={`truncate ${rowText} ${hasActive ? 'font-semibold text-[var(--text-primary)]' : 'text-[var(--text-primary)]'}`}>{folder}</span>
+                        ? <FolderOpen size={roomy ? 18 : 14} className="shrink-0 text-(--text-secondary)" />
+                        : <Folder size={roomy ? 18 : 14} className="shrink-0 text-(--text-secondary)" />}
+                      <span className={`truncate ${rowText} ${hasActive ? 'font-semibold text-(--text-primary)' : 'text-(--text-primary)'}`}>{folder}</span>
                     </button>
                     <button
                       onClick={() => onCreateNote(folder === t('notes.unassigned') ? '' : folder)}
-                      className={`flex flex-shrink-0 items-center justify-center rounded-md text-[var(--text-secondary)] ${roomy ? 'h-9 w-9' : 'h-6 w-6'}`}
+                      className={`flex shrink-0 items-center justify-center rounded-md text-(--text-secondary) ${roomy ? 'h-9 w-9' : 'h-6 w-6'}`}
                       title={t('notes.createNoteInAssignment', { assignment: folder })}
                       aria-label={t('notes.createNoteInAssignment', { assignment: folder })}
                     >
@@ -264,7 +264,7 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
                   </div>
 
                   {open && (
-                    <ul className="ml-2.5 border-l border-[var(--border-primary)] pl-1.5" role="group">
+                    <ul className="ml-2.5 border-l border-(--border-primary) pl-1.5" role="group">
                       {folderNotes.map(note => {
                         const key = noteKeyOf(note);
                         const active = !!note.id && selectedNoteId === note.id;
@@ -276,8 +276,8 @@ const NotesSidepanel: React.FC<NotesSidepanelProps> = ({
                               aria-current={active ? 'page' : undefined}
                               className={`flex w-full items-center gap-1.5 rounded px-2 text-left ${rowPad} ${rowText} ${
                                 active
-                                  ? 'bg-[var(--accent-primary)]/15 font-medium text-[var(--text-primary)]'
-                                  : 'text-[var(--text-secondary)]'
+                                  ? 'bg-(--accent-primary)/15 font-medium text-(--text-primary)'
+                                  : 'text-(--text-secondary)'
                               }`}
                             >
                               <span className="truncate">{note.title || t('notes.noteTitlePlaceholder')}</span>

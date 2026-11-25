@@ -14,7 +14,7 @@ interface TimeSegmentDisplayProps {
 
 const TimeSegmentDisplay: React.FC<TimeSegmentDisplayProps> = ({
   segments,
-  separatorColor = 'text-[var(--text-secondary)]',
+  separatorColor = 'text-(--text-secondary)',
   className = ''
 }) => {
   return (
@@ -22,12 +22,12 @@ const TimeSegmentDisplay: React.FC<TimeSegmentDisplayProps> = ({
       {segments.map((segment, i) => (
         <React.Fragment key={segment.label}>
           <div className="flex flex-col items-center">
-            <div className="flex items-center justify-center w-12 sm:w-14 md:w-16 h-12 sm:h-14 md:h-16 rounded-lg bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)]">
-              <span className={`text-2xl sm:text-3xl md:text-4xl font-mono font-bold tabular-nums tracking-tight leading-none ${segment.colorClass || 'text-[var(--text-primary)]'}`}>
+            <div className="flex items-center justify-center w-12 sm:w-14 md:w-16 h-12 sm:h-14 md:h-16 rounded-lg bg-(--bg-secondary) border-2 border-(--border-primary)">
+              <span className={`text-2xl sm:text-3xl md:text-4xl font-mono font-bold tabular-nums tracking-tight leading-none ${segment.colorClass || 'text-(--text-primary)'}`}>
                 {segment.value}
               </span>
             </div>
-            <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
+            <span className="text-xs font-medium text-(--text-secondary) uppercase tracking-wider mt-1">
               {segment.label}
             </span>
           </div>

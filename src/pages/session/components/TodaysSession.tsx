@@ -191,8 +191,8 @@ const TodaysSession = () => {
     }} animate={{
       opacity: 1,
       y: 0
-    }} className="flex items-center justify-center pb-2 border-b border-[var(--border-primary)]">
-        <h3 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
+    }} className="flex items-center justify-center pb-2 border-b border-(--border-primary)">
+        <h3 className="text-base sm:text-lg font-semibold text-(--text-primary) flex items-center gap-2">
           <span className="text-sm sm:text-base md:text-lg">Today's Session</span>
         </h3>
       </motion.div>
@@ -200,25 +200,25 @@ const TodaysSession = () => {
       {/* Stats Row */}
       <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
         {/* Total Study Time */}
-        <motion.div variants={item} className="relative overflow-hidden bg-gradient-to-br from-blue-500/5 to-indigo-500/5 p-2 sm:p-3 md:p-4 rounded-lg border-[var(--border-primary)] hover:shadow-md transition-all duration-300 w-full flex flex-col items-center text-center">
+        <motion.div variants={item} className="relative overflow-hidden bg-linear-to-br from-blue-500/5 to-indigo-500/5 p-2 sm:p-3 md:p-4 rounded-lg border-(--border-primary) hover:shadow-md transition-all duration-300 w-full flex flex-col items-center text-center">
           <div className="text-xl sm:text-2xl md:text-3xl lg:text-xl xl:text-3xl font-bold text-blue-500 mb-0.5 sm:mb-1">
             {displayStudyTime}
           </div>
-          <div className="text-sm sm:text-sm font-medium text-[var(--text-secondary)] whitespace-nowrap">
+          <div className="text-sm sm:text-sm font-medium text-(--text-secondary) whitespace-nowrap">
             Study Time
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-linear-to-r from-blue-500 to-indigo-500"></div>
         </motion.div>
 
         {/* Pomodoros Completed */}
-        <motion.div variants={item} className="relative overflow-hidden bg-gradient-to-br from-purple-500/5 to-pink-500/5 p-2 sm:p-3 md:p-4 rounded-lg border-[var(--border-primary)] hover:shadow-md transition-all duration-300 w-full flex flex-col items-center text-center">
+        <motion.div variants={item} className="relative overflow-hidden bg-linear-to-br from-purple-500/5 to-pink-500/5 p-2 sm:p-3 md:p-4 rounded-lg border-(--border-primary) hover:shadow-md transition-all duration-300 w-full flex flex-col items-center text-center">
           <div className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-500 mb-0.5 sm:mb-1">
             {displayPomodoros}
           </div>
-          <div className="text-sm sm:text-sm font-medium text-[var(--text-secondary)] whitespace-nowrap">
+          <div className="text-sm sm:text-sm font-medium text-(--text-secondary) whitespace-nowrap">
             Pomodoros
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-linear-to-r from-purple-500 to-pink-500"></div>
         </motion.div>
 
       </motion.div>

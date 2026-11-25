@@ -37,10 +37,10 @@ const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isOpen, onClose }) 
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 bg-white/60 dark:bg-black/70 flex items-center justify-center z-[10001] backdrop-blur-xl">
-      <div ref={modalRef} className="bg-[var(--bg-primary)] rounded-lg p-6 max-w-md w-full mx-4 border-2 border-[var(--border-primary)] shadow-xl">
-        <h2 className="text-xl font-semibold mb-4 text-center text-[var(--text-primary)]">{t('auth.login.required')}</h2>
-        <p className="text-[var(--text-secondary)] mb-6 text-center">
+    <div className="fixed inset-0 bg-white/60 dark:bg-black/70 flex items-center justify-center z-10001 backdrop-blur-xl">
+      <div ref={modalRef} className="bg-(--bg-primary) rounded-lg p-6 max-w-md w-full mx-4 border-2 border-(--border-primary) shadow-xl">
+        <h2 className="text-xl font-semibold mb-4 text-center text-(--text-primary)">{t('auth.login.required')}</h2>
+        <p className="text-(--text-secondary) mb-6 text-center">
           {t('auth.login.syncNote')}
         </p>
         <div className="flex flex-col gap-3">
@@ -49,14 +49,14 @@ const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isOpen, onClose }) 
               onClose();
               navigate('/login');
             }}
-            className="w-full px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+            className="w-full px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 border-2 border-(--accent-primary) text-(--accent-primary) hover:bg-(--accent-primary)/10"
           >
             <LogIn size={20} />
             {t('settings.account.logIn')}
           </button>
           <button
             onClick={onClose}
-            className="w-full px-4 py-2 text-[var(--text-primary)] rounded-lg transition-colors border-2 border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]"
+            className="w-full px-4 py-2 text-(--text-primary) rounded-lg transition-colors border-2 border-(--border-primary) hover:bg-(--bg-secondary)"
           >
             {t('common.cancel')}
           </button>

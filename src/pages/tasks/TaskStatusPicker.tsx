@@ -67,7 +67,7 @@ const TaskStatusPicker = ({ task }: TaskStatusPickerProps) => {
       onDoubleClick={(e) => e.stopPropagation()}
       title={`${config.label} — click for ${next.label}`}
       aria-label={`Status: ${config.label}. Click to change to ${next.label}`}
-      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[length:var(--t-meta,12px)] font-semibold leading-none select-none ${config.textColor}`}
+      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-(length:--t-meta,12px) font-semibold leading-none select-none ${config.textColor}`}
       style={{ backgroundColor: "color-mix(in srgb, currentColor 12%, transparent)" }}
     >
       <span aria-hidden className={`h-1.5 w-1.5 rounded-full ${config.bgColor}`} />

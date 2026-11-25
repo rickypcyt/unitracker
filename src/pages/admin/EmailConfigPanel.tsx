@@ -110,75 +110,75 @@ const EmailConfigPanel: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-2">
-        <div className="w-10 h-10 rounded-lg bg-[var(--accent-primary)]/10 flex items-center justify-center">
-          <Mail className="w-5 h-5 text-[var(--accent-primary)]" />
+        <div className="w-10 h-10 rounded-lg bg-(--accent-primary)/10 flex items-center justify-center">
+          <Mail className="w-5 h-5 text-(--accent-primary)" />
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Email Configuration</h2>
-          <p className="text-xs text-[var(--text-secondary)]">Customize and test email notifications</p>
+          <h2 className="text-lg font-semibold text-(--text-primary)">Email Configuration</h2>
+          <p className="text-xs text-(--text-secondary)">Customize and test email notifications</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
       <div className="space-y-6 min-w-0">
       {/* Config inputs */}
-      <div className="bg-[var(--bg-secondary)]/20 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5 space-y-4">
+      <div className="bg-(--bg-secondary)/20 border-2 border-(--border-primary)/30 rounded-xl p-4 sm:p-5 space-y-4">
         <div className="flex items-center gap-2 mb-2">
-          <Settings size={16} className="text-[var(--text-secondary)]" />
-          <h3 className="text-sm font-semibold text-[var(--text-primary)]">Brand Settings</h3>
+          <Settings size={16} className="text-(--text-secondary)" />
+          <h3 className="text-sm font-semibold text-(--text-primary)">Brand Settings</h3>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">App Name</label>
+            <label className="block text-xs font-medium text-(--text-secondary) mb-1">App Name</label>
             <input
               type="text"
               value={config.appName}
               onChange={(e) => handleConfigChange('appName', e.target.value)}
-              className="w-full px-3 py-2 text-sm border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              className="w-full px-3 py-2 text-sm border-2 border-(--border-primary) rounded-lg bg-(--bg-primary) text-(--text-primary) focus:outline-none focus:ring-1 focus:ring-(--accent-primary)"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Primary Color</label>
+            <label className="block text-xs font-medium text-(--text-secondary) mb-1">Primary Color</label>
             <div className="flex gap-2">
               <input
                 type="color"
                 value={config.primaryColor}
                 onChange={(e) => handleConfigChange('primaryColor', e.target.value)}
-                className="w-10 h-9 rounded-lg border-2 border-[var(--border-primary)] cursor-pointer bg-[var(--bg-primary)]"
+                className="w-10 h-9 rounded-lg border-2 border-(--border-primary) cursor-pointer bg-(--bg-primary)"
               />
               <input
                 type="text"
                 value={config.primaryColor}
                 onChange={(e) => handleConfigChange('primaryColor', e.target.value)}
-                className="flex-1 px-3 py-2 text-sm border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+                className="flex-1 px-3 py-2 text-sm border-2 border-(--border-primary) rounded-lg bg-(--bg-primary) text-(--text-primary) focus:outline-none focus:ring-1 focus:ring-(--accent-primary)"
               />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Logo URL (optional)</label>
+            <label className="block text-xs font-medium text-(--text-secondary) mb-1">Logo URL (optional)</label>
             <input
               type="text"
               value={config.logoUrl || ''}
               onChange={(e) => handleConfigChange('logoUrl', e.target.value)}
               placeholder="https://..."
-              className="w-full px-3 py-2 text-sm border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              className="w-full px-3 py-2 text-sm border-2 border-(--border-primary) rounded-lg bg-(--bg-primary) text-(--text-primary) focus:outline-none focus:ring-1 focus:ring-(--accent-primary)"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Footer Text</label>
+            <label className="block text-xs font-medium text-(--text-secondary) mb-1">Footer Text</label>
             <input
               type="text"
               value={config.footerText}
               onChange={(e) => handleConfigChange('footerText', e.target.value)}
-              className="w-full px-3 py-2 text-sm border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              className="w-full px-3 py-2 text-sm border-2 border-(--border-primary) rounded-lg bg-(--bg-primary) text-(--text-primary) focus:outline-none focus:ring-1 focus:ring-(--accent-primary)"
             />
           </div>
         </div>
       </div>
 
       {/* Email type selector */}
-      <div className="bg-[var(--bg-secondary)]/20 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5">
-        <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Select Email Type</h3>
+      <div className="bg-(--bg-secondary)/20 border-2 border-(--border-primary)/30 rounded-xl p-4 sm:p-5">
+        <h3 className="text-sm font-semibold text-(--text-primary) mb-3">Select Email Type</h3>
         <div className="grid grid-cols-2 gap-2">
           {EMAIL_TYPES.map((type) => (
             <button
@@ -186,19 +186,19 @@ const EmailConfigPanel: React.FC = () => {
               onClick={() => { setSelectedType(type.id); setSendResult(null); }}
               className={`p-3 rounded-lg border text-left transition-all ${
                 selectedType === type.id
-                  ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
-                  : 'border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]/30'
+                  ? 'border-(--accent-primary) bg-(--accent-primary)/10'
+                  : 'border-(--border-primary) hover:bg-(--bg-secondary)/30'
               }`}
             >
-              <p className="text-sm font-semibold text-[var(--text-primary)]">{type.label}</p>
-              <p className="text-xs text-[var(--text-secondary)] mt-0.5">{type.description}</p>
+              <p className="text-sm font-semibold text-(--text-primary)">{type.label}</p>
+              <p className="text-xs text-(--text-secondary) mt-0.5">{type.description}</p>
             </button>
           ))}
         </div>
       </div>
 
       {/* Test send */}
-      <div className="bg-[var(--bg-secondary)]/20 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5 space-y-4">
+      <div className="bg-(--bg-secondary)/20 border-2 border-(--border-primary)/30 rounded-xl p-4 sm:p-5 space-y-4">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex flex-1 gap-2">
             <input
@@ -206,12 +206,12 @@ const EmailConfigPanel: React.FC = () => {
               value={testEmail}
               onChange={(e) => setTestEmail(e.target.value)}
               placeholder="test@example.com"
-              className="flex-1 px-3 py-2 text-sm border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]"
+              className="flex-1 px-3 py-2 text-sm border-2 border-(--border-primary) rounded-lg bg-(--bg-primary) text-(--text-primary) focus:outline-none focus:ring-1 focus:ring-(--accent-primary)"
             />
             <button
               onClick={handleSendTest}
               disabled={sending}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 transition-all border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 transition-all border-2 border-(--accent-primary) text-(--accent-primary) hover:bg-(--accent-primary)/10"
             >
               <Send size={16} />
               {sending ? 'Sending...' : 'Send Test'}
@@ -229,18 +229,18 @@ const EmailConfigPanel: React.FC = () => {
       </div>
 
       {/* Live preview (right) */}
-      <div className="lg:sticky lg:top-4 bg-[var(--bg-secondary)]/20 border-2 border-[var(--border-primary)]/30 rounded-xl p-4 sm:p-5">
+      <div className="lg:sticky lg:top-4 bg-(--bg-secondary)/20 border-2 border-(--border-primary)/30 rounded-xl p-4 sm:p-5">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Eye size={16} className="text-[var(--text-secondary)]" />
-            <h3 className="text-sm font-semibold text-[var(--text-primary)]">Live Preview</h3>
+            <Eye size={16} className="text-(--text-secondary)" />
+            <h3 className="text-sm font-semibold text-(--text-primary)">Live Preview</h3>
           </div>
-          {previewLoading && <span className="text-xs text-[var(--text-secondary)]">Updating...</span>}
+          {previewLoading && <span className="text-xs text-(--text-secondary)">Updating...</span>}
         </div>
         {previewError && (
           <div className="p-3 mb-3 rounded-lg text-sm bg-red-500/10 text-red-500">Preview error: {previewError}</div>
         )}
-        <div className="border-2 border-[var(--border-primary)] rounded-lg overflow-hidden bg-white">
+        <div className="border-2 border-(--border-primary) rounded-lg overflow-hidden bg-white">
           <iframe
             srcDoc={previewHtml ?? ''}
             className="w-full h-[70vh] border-0"

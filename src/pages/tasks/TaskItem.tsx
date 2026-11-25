@@ -46,10 +46,10 @@ const formatTimeRange = (startStr: string | undefined | null, endStr: string | u
 
 // Helper para determinar el color del deadline
 const getDeadlineColor = (dateStr: string) => {
-    if (!dateStr) return 'text-[var(--text-secondary)]'; // No deadline
+    if (!dateStr) return 'text-(--text-secondary)'; // No deadline
 
     const date = parseDateFromString(dateStr);
-    if (!date) return 'text-[var(--text-secondary)]';
+    if (!date) return 'text-(--text-secondary)';
     const now = new Date();
     const today = new Date(now);
     today.setHours(0, 0, 0, 0);
@@ -76,10 +76,10 @@ const getDeadlineColor = (dateStr: string) => {
         return 'text-yellow-500';
     } else if (date >= startOfNextWeek) {
         // Next week or later - Secondary text color
-        return 'text-[var(--text-secondary)]';
+        return 'text-(--text-secondary)';
     } else {
         // Between end of this week and start of next week (shouldn't happen but fallback)
-        return 'text-[var(--text-secondary)]';
+        return 'text-(--text-secondary)';
     }
 };
 
@@ -118,9 +118,9 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 if (type === 'border') return 'border-red-500';
                 return 'text-[#FF003C]';
             default:
-                if (type === 'bg') return 'bg-[var(--bg-secondary)]';
-                if (type === 'border') return 'border-[var(--border-primary)]';
-                return 'text-[var(--text-secondary)]';
+                if (type === 'bg') return 'bg-(--bg-secondary)';
+                if (type === 'border') return 'border-(--border-primary)';
+                return 'text-(--text-secondary)';
         }
     };
 
@@ -160,16 +160,16 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     };
 
     
-    const chip = "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[length:var(--t-meta,12px)] font-medium leading-none whitespace-nowrap";
+    const chip = "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-(length:--t-meta,12px) font-medium leading-none whitespace-nowrap";
     const deadlineColor = task.deadline && task.deadline !== ''
         ? (isTaskForToday(task.deadline) ? 'text-green-500' : getDeadlineColor(task.deadline))
-        : 'text-[var(--text-secondary)]';
+        : 'text-(--text-secondary)';
 
     return (
         <div
             className={`group relative grid grid-cols-[auto_minmax(0,1fr)] px-2 py-1.5 rounded-lg cursor-pointer gap-2 items-center overflow-hidden
-                bg-[var(--bg-primary)] border border-[var(--border-primary)]
-                focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]/40
+                bg-(--bg-primary) border border-(--border-primary)
+                focus:outline-none focus-visible:ring-2 focus-visible:ring-(--accent-primary)/40
                 ${task.completed ? 'opacity-50' : ''}
             `}
             onDoubleClick={handleDoubleClick}
@@ -178,7 +178,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             role="listitem"
         >
             {/* Left side: complete toggle */}
-            <div className="col-start-1 row-start-1 flex items-center self-stretch flex-shrink-0">
+            <div className="col-start-1 row-start-1 flex items-center self-stretch shrink-0">
                 <button
                     onClick={handleToggleClick}
                     onMouseDown={(e) => e.stopPropagation()}
@@ -187,7 +187,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                     aria-label={task.completed ? "Mark as incomplete" : "Mark as complete"}
                 >
                     {task.completed ? (
-                        <CheckCircle2 className="text-[var(--accent-primary)]" size={18} strokeWidth={2.2} />
+                        <CheckCircle2 className="text-(--accent-primary)" size={18} strokeWidth={2.2} />
                     ) : (
                         <Circle className={getDifficultyColor(task.difficulty || 'medium')} size={18} strokeWidth={2.2} />
                     )}
@@ -200,26 +200,26 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 <div className="w-full flex items-center justify-between gap-2">
                     <div className="flex min-w-0 flex-1 items-center gap-2">
                         {showAssignment && task.assignment && (
-                            <span className="flex-shrink-0 truncate text-[var(--accent-primary)] text-[length:var(--t-meta,12px)] font-semibold uppercase tracking-wide max-w-[40%]">
+                            <span className="shrink-0 truncate text-(--accent-primary) text-(length:--t-meta,12px) font-semibold uppercase tracking-wide max-w-[40%]">
                                 {task.assignment}
                             </span>
                         )}
                         <span
-                            className={`min-w-0 flex-1 font-medium text-[length:var(--t-title,14px)] leading-snug overflow-hidden text-ellipsis line-clamp-2 ${
+                            className={`min-w-0 flex-1 font-medium text-(length:--t-title,14px) leading-snug overflow-hidden text-ellipsis line-clamp-2 ${
                                 task.completed
-                                    ? "line-through text-[var(--text-secondary)]"
-                                    : "text-[var(--text-primary)]"
+                                    ? "line-through text-(--text-secondary)"
+                                    : "text-(--text-primary)"
                             }`}
                             title={task.title}
                         >
                             {task.title}
                         </span>
                     </div>
-                    <div className="flex items-center gap-0.5 flex-shrink-0 opacity-70">
+                    <div className="flex items-center gap-0.5 shrink-0 opacity-70">
                         <button
                             onClick={(e) => { e.stopPropagation(); e.preventDefault(); onEditTask(task); }}
                             onMouseDown={(e) => e.stopPropagation()}
-                            className="p-0.5 rounded-md text-[var(--text-secondary)]"
+                            className="p-0.5 rounded-md text-(--text-secondary)"
                             title="Edit task"
                             aria-label="Edit task"
                         >
@@ -229,7 +229,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                             <button
                                 onClick={(e) => { e.stopPropagation(); e.preventDefault(); onDelete(task.id); }}
                                 onMouseDown={(e) => e.stopPropagation()}
-                                className="p-0.5 rounded-md text-[var(--text-secondary)]"
+                                className="p-0.5 rounded-md text-(--text-secondary)"
                                 title="Delete task"
                                 aria-label="Delete task"
                             >
@@ -243,12 +243,12 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                 <div className="flex flex-wrap items-center gap-x-1 gap-y-1 min-w-0">
                 {task.recurrence_type === 'weekly' && task.recurrence_weekdays && task.recurrence_weekdays.length > 0 ? (
                     <>
-                        <span className={`${chip} text-[var(--accent-primary)]`} style={{ backgroundColor: 'color-mix(in srgb, currentColor 10%, transparent)' }}>
-                            <Zap size={11} className="flex-shrink-0" />
-                            <span className="truncate max-w-[12rem]">{formatRecurrenceText(task.recurrence_weekdays)}</span>
+                        <span className={`${chip} text-(--accent-primary)`} style={{ backgroundColor: 'color-mix(in srgb, currentColor 10%, transparent)' }}>
+                            <Zap size={11} className="shrink-0" />
+                            <span className="truncate max-w-48">{formatRecurrenceText(task.recurrence_weekdays)}</span>
                         </span>
                         {task.start_at && (
-                            <span className={`${chip} text-[var(--text-secondary)] bg-[var(--bg-secondary)]`}>
+                            <span className={`${chip} text-(--text-secondary) bg-(--bg-secondary)`}>
                                 {formatTimeRange(task.start_at, task.end_at)}
                             </span>
                         )}
@@ -260,13 +260,13 @@ export const TaskItem: React.FC<TaskItemProps> = ({
                             <span className="opacity-70">· {getTimeRemainingString(task.deadline)}</span>
                         </span>
                         {task.start_at && (
-                            <span className={`${chip} text-[var(--text-secondary)] bg-[var(--bg-secondary)]`}>
+                            <span className={`${chip} text-(--text-secondary) bg-(--bg-secondary)`}>
                                 {formatTimeRange(task.start_at, task.end_at)}
                             </span>
                         )}
                     </>
                 ) : (
-                    <span className={`${chip} text-[var(--text-secondary)] opacity-50`}>No deadline</span>
+                    <span className={`${chip} text-(--text-secondary) opacity-50`}>No deadline</span>
                 )}
                 {/* Plain "To Do" is the default, so it isn't shown; In Progress / On Hold are */}
                 {!task.completed && normalizeTaskStatus(task.status) !== 'todo' && (

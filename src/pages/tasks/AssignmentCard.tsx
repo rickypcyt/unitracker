@@ -145,20 +145,20 @@ export const AssignmentCard = ({
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <button
               onClick={onTogglePin}
-              className="flex items-center justify-center p-0.5 rounded-md flex-shrink-0"
+              className="flex items-center justify-center p-0.5 rounded-md shrink-0"
               title={pinned ? "Unpin column" : "Pin column"}
             >
               {pinned ? (
-                <Pin size={14} className="text-[var(--accent-primary)] fill-[var(--accent-primary)]" />
+                <Pin size={14} className="text-(--accent-primary) fill-(--accent-primary)" />
               ) : (
-                <PinOff size={14} className="text-[var(--text-secondary)]" />
+                <PinOff size={14} className="text-(--text-secondary)" />
               )}
             </button>
             {isEditing ? (
-              <div className="flex items-center gap-1 bg-[var(--bg-primary)] rounded-md px-2 py-1">
+              <div className="flex items-center gap-1 bg-(--bg-primary) rounded-md px-2 py-1">
                 <input
                   type="text"
-                  className="bg-transparent border-b border-[var(--accent-primary)] text-[var(--text-primary)] focus:outline-none w-full min-w-[100px]"
+                  className="bg-transparent border-b border-(--accent-primary) text-(--text-primary) focus:outline-none w-full min-w-[100px]"
                   value={editedName}
                   onChange={(e) => setEditedName(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -184,19 +184,19 @@ export const AssignmentCard = ({
               </div>
             ) : (
               <div className="flex items-center gap-2 min-w-0">
-                <h3 className="font-bold text-[length:var(--t-head,13px)] uppercase tracking-wider text-[var(--text-primary)] truncate">
+                <h3 className="font-bold text-(length:--t-head,13px) uppercase tracking-wider text-(--text-primary) truncate">
                   {assignment}
                 </h3>
-                <span className="flex-shrink-0 px-1.5 py-0.5 rounded-full text-[length:var(--t-meta,12px)] font-semibold leading-none tabular-nums bg-[var(--accent-primary)]/15 text-[var(--accent-primary)]" title={`${tasks.length} pending`}>
+                <span className="shrink-0 px-1.5 py-0.5 rounded-full text-(length:--t-meta,12px) font-semibold leading-none tabular-nums bg-(--accent-primary)/15 text-(--accent-primary)" title={`${tasks.length} pending`}>
                   {tasks.length}
                 </span>
               </div>
             )}
           </div>
-          <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+          <div className="flex items-center gap-1 shrink-0 ml-2">
             <button
               onClick={onAddTask}
-              className="p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 bg-[var(--bg-secondary)] hover:bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              className="p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 bg-(--bg-secondary) hover:bg-(--bg-primary) text-(--text-secondary) hover:text-(--text-primary)"
               title="Add task"
               aria-label="Add task"
             >
@@ -234,10 +234,10 @@ export const AssignmentCard = ({
           {sortedTasks.length === 0 ? (
             <div
               onClick={onAddTask}
-              className="flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-dashed border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-primary)]/30 transition-all cursor-pointer group"
+              className="flex flex-1 flex-col items-center justify-center rounded-lg border-2 border-dashed border-(--border-primary) hover:border-(--accent-primary) hover:bg-(--bg-primary)/30 transition-all cursor-pointer group"
             >
-              <Plus size={20} className="text-[var(--text-secondary)] group-hover:text-[var(--accent-primary)] mb-1 transition-colors" />
-              <span className="text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
+              <Plus size={20} className="text-(--text-secondary) group-hover:text-(--accent-primary) mb-1 transition-colors" />
+              <span className="text-sm text-(--text-secondary) group-hover:text-(--text-primary) transition-colors">
                 No tasks yet — click to add
               </span>
             </div>

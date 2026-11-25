@@ -23,14 +23,14 @@ const ExitSessionChoiceModal: React.FC<ExitSessionChoiceModalProps> = ({
       title="Exit Session"
       maxWidth="max-w-md"
     >
-      <div className="space-y-4 text-[var(--text-primary)]">
-        <p className="text-[var(--text-secondary)]">
+      <div className="space-y-4 text-(--text-primary)">
+        <p className="text-(--text-secondary)">
           Do you want to exit this session and keep it for later, or exit and delete it permanently?
         </p>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-end pt-2">
           <button
             onClick={onJustExit}
-            className="px-4 border-2 py-2 rounded-lg border-2 border-[var(--accent-primary)] hover:bg-[var(--accent-primary-500-10)] text-[var(--accent-primary)]  transition-colors"
+            className="px-4 border-2 py-2 rounded-lg border-2 border-(--accent-primary) hover:bg-(--accent-primary-500-10) text-(--accent-primary)  transition-colors"
           >
             Just Exit
           </button>
@@ -42,7 +42,7 @@ const ExitSessionChoiceModal: React.FC<ExitSessionChoiceModalProps> = ({
           </button>
           <button
             onClick={onClose}
-            className="px-4 border-2 py-2 rounded-lg border-2 border-[var(--border-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+            className="px-4 border-2 py-2 rounded-lg border-2 border-(--border-primary) hover:bg-(--bg-secondary) transition-colors"
           >
             Cancel
           </button>

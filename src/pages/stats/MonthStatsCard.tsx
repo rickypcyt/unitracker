@@ -25,19 +25,19 @@ className=""
       <>
         <button
           onClick={handleMonthPrevious || (() => setMonthOffset((prev) => prev - 1))}
-          className="p-1.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
+          className="p-1.5 rounded-lg hover:bg-(--bg-secondary) transition-colors"
           aria-label="Mes anterior"
         >
           <ChevronLeft size={20} />
         </button>
         <span
-          className={`font-semibold text-lg text-center select-none transition-colors duration-200 ${monthOffset === 0 ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}
+          className={`font-semibold text-lg text-center select-none transition-colors duration-200 ${monthOffset === 0 ? 'text-(--accent-primary)' : 'text-(--text-primary)'}`}
         >
           {shownMonthDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
         </span>
         <button
           onClick={handleMonthNext || (() => setMonthOffset((prev) => prev + 1))}
-          className="p-1.5 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
+          className="p-1.5 rounded-lg hover:bg-(--bg-secondary) transition-colors"
           aria-label="Mes siguiente"
           disabled={monthOffset >= 0}
         >

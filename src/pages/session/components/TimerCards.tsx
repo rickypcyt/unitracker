@@ -8,7 +8,7 @@ import StudyTimer from "@/pages/session/StudyTimer";
 import DemoStudyTimer from "@/pages/landing/DemoStudyTimer";
 
 const card =
-  "timer-card relative min-w-0 flex flex-col rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-3 sm:p-4 2xl:aspect-square";
+  "timer-card relative min-w-0 flex flex-col rounded-2xl border border-(--border-primary) bg-(--bg-primary) p-3 sm:p-4 2xl:aspect-square";
 
 const TOGGLES_KEY = "mobileTimerToggles";
 
@@ -50,8 +50,8 @@ const ToggleChip = ({
     aria-pressed={active}
     className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
       active
-        ? "border-[var(--accent-primary)] text-[var(--accent-primary)] bg-[var(--accent-primary)]/10"
-        : "border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+        ? "border-(--accent-primary) text-(--accent-primary) bg-(--accent-primary)/10"
+        : "border-(--border-primary) text-(--text-secondary) hover:text-(--text-primary)"
     }`}
   >
     <Icon size={14} />
@@ -84,8 +84,8 @@ const MobileTimer = ({ isSynced, isRunning, fresh }: Omit<Props, "className">) =
   }, [show]);
 
   const extra = Number(show.pomodoro) + Number(show.countdown);
-  const tile = "timer-card min-w-0 flex flex-col rounded-xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-2";
-  const tileLabel = "mb-1 text-center text-xs font-semibold text-[var(--text-secondary)]";
+  const tile = "timer-card min-w-0 flex flex-col rounded-xl border border-(--border-primary) bg-(--bg-primary) p-2";
+  const tileLabel = "mb-1 text-center text-xs font-semibold text-(--text-secondary)";
   const pomoLabel = t("session.unifiedTimer.pomodoroLabel", { defaultValue: "Pomodoro" });
   const countdownLabel = t("session.unifiedTimer.countdownLabel", { defaultValue: "Countdown" });
 

@@ -56,7 +56,7 @@ const GlobalTimerControls = () => {
       <div className="flex gap-4">
         <button
           onClick={handlePlayPause}
-          className="flex items-center gap-2 px-6 py-3 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 transition-colors font-semibold"
+          className="flex items-center gap-2 px-6 py-3 rounded-lg border-2 border-(--accent-primary) text-(--accent-primary) bg-transparent hover:bg-(--accent-primary)/10 transition-colors font-semibold"
           aria-label={anyTimerRunning ? 'Pause all timers' : 'Start all timers'}
         >
           {anyTimerRunning ? (

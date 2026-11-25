@@ -86,25 +86,25 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
         <div className="flex items-center gap-3 mb-6">
           {(() => {
             const IconComp = iconOptions.find(opt => opt.name === selectedIcon)?.icon || Briefcase;
-            return <IconComp size={24} className="text-[var(--accent-primary)]" />;
+            return <IconComp size={24} className="text-(--accent-primary)" />;
           })()}
-          <h2 className="text-xl font-semibold text-[var(--text-primary)]">Create New Workspace</h2>
+          <h2 className="text-xl font-semibold text-(--text-primary)">Create New Workspace</h2>
         </div>
         <div>
-            <label htmlFor="workspaceName" className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+            <label htmlFor="workspaceName" className="block text-sm font-medium text-(--text-secondary) mb-2">
               Workspace Name
             </label>
             <input
               type="text"
               id="workspaceName"
               {...register('name')}
-              className="w-full px-3 py-2 border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-primary)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent"
+              className="w-full px-3 py-2 border-2 border-(--border-primary) rounded-lg bg-(--bg-primary) text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary) focus:border-transparent"
               placeholder="Enter workspace name..."
               autoFocus
             />
         </div>
         <div>
-          <div className="text-sm font-medium text-[var(--text-secondary)] mb-3">Choose Icon</div>
+          <div className="text-sm font-medium text-(--text-secondary) mb-3">Choose Icon</div>
           <div className="grid grid-cols-6 sm:grid-cols-7 md:grid-cols-8 gap-2 mb-4">
             {iconOptions.map((option) => {
               const IconComp = option.icon;
@@ -115,8 +115,8 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
                   onClick={() => setSelectedIcon(option.name)}
                   className={`group relative p-3 rounded-xl border-2 transition-all duration-200 ${
                     selectedIcon === option.name
-                      ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/15 shadow-sm shadow-[var(--accent-primary)]/20'
-                      : 'border-[var(--border-primary)]'
+                      ? 'border-(--accent-primary) bg-(--accent-primary)/15 shadow-sm shadow-(--accent-primary)/20'
+                      : 'border-(--border-primary)'
                   }`}
                   title={option.name}
                   aria-label={`Select ${option.name} icon`}
@@ -126,16 +126,16 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
                     size={20} 
                     className={`transition-colors duration-200 ${
                       selectedIcon === option.name 
-                        ? 'text-[var(--accent-primary)]' 
-                        : 'text-[var(--text-secondary)]'
+                        ? 'text-(--accent-primary)' 
+                        : 'text-(--text-secondary)'
                     }`} 
                   />
                 </button>
               );
             })}
           </div>
-          <div className="text-xs text-[var(--text-secondary)] text-center">
-            Selected: <span className="font-medium text-[var(--text-primary)]">{selectedIcon}</span>
+          <div className="text-xs text-(--text-secondary) text-center">
+            Selected: <span className="font-medium text-(--text-primary)">{selectedIcon}</span>
           </div>
         </div>
           {error && (
@@ -145,14 +145,14 @@ const WorkspaceCreateModal = ({ isOpen, onClose, onWorkspaceCreated }: Props) =>
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-2 border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
+              className="flex-1 px-4 py-2 text-(--text-secondary) hover:text-(--text-primary) border-2 border-(--border-primary) rounded-lg hover:bg-(--bg-secondary) transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !isValid}
-              className="flex-1 px-4 py-2 text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 px-4 py-2 text-(--accent-primary) border-2 border-(--accent-primary) bg-transparent rounded-lg hover:bg-(--accent-primary)/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Creating...' : 'Create Workspace'}
             </button>

@@ -25,11 +25,11 @@ const LegalPage: FC<{ doc: LegalDoc }> = ({ doc }) => {
         <link rel="canonical" href={`https://unitracker.me/${doc}`} />
       </Helmet>
 
-      <header className="border-b border-white/[0.06] bg-black/60 backdrop-blur-xl">
+      <header className="border-b border-white/6 bg-black/60 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-5">
           <Link to="/" className="font-heading text-[15px] font-bold tracking-tight">
             <span className="text-white">Uni</span>
-            <span className="text-[var(--accent-primary)]">Tracker</span>
+            <span className="text-(--accent-primary)">Tracker</span>
           </Link>
           <Link
             to="/"
@@ -61,7 +61,7 @@ const LegalPage: FC<{ doc: LegalDoc }> = ({ doc }) => {
                 <ul className="mt-3 space-y-2 text-[15px] leading-relaxed text-white/65">
                   {section.bullets.map((b) => (
                     <li key={b} className="flex gap-3">
-                      <span className="mt-2.5 h-1 w-1 flex-none rounded-full bg-[var(--accent-primary)]" />
+                      <span className="mt-2.5 h-1 w-1 flex-none rounded-full bg-(--accent-primary)" />
                       <span>{b}</span>
                     </li>
                   ))}
@@ -72,7 +72,7 @@ const LegalPage: FC<{ doc: LegalDoc }> = ({ doc }) => {
         </div>
 
         <div className="mt-16 flex items-center justify-between border-t border-white/10 pt-6 text-[13px]">
-          <Link to={`/${other}`} className="text-[var(--accent-primary)] hover:brightness-110">
+          <Link to={`/${other}`} className="text-(--accent-primary) hover:brightness-110">
             {otherTitle}
           </Link>
           <button

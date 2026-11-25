@@ -168,8 +168,8 @@ const DemoStudyTimer: FC = () => {
   const s = Math.floor(seconds % 60);
   const paused = phase === 'active' && !running;
   const progress = (seconds % 3600) / 3600;
-  const digit = `text-lg font-mono font-bold tabular-nums leading-none ${running ? 'text-[#0A84FF]' : 'text-[var(--text-primary)]'}`;
-  const colon = `text-base font-mono font-bold leading-none ${running ? 'text-[#0A84FF]' : 'text-[var(--text-secondary)]'}`;
+  const digit = `text-lg font-mono font-bold tabular-nums leading-none ${running ? 'text-accent-primary' : 'text-(--text-primary)'}`;
+  const colon = `text-base font-mono font-bold leading-none ${running ? 'text-accent-primary' : 'text-(--text-secondary)'}`;
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -190,9 +190,9 @@ const DemoStudyTimer: FC = () => {
           }}
         >
           <label className="block">
-            <span className="mb-1 flex items-center justify-between text-xs font-semibold text-[var(--text-primary)]">
+            <span className="mb-1 flex items-center justify-between text-xs font-semibold text-(--text-primary)">
               {t('landing.demoSession.nameLabel', { defaultValue: 'Session name' })}
-              <span className="font-normal text-[var(--text-secondary)]">{t('landing.demoSession.optional', { defaultValue: 'optional' })}</span>
+              <span className="font-normal text-(--text-secondary)">{t('landing.demoSession.optional', { defaultValue: 'optional' })}</span>
             </span>
             <input
               type="text"
@@ -201,14 +201,14 @@ const DemoStudyTimer: FC = () => {
               maxLength={60}
               autoFocus
               placeholder={t('landing.demoSession.name', { defaultValue: 'Example session' })}
-              className="w-full rounded-lg border-2 border-[var(--border-primary)] bg-transparent px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/60 focus:border-[var(--accent-primary)] focus:outline-none"
+              className="w-full rounded-lg border-2 border-(--border-primary) bg-transparent px-3 py-2 text-sm text-(--text-primary) placeholder:text-(--text-secondary)/60 focus:border-(--accent-primary) focus:outline-none"
             />
           </label>
           <div>
             <label className="block">
-              <span className="mb-1 flex items-center justify-between text-xs font-semibold text-[var(--text-primary)]">
+              <span className="mb-1 flex items-center justify-between text-xs font-semibold text-(--text-primary)">
                 {t('landing.demoSession.assignmentLabel', { defaultValue: 'Assignment' })}
-                <span className="font-normal text-[var(--text-secondary)]">{t('landing.demoSession.optional', { defaultValue: 'optional' })}</span>
+                <span className="font-normal text-(--text-secondary)">{t('landing.demoSession.optional', { defaultValue: 'optional' })}</span>
               </span>
               <input
                 type="text"
@@ -216,7 +216,7 @@ const DemoStudyTimer: FC = () => {
                 onChange={(e) => setSessionAssignment(e.target.value)}
                 maxLength={40}
                 placeholder="Mathematics"
-                className="w-full rounded-lg border-2 border-[var(--border-primary)] bg-transparent px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/60 focus:border-[var(--accent-primary)] focus:outline-none"
+                className="w-full rounded-lg border-2 border-(--border-primary) bg-transparent px-3 py-2 text-sm text-(--text-primary) placeholder:text-(--text-secondary)/60 focus:border-(--accent-primary) focus:outline-none"
               />
             </label>
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -228,8 +228,8 @@ const DemoStudyTimer: FC = () => {
                   aria-pressed={sessionAssignment === a}
                   className={`rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors ${
                     sessionAssignment === a
-                      ? 'border-[var(--accent-primary)] text-[var(--accent-primary)]'
-                      : 'border-[var(--border-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                      ? 'border-(--accent-primary) text-(--accent-primary)'
+                      : 'border-(--border-primary) text-(--text-secondary) hover:text-(--text-primary)'
                   }`}
                 >
                   {a}
@@ -241,13 +241,13 @@ const DemoStudyTimer: FC = () => {
             <button
               type="button"
               onClick={() => setPhase('idle')}
-              className="flex-1 rounded-lg border-2 border-[var(--border-primary)] px-3 py-2 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-secondary)]"
+              className="flex-1 rounded-lg border-2 border-(--border-primary) px-3 py-2 text-xs font-semibold text-(--text-primary) transition-colors hover:bg-(--bg-secondary)"
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border-2 border-[var(--accent-primary)] px-3 py-2 text-xs font-semibold text-[var(--accent-primary)] transition-colors hover:bg-[var(--accent-primary)]/10"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border-2 border-(--accent-primary) px-3 py-2 text-xs font-semibold text-(--accent-primary) transition-colors hover:bg-(--accent-primary)/10"
             >
               <Play size={14} />
               {t('landing.demoSession.start', { defaultValue: 'Start' })}
@@ -257,29 +257,29 @@ const DemoStudyTimer: FC = () => {
       ) : phase === 'finished' && summary ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 py-6 text-center">
           <Check size={28} className="text-emerald-400" />
-          <p className="text-base font-semibold text-[var(--text-primary)]">
+          <p className="text-base font-semibold text-(--text-primary)">
             {sessionName.trim() || t('landing.demoSession.done', { defaultValue: 'Example session complete' })}
           </p>
           {sessionAssignment.trim() && (
-            <span className="rounded-full bg-[var(--accent-primary)]/10 px-2 py-0.5 text-[11px] font-medium text-[var(--accent-primary)]">
+            <span className="rounded-full bg-(--accent-primary)/10 px-2 py-0.5 text-[11px] font-medium text-(--accent-primary)">
               {sessionAssignment.trim()}
             </span>
           )}
-          <p className="font-mono text-2xl font-bold tabular-nums text-[var(--accent-primary)]">{summary.duration}</p>
-          <p className="max-w-[16rem] text-xs text-[var(--text-secondary)]">
+          <p className="font-mono text-2xl font-bold tabular-nums text-(--accent-primary)">{summary.duration}</p>
+          <p className="max-w-[16rem] text-xs text-(--text-secondary)">
             {t('landing.demoSession.signup', { defaultValue: 'Sign up to save your real sessions and see your stats.' })}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2">
             <Link
               to="/login"
-              className="rounded-lg border-2 border-[var(--accent-primary)] px-4 py-1.5 text-xs font-semibold text-[var(--accent-primary)] transition-colors hover:bg-[var(--accent-primary)]/10"
+              className="rounded-lg border-2 border-(--accent-primary) px-4 py-1.5 text-xs font-semibold text-(--accent-primary) transition-colors hover:bg-(--accent-primary)/10"
             >
               {t('landing.demoSession.cta', { defaultValue: 'Sign up free' })}
             </Link>
             <button
               type="button"
               onClick={cancel}
-              className="rounded-lg border-2 border-[var(--border-primary)] px-4 py-1.5 text-xs font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-secondary)]"
+              className="rounded-lg border-2 border-(--border-primary) px-4 py-1.5 text-xs font-semibold text-(--text-primary) transition-colors hover:bg-(--bg-secondary)"
             >
               {t('landing.demoSession.again', { defaultValue: 'Try again' })}
             </button>
@@ -370,7 +370,7 @@ const DemoStudyTimer: FC = () => {
           </div>
 
           {notes.length > 0 && (
-            <ul className="mx-3 mb-2 max-h-16 space-y-0.5 overflow-y-auto text-xs text-[var(--text-secondary)]">
+            <ul className="mx-3 mb-2 max-h-16 space-y-0.5 overflow-y-auto text-xs text-(--text-secondary)">
               {notes.map((n, i) => (
                 <li key={i} className="flex justify-between gap-2">
                   <span className="truncate">{n.text}</span>
@@ -400,7 +400,7 @@ const DemoStudyTimer: FC = () => {
               <button
                 type="button"
                 onClick={() => setPhase('setup')}
-                className="mx-1 shrink-0 whitespace-nowrap rounded-lg border-2 border-[var(--accent-primary)] px-4 py-1.5 text-xs font-semibold text-[var(--accent-primary)] transition-colors hover:bg-[var(--accent-primary)]/10"
+                className="mx-1 shrink-0 whitespace-nowrap rounded-lg border-2 border-(--accent-primary) px-4 py-1.5 text-xs font-semibold text-(--accent-primary) transition-colors hover:bg-(--accent-primary)/10"
               >
                 {t('session.studyTimer.startNewSession')}
               </button>

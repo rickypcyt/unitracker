@@ -10,7 +10,7 @@ const LanguageToggle = ({ langs = ['en', 'es', 'hi'] }: { langs?: string[] }) =>
   const { i18n } = useTranslation();
   const current = i18n.resolvedLanguage ?? i18n.language;
   return (
-    <div className="flex items-center rounded-md border border-[var(--border-primary)] overflow-hidden text-[12px] font-medium">
+    <div className="flex items-center rounded-md border border-(--border-primary) overflow-hidden text-[12px] font-medium">
       {langs.map((lng) => (
         <button
           key={lng}
@@ -18,8 +18,8 @@ const LanguageToggle = ({ langs = ['en', 'es', 'hi'] }: { langs?: string[] }) =>
           onClick={() => void i18n.changeLanguage(lng)}
           className={`px-2.5 py-1.5 transition-colors ${
             current === lng
-              ? 'bg-[var(--bg-secondary)] text-[var(--text-primary)]'
-              : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              ? 'bg-(--bg-secondary) text-(--text-primary)'
+              : 'text-(--text-secondary) hover:text-(--text-primary)'
           }`}
           aria-pressed={current === lng}
         >

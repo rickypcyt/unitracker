@@ -33,7 +33,7 @@ const SeoLandingPage = ({ slug }: { slug: string }) => {
           <p className="mt-4 text-lg text-zinc-400">{page.intro}</p>
           <Link
             to="/session"
-            className="mt-8 inline-block rounded-lg border-2 border-[var(--accent-primary)] px-5 py-3 text-sm font-semibold text-[var(--accent-primary)] transition-colors hover:bg-[var(--accent-primary)]/10"
+            className="mt-8 inline-block rounded-lg border-2 border-(--accent-primary) px-5 py-3 text-sm font-semibold text-(--accent-primary) transition-colors hover:bg-(--accent-primary)/10"
           >
             Start free
           </Link>

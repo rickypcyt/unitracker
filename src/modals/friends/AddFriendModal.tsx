@@ -518,26 +518,26 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests, sent
     <BaseModal isOpen={isOpen} onClose={onClose} title="Add Friend" maxWidth="max-w-md">
       <div className="flex items-center justify-evenly gap-0 mb-2 w-full">
         <button
-          className={`flex-1 text-center px-4 py-1 font-semibold ${tab === 'send' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} focus:outline-none`}
+          className={`flex-1 text-center px-4 py-1 font-semibold ${tab === 'send' ? 'text-(--accent-primary)' : 'text-(--text-secondary)'} focus:outline-none`}
           onClick={() => setTab('send')}
         >
           Send
         </button>
-        <span className="text-[var(--border-primary)] font-bold">|</span>
+        <span className="text-(--border-primary) font-bold">|</span>
         <button
-          className={`flex-1 text-center px-4 py-1 font-semibold relative ${tab === 'received' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} focus:outline-none`}
+          className={`flex-1 text-center px-4 py-1 font-semibold relative ${tab === 'received' ? 'text-(--accent-primary)' : 'text-(--text-secondary)'} focus:outline-none`}
           onClick={() => setTab('received')}
         >
           <span className="relative inline-block">
             Received
             {receivedCount > 0 && (
-              <span className="absolute -top-2 -right-4 w-2.5 h-2.5 rounded-full bg-[var(--accent-primary)] border-2 border-[var(--bg-primary)]"></span>
+              <span className="absolute -top-2 -right-4 w-2.5 h-2.5 rounded-full bg-(--accent-primary) border-2 border-(--bg-primary)"></span>
             )}
           </span>
         </button>
-        <span className="text-[var(--border-primary)] font-bold">|</span>
+        <span className="text-(--border-primary) font-bold">|</span>
         <button
-          className={`flex-1 text-center px-4 py-1 font-semibold relative ${tab === 'sent' ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} focus:outline-none`}
+          className={`flex-1 text-center px-4 py-1 font-semibold relative ${tab === 'sent' ? 'text-(--accent-primary)' : 'text-(--text-secondary)'} focus:outline-none`}
           onClick={() => setTab('sent')}
         >
           Sent{visibleSentRequests.filter(req => !deletingIds.includes(req.id)).length > 0 ? ` (${visibleSentRequests.filter(req => !deletingIds.includes(req.id)).length})` : ''}
@@ -550,7 +550,7 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests, sent
             value={username}
             onChange={e => setUsername(e.target.value)}
             placeholder="Friend's username"
-            className="w-full px-3 py-2 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] focus:border-[var(--accent-primary)] focus:outline-none text-[var(--text-primary)]"
+            className="w-full px-3 py-2 rounded-lg border-2 border-(--border-primary) bg-(--bg-secondary) focus:border-(--accent-primary) focus:outline-none text-(--text-primary)"
             autoFocus
             disabled={requestSent}
           />
@@ -561,7 +561,7 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests, sent
             <div className="text-sm text-red-600 mt-1">No user found with that username.</div>
           )}
           <button
-            className="mt-2 px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-semibold hover:bg-[var(--accent-primary)]/10 w-full disabled:opacity-60 disabled:hover:bg-transparent"
+            className="mt-2 px-4 py-2 rounded-lg border-2 border-(--accent-primary) text-(--accent-primary) font-semibold hover:bg-(--accent-primary)/10 w-full disabled:opacity-60 disabled:hover:bg-transparent"
             onClick={handleSend}
             disabled={requestSent || userExists === false || isSelfRequest || isSubmitting}
           >
@@ -576,11 +576,11 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests, sent
       {tab === 'received' && (
         <div className="w-full flex flex-col gap-2 py-4">
           {displayedReceivedRequests.length === 0 ? (
-            <div className="text-[var(--text-secondary)] text-center">No received requests</div>
+            <div className="text-(--text-secondary) text-center">No received requests</div>
           ) : (
             displayedReceivedRequests.map((req, i) => (
-              <div key={i} className="flex items-center justify-between bg-[var(--bg-secondary)] rounded-lg px-3 py-2">
-                <span className="text-[var(--text-primary)] font-medium">{req.from_user?.username || req.from_user_id}</span>
+              <div key={i} className="flex items-center justify-between bg-(--bg-secondary) rounded-lg px-3 py-2">
+                <span className="text-(--text-primary) font-medium">{req.from_user?.username || req.from_user_id}</span>
                 <div className="flex gap-2">
                   <button
                     className="px-2 py-1 rounded text-sm font-semibold border-2 border-green-500 text-green-500 hover:bg-green-500/10"
@@ -605,15 +605,15 @@ const AddFriendModal = ({ isOpen, onClose, onSendRequest, receivedRequests, sent
       {tab === 'sent' && (
         <div className="w-full flex flex-col gap-2 py-4">
           {visibleSentRequests.filter(req => !deletingIds.includes(req.id)).length === 0 ? (
-            <div className="text-[var(--text-secondary)] text-center">No pending requests</div>
+            <div className="text-(--text-secondary) text-center">No pending requests</div>
           ) : (
             visibleSentRequests.filter(req => !deletingIds.includes(req.id)).map((req, i) => (
-              <div key={`req-${i}`} className="flex flex-row items-center bg-[var(--bg-secondary)] rounded-lg px-3 py-2 min-h-[2.5rem]">
+              <div key={`req-${i}`} className="flex flex-row items-center bg-(--bg-secondary) rounded-lg px-3 py-2 min-h-10">
                 <div className="flex-1 flex items-center min-w-0">
-                  <span className="text-[var(--text-primary)] font-medium whitespace-nowrap">{req.to_user?.username || req.to_user_id}</span>
+                  <span className="text-(--text-primary) font-medium whitespace-nowrap">{req.to_user?.username || req.to_user_id}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-[var(--text-secondary)] font-semibold capitalize text-right">{req.status}</span>
+                  <span className="text-sm text-(--text-secondary) font-semibold capitalize text-right">{req.status}</span>
                   <button
                     className="p-1 rounded-full hover:bg-red-500/20 text-red-500 hover:text-red-700 transition-colors disabled:opacity-50"
                     onClick={() => handleDeletePending(req)}

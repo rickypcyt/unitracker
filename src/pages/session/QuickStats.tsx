@@ -87,7 +87,7 @@ const QuickStats = () => {
               <button
                 type="button"
                 onClick={() => setIsShareOpen(true)}
-                className="absolute top-2 right-2 p-1.5 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+                className="absolute top-2 right-2 p-1.5 rounded-md text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-secondary) transition-colors"
                 title="Share your streak"
                 aria-label="Share your streak"
               >
@@ -98,14 +98,14 @@ const QuickStats = () => {
               <div className={`p-1.5 rounded-lg ${card.bg}`}>
                 {card.icon}
               </div>
-              <span className="font-medium text-[var(--text-secondary)] uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>
+              <span className="font-medium text-(--text-secondary) uppercase tracking-wide" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>
                 {card.label}
               </span>
             </div>
-            <div className="font-bold text-[var(--text-primary)]" style={{ fontSize: 'clamp(1rem, 0.85rem + 0.8vw, 1.5rem)' }}>
+            <div className="font-bold text-(--text-primary)" style={{ fontSize: 'clamp(1rem, 0.85rem + 0.8vw, 1.5rem)' }}>
               {card.value}
             </div>
-            <div className="text-[var(--text-secondary)]" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>
+            <div className="text-(--text-secondary)" style={{ fontSize: 'clamp(0.625rem, 0.58rem + 0.2vw, 0.75rem)' }}>
               {card.sub}
             </div>
           </div>

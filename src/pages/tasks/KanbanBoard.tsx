@@ -418,25 +418,25 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
     return (
       <div className="flex items-center justify-center py-6 min-h-[20vh]">
         <div className="text-center max-w-sm">
-          <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-[var(--accent-primary)]/10 flex items-center justify-center">
-            <ClipboardCheck className="w-8 h-8 text-[var(--accent-primary)]" />
+          <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-(--accent-primary)/10 flex items-center justify-center">
+            <ClipboardCheck className="w-8 h-8 text-(--accent-primary)" />
           </div>
-          <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">
+          <h3 className="text-xl font-bold text-(--text-primary) mb-2">
             No Workspaces Available
           </h3>
-          <p className="text-sm text-[var(--text-secondary)] mb-4">
+          <p className="text-sm text-(--text-secondary) mb-4">
             Create your first workspace to start organizing your tasks.
           </p>
           {isLoggedIn ? (
             <button
               onClick={() => window.dispatchEvent(new Event('openWorkspaceModal'))}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition-all border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold active:scale-95 transition-all border-2 border-(--accent-primary) text-(--accent-primary) hover:bg-(--accent-primary)/10"
             >
               <Plus size={18} />
               Create your first workspace
             </button>
           ) : (
-            <p className="text-xs text-[var(--text-secondary)] opacity-70">
+            <p className="text-xs text-(--text-secondary) opacity-70">
               Remember to login first
             </p>
           )}
@@ -450,8 +450,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
     return (
       <div className="flex items-center justify-center py-6 min-h-[20vh]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)] mx-auto mb-4"></div>
-          <p className="text-[var(--text-secondary)]">Selecting workspace...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-(--accent-primary) mx-auto mb-4"></div>
+          <p className="text-(--text-secondary)">Selecting workspace...</p>
         </div>
       </div>
     );
@@ -462,8 +462,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
     return (
       <div className="flex items-center justify-center py-6 min-h-[20vh]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)] mx-auto mb-4"></div>
-          <p className="text-[var(--text-secondary)]">Loading tasks...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-(--accent-primary) mx-auto mb-4"></div>
+          <p className="text-(--text-secondary)">Loading tasks...</p>
         </div>
       </div>
     );
@@ -473,25 +473,25 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
     return (
       <div data-tour="tasks-board" className="flex min-h-[50vh] flex-col items-center justify-center gap-6 px-4 py-6">
         <div className="max-w-sm text-center">
-          <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-[var(--accent-primary)]/10 flex items-center justify-center">
-            <ClipboardCheck className="w-8 h-8 text-[var(--accent-primary)]" />
+          <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-(--accent-primary)/10 flex items-center justify-center">
+            <ClipboardCheck className="w-8 h-8 text-(--accent-primary)" />
           </div>
-          <h3 className="text-xl sm:text-2xl font-bold text-[var(--text-primary)] mb-2">
+          <h3 className="text-xl sm:text-2xl font-bold text-(--text-primary) mb-2">
             {activeWorkspace ? `No tasks in "${activeWorkspace.name}" yet` : 'No Tasks Yet'}
           </h3>
-          <p className="text-sm sm:text-base text-[var(--text-secondary)] mb-5">
+          <p className="text-sm sm:text-base text-(--text-secondary) mb-5">
             {activeWorkspace ? 'Create your first task in this workspace to get started.' : 'Create your first task to get started.'}
           </p>
           {isLoggedIn ? (
             <button
               onClick={() => handleAddTask(null)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent text-sm font-semibold hover:bg-[var(--accent-primary)]/10 active:scale-95 transition-all"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border-2 border-(--accent-primary) text-(--accent-primary) bg-transparent text-sm font-semibold hover:bg-(--accent-primary)/10 active:scale-95 transition-all"
             >
               <Plus size={18} />
               Click here to create your first task
             </button>
           ) : (
-            <p className="text-sm text-[var(--text-secondary)] opacity-70">
+            <p className="text-sm text-(--text-secondary) opacity-70">
               Remember to login first
             </p>
           )}

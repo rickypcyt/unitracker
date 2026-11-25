@@ -9,7 +9,7 @@ const SettingsPage = () => {
   const { workspaces } = useWorkspace();
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] w-full max-w-2xl mx-auto px-4 sm:px-6 py-6">
+    <div className="min-h-screen bg-(--bg-primary) w-full max-w-2xl mx-auto px-4 sm:px-6 py-6">
       <SettingsContent
         friends={friends}
         workspaces={workspaces}

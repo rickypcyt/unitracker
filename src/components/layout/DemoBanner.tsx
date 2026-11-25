@@ -25,12 +25,12 @@ const DemoBanner: FC = () => {
   return (
     <div
       role="status"
-      className="sticky top-0 z-[10001] flex h-10 items-center justify-center gap-3 border-b border-[var(--accent-primary)]/30 bg-[var(--bg-primary)] px-3 text-xs sm:text-sm"
+      className="sticky top-0 z-10001 flex h-10 items-center justify-center gap-3 border-b border-(--accent-primary)/30 bg-(--bg-primary) px-3 text-xs sm:text-sm"
     >
-      <span className="min-w-0 truncate text-[var(--text-secondary)]">{t('demo.banner.text')}</span>
+      <span className="min-w-0 truncate text-(--text-secondary)">{t('demo.banner.text')}</span>
       <Link
         to="/login"
-        className="shrink-0 rounded-full border-2 border-[var(--accent-primary)] px-3 py-0.5 font-semibold text-[var(--accent-primary)] transition-colors hover:bg-[var(--accent-primary)]/10"
+        className="shrink-0 rounded-full border-2 border-(--accent-primary) px-3 py-0.5 font-semibold text-(--accent-primary) transition-colors hover:bg-(--accent-primary)/10"
       >
         {t('demo.banner.cta')}
       </Link>

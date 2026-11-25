@@ -228,24 +228,24 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
           const IconComponent = iconOptions.find(opt => opt.name === workspace.icon)?.icon || Briefcase;
           return (
             <div key={workspace.id}>
-              <div className="flex items-center gap-3 p-3 border-2 border-[var(--border-primary)] rounded-lg bg-[var(--bg-secondary)]">
+              <div className="flex items-center gap-3 p-3 border-2 border-(--border-primary) rounded-lg bg-(--bg-secondary)">
                 {/* Icon to the left */}
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   {isEditing ? (
                     <div className="relative">
                       <button
                         onClick={() => setExpandedIconSelector(expandedIconSelector === workspace.id ? null : workspace.id)}
-                        className="p-2 sm:p-2.5 rounded-lg border transition-all flex items-center justify-center aspect-square border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-secondary)]"
+                        className="p-2 sm:p-2.5 rounded-lg border transition-all flex items-center justify-center aspect-square border-(--border-primary) hover:border-(--accent-primary) hover:bg-(--bg-secondary)"
                         title="Choose icon"
                       >
                         {(() => {
                           const IconComp = iconOptions.find(opt => opt.name === editIcon)?.icon || Briefcase;
-                          return <IconComp size={22} className="text-[var(--text-secondary)]" />;
+                          return <IconComp size={22} className="text-(--text-secondary)" />;
                         })()}
                       </button>
                     </div>
                   ) : (
-                    <IconComponent size={20} className="text-[var(--text-secondary)]" />
+                    <IconComponent size={20} className="text-(--text-secondary)" />
                   )}
                 </div>
                 {/* Name/Input in the middle */}
@@ -256,12 +256,12 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
                       onKeyDown={(e) => handleKeyPress(e, workspace)}
-                      className="w-full px-3 py-2 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                      className="w-full px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)"
                       placeholder="Workspace name"
                       autoFocus
                     />
                   ) : (
-                    <span className="text-[var(--text-primary)] font-medium">
+                    <span className="text-(--text-primary) font-medium">
                       {workspace.name} ({getTaskCountByWorkspace(workspace.id, workspace.taskCount)})
                     </span>
                   )}
@@ -273,7 +273,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                       <button
                         onClick={() => handleSave(workspace)}
                         disabled={loading}
-                        className="p-2 sm:p-2.5 rounded-lg border transition-all flex items-center justify-center aspect-square border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-secondary)]"
+                        className="p-2 sm:p-2.5 rounded-lg border transition-all flex items-center justify-center aspect-square border-(--border-primary) hover:border-(--accent-primary) hover:bg-(--bg-secondary)"
                         title="Save changes"
                       >
                         <Save size={18} className="text-green-500" />
@@ -281,17 +281,17 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                       <button
                         onClick={handleCancel}
                         disabled={loading}
-                        className="p-2 sm:p-2.5 rounded-lg border transition-all flex items-center justify-center aspect-square border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-secondary)]"
+                        className="p-2 sm:p-2.5 rounded-lg border transition-all flex items-center justify-center aspect-square border-(--border-primary) hover:border-(--accent-primary) hover:bg-(--bg-secondary)"
                         title="Cancel"
                       >
-                        <X size={18} className="text-[var(--text-secondary)]" />
+                        <X size={18} className="text-(--text-secondary)" />
                       </button>
                     </>
                   ) : (
                     <>
                       <button
                         onClick={() => handleEdit(workspace)}
-                        className="p-2 text-[var(--accent-primary)] hover:text-[var(--accent-primary)]/80 hover:bg-[var(--accent-primary)]/10 rounded-lg transition-colors"
+                        className="p-2 text-(--accent-primary) hover:text-(--accent-primary)/80 hover:bg-(--accent-primary)/10 rounded-lg transition-colors"
                         title="Edit workspace"
                       >
                         <Edit size={16} />
@@ -309,8 +309,8 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                 </div>
               </div>
               {isEditing && expandedIconSelector === workspace.id && (
-                <div className="mt-3 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg p-3">
-                  <div className="text-sm font-medium text-[var(--text-secondary)] mb-3">Choose Icon</div>
+                <div className="mt-3 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg p-3">
+                  <div className="text-sm font-medium text-(--text-secondary) mb-3">Choose Icon</div>
                   <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-8 gap-2 sm:gap-3">
                     {iconOptions.map((option) => {
                       const IconComp = option.icon;
@@ -323,13 +323,13 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                           }}
                           className={`p-2 sm:p-2.5 rounded-lg border transition-all flex items-center justify-center aspect-square ${
                             editIcon === option.name
-                              ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
-                              : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-secondary)]'
+                              ? 'border-(--accent-primary) bg-(--accent-primary)/10'
+                              : 'border-(--border-primary) hover:border-(--accent-primary) hover:bg-(--bg-secondary)'
                           }`}
                         >
                           <IconComp 
                             size={22} 
-                            className={editIcon === option.name ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'} 
+                            className={editIcon === option.name ? 'text-(--accent-primary)' : 'text-(--text-secondary)'} 
                           />
                         </button>
                       );

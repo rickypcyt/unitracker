@@ -128,18 +128,18 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
       title={'AI Task Preview'}
       maxWidth="max-w-lg"
       className="overflow-hidden flex flex-col"
-      overlayClassName="!bg-white/60 dark:!bg-black/70"
+      overlayClassName="bg-white/60! dark:bg-black/70!"
     >
       <div className="flex flex-col h-full max-h-[90vh]">
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto space-y-2 sm:space-y-4 py-4 sm:py-0">
           {items.length === 0 && (
-            <div className="text-center text-[var(--text-secondary)]">No tasks to preview.</div>
+            <div className="text-center text-(--text-secondary)">No tasks to preview.</div>
           )}
           {items.map((task, idx) => (
             <div
               key={idx}
-              className={`flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3 border rounded-lg p-3 sm:p-4 transition-colors ${selectedIdx === idx ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10' : 'border-[var(--border-primary)] bg-[var(--bg-secondary)]'}`}
+              className={`flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3 border rounded-lg p-3 sm:p-4 transition-colors ${selectedIdx === idx ? 'border-(--accent-primary) bg-(--accent-primary)/10' : 'border-(--border-primary) bg-(--bg-secondary)'}`}
               onClick={() => setSelectedIdx(idx)}
               role="button"
             >
@@ -147,17 +147,17 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
               <div className="flex-1">
                 {/* Header: index badge + title + actions */}
                 <div className="flex items-center gap-2 mb-2 sm:mb-1">
-                  <div className="shrink-0 select-none w-6 h-6 sm:w-8 sm:h-8 rounded-md bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] flex items-center justify-center text-[var(--text-secondary)] font-bold text-sm sm:text-sm">#{idx + 1}</div>
+                  <div className="shrink-0 select-none w-6 h-6 sm:w-8 sm:h-8 rounded-md bg-(--bg-primary) border-2 border-(--border-primary) flex items-center justify-center text-(--text-secondary) font-bold text-sm sm:text-sm">#{idx + 1}</div>
                   {editIdx === idx ? (
                     <input
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
-                      className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] text-sm sm:text-base"
+                      className="flex-1 min-w-0 px-2 py-1 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) text-sm sm:text-base"
                       placeholder="Task title"
                       onClick={(e) => e.stopPropagation()}
                     />
                   ) : (
-                    <div className="flex-1 font-bold text-sm sm:text-lg text-[var(--text-primary)] truncate">
+                    <div className="flex-1 font-bold text-sm sm:text-lg text-(--text-primary) truncate">
                       {task.task || 'Untitled task'}
                     </div>
                   )}
@@ -167,7 +167,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                       type="button"
                       title="Edit"
                       onClick={(e) => { e.stopPropagation(); editIdx === idx ? cancelEdit() : beginEdit(idx); }}
-                      className="p-1.5 sm:p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] active:scale-95 transition-transform"
+                      className="p-1.5 sm:p-1 rounded-md text-(--text-secondary) hover:text-(--text-primary) active:scale-95 transition-transform"
                     >
                       <Pencil size={14} className="sm:w-4 sm:h-4" />
                     </button>
@@ -186,30 +186,30 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                   {editIdx === idx ? (
                     <div onClick={(e) => e.stopPropagation()} className="space-y-1">
                       <div className="flex items-center gap-2 text-sm sm:text-base">
-                        <span className="font-semibold text-[var(--text-secondary)] text-sm sm:text-sm w-20 sm:w-28">Description:</span>
+                        <span className="font-semibold text-(--text-secondary) text-sm sm:text-sm w-20 sm:w-28">Description:</span>
                         <input
                           value={editDesc}
                           onChange={(e) => setEditDesc(e.target.value)}
-                          className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] text-sm"
+                          className="flex-1 min-w-0 px-2 py-1 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) text-sm"
                           placeholder="Description"
                         />
                       </div>
                       <div className="flex items-center gap-2 text-sm sm:text-base">
-                        <span className="font-semibold text-[var(--text-secondary)] text-sm sm:text-sm w-20 sm:w-28">Assignment:</span>
+                        <span className="font-semibold text-(--text-secondary) text-sm sm:text-sm w-20 sm:w-28">Assignment:</span>
                         <input
                           value={editSubject}
                           onChange={(e) => setEditSubject(e.target.value)}
-                          className="flex-1 min-w-0 px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] text-sm"
+                          className="flex-1 min-w-0 px-2 py-1 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) text-sm"
                           placeholder="Assignment/Subject"
                         />
                       </div>
                       <div className="flex items-center gap-2 text-sm sm:text-base">
-                        <span className="font-semibold text-[var(--text-secondary)] text-sm sm:text-sm w-20 sm:w-28">Date:</span>
+                        <span className="font-semibold text-(--text-secondary) text-sm sm:text-sm w-20 sm:w-28">Date:</span>
                         <div className="relative flex-1 min-w-0">
                           <DatePicker
                             selected={editDate}
                             onChange={(date) => setEditDate(date)}
-                            className="w-full px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] pr-8 text-sm"
+                            className="w-full px-2 py-1 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) pr-8 text-sm"
                             placeholderText="YYYY-MM-DD"
                             dateFormat="yyyy-MM-dd"
                             minDate={new Date()}
@@ -228,15 +228,15 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                               }
                             }] as never}
                           />
-                          <Calendar size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] pointer-events-none" />
+                          <Calendar size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-(--text-secondary) pointer-events-none" />
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-sm sm:text-base">
-                        <span className="font-semibold text-[var(--text-secondary)] text-sm sm:text-sm w-20 sm:w-28">Difficulty:</span>
+                        <span className="font-semibold text-(--text-secondary) text-sm sm:text-sm w-20 sm:w-28">Difficulty:</span>
                         <select
                           value={editDifficulty}
                           onChange={(e) => setEditDifficulty(e.target.value)}
-                          className="px-2 py-1 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] text-sm"
+                          className="px-2 py-1 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) text-sm"
                         >
                           <option value="easy">easy</option>
                           <option value="medium">medium</option>
@@ -244,10 +244,10 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                         </select>
                       </div>
                       <div className="mt-2 flex items-center gap-2 justify-end">
-                        <button type="button" onClick={(e) => { e.stopPropagation(); cancelEdit(); }} className="px-2 py-1 text-sm sm:text-sm rounded-md border-2 border-[var(--border-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] active:scale-95 transition-transform">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); cancelEdit(); }} className="px-2 py-1 text-sm sm:text-sm rounded-md border-2 border-(--border-primary) text-(--text-secondary) hover:bg-(--bg-secondary) active:scale-95 transition-transform">
                           Cancel
                         </button>
-                        <button type="button" onClick={(e) => { e.stopPropagation(); saveEdit(); }} className="px-2 py-1 text-sm sm:text-sm rounded-md border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent font-medium active:scale-95 transition-transform">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); saveEdit(); }} className="px-2 py-1 text-sm sm:text-sm rounded-md border-2 border-(--accent-primary) text-(--accent-primary) bg-transparent font-medium active:scale-95 transition-transform">
                           Save
                         </button>
                       </div>
@@ -255,7 +255,7 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                   ) : (
                     <>
                       {task.description && (
-                        <div className="text-sm text-[var(--text-secondary)]">
+                        <div className="text-sm text-(--text-secondary)">
                           <span className="font-semibold">Description:</span> {task.description}
                         </div>
                       )}
@@ -263,14 +263,14 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
                   )}
                   {editIdx !== idx && (
                     <>
-                      <div className="text-sm text-[var(--text-secondary)]">
+                      <div className="text-sm text-(--text-secondary)">
                         <span className="font-semibold">Assignment:</span> {task.subject || <span className="italic">None</span>}
                       </div>
-                      <div className="text-sm text-[var(--text-secondary)]">
+                      <div className="text-sm text-(--text-secondary)">
                         <span className="font-semibold">Date:</span> {task.date || <span className="italic">None</span>}
                       </div>
                       {task.difficulty && (
-                        <div className="text-sm text-[var(--text-secondary)]">
+                        <div className="text-sm text-(--text-secondary)">
                           <span className="font-semibold">Difficulty:</span> {task.difficulty}
                         </div>
                       )}
@@ -286,14 +286,14 @@ const AIPreviewModal = ({ isOpen, tasks = [], onAcceptAll, onCancel }: Props) =>
         </div>
         
         {/* Sticky footer - outside scrollable content */}
-        <div className="flex-shrink-0 pt-2 sm:pt-3 bg-[var(--bg-primary)] border-t border-[var(--border-primary)]">
+        <div className="shrink-0 pt-2 sm:pt-3 bg-(--bg-primary) border-t border-(--border-primary)">
           <div className="flex items-center justify-between gap-2">
             {/* Cancel button */}
             <button
               onClick={onCancel}
               aria-label="Cancel"
               title="Cancel"
-              className="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg border-2 border-[var(--border-primary)] hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-secondary)] active:scale-95 transition-transform"
+              className="w-10 h-10 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg border-2 border-(--border-primary) hover:bg-black/5 dark:hover:bg-white/10 text-(--text-secondary) active:scale-95 transition-transform"
             >
               <X size={18} className="sm:w-4 sm:h-4" />
             </button>

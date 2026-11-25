@@ -42,8 +42,8 @@ const featureCards = [
 ] as const;
 
 const ShowcaseFrame = ({ title, children }: { title: string; children: ReactNode }) => (
-  <div className="rounded-xl border border-white/10 bg-white/[0.04] backdrop-blur-xl overflow-hidden">
-    <div className="flex items-center gap-2 px-4 h-9 border-b border-white/[0.06]">
+  <div className="rounded-xl border border-white/10 bg-white/4 backdrop-blur-xl overflow-hidden">
+    <div className="flex items-center gap-2 px-4 h-9 border-b border-white/6">
       <div className="flex gap-1.5">
         <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
         <span className="w-2.5 h-2.5 rounded-full bg-white/15" />
@@ -58,7 +58,7 @@ const ShowcaseFrame = ({ title, children }: { title: string; children: ReactNode
 );
 
 const Eyebrow = ({ children }: { children: ReactNode }) => (
-  <p className="text-sm sm:text-base uppercase tracking-[0.2em] font-semibold text-[var(--accent-primary)] mb-4">
+  <p className="text-sm sm:text-base uppercase tracking-[0.2em] font-semibold text-(--accent-primary) mb-4">
     {children}
   </p>
 );
@@ -173,17 +173,17 @@ const IndiaLandingPage = () => {
 
       <div className="h-screen overflow-y-auto overflow-x-hidden scroll-smooth bg-black text-[#e4e4e7] pb-16 antialiased">
         {/* Nav */}
-        <nav className="sticky top-0 z-50 backdrop-blur-xl bg-black/60 border-b border-white/[0.08]">
+        <nav className="sticky top-0 z-50 backdrop-blur-xl bg-black/60 border-b border-white/8">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 h-14 flex items-center justify-between">
             <Link to="/" className="font-heading text-[15px] font-bold tracking-tight">
-              <span className="text-white">Uni</span><span className="text-[var(--accent-primary)]">Tracker</span>
+              <span className="text-white">Uni</span><span className="text-(--accent-primary)">Tracker</span>
             </Link>
             <div className="flex items-center gap-2">
               <LanguageToggle langs={['en', 'hi', 'es']} />
               <Link
                 to="/app"
                 onClick={startOnboarding}
-                className="text-[13px] font-semibold px-4 py-1.5 rounded-md transition-opacity border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+                className="text-[13px] font-semibold px-4 py-1.5 rounded-md transition-opacity border-2 border-(--accent-primary) text-(--accent-primary) hover:bg-(--accent-primary)/10"
               >
                 {t('india.nav.getStarted')}
               </Link>
@@ -210,7 +210,7 @@ const IndiaLandingPage = () => {
                 <Link
                   to="/app"
                   onClick={startOnboarding}
-                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md font-semibold text-sm transition-opacity border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md font-semibold text-sm transition-opacity border-2 border-(--accent-primary) text-(--accent-primary) hover:bg-(--accent-primary)/10"
                 >
                   {t('india.hero.cta')}
                   <ArrowRight className="w-4 h-4" />
@@ -230,7 +230,7 @@ const IndiaLandingPage = () => {
         </section>
 
         {/* Live timers */}
-        <section className="border-t border-white/[0.06]">
+        <section className="border-t border-white/6">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
             <Eyebrow>{t('india.timers.eyebrow')}</Eyebrow>
             <h2 className="text-2xl sm:text-3xl font-heading font-semibold tracking-tight mb-2">
@@ -254,19 +254,19 @@ const IndiaLandingPage = () => {
         </section>
 
         {/* Exams */}
-        <section className="border-t border-white/[0.06]">
+        <section className="border-t border-white/6">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
             <Eyebrow>{t('india.exams.eyebrow')}</Eyebrow>
             <h2 className="text-2xl sm:text-3xl font-heading font-semibold tracking-tight mb-10">
               {t('india.exams.title')}
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-l border-white/[0.06]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-l border-white/6">
               {examCards.map(({ icon: Icon, key }) => (
                 <div
                   key={key}
-                  className="border-b border-r border-white/[0.06] p-6 hover:bg-white/[0.03] transition-colors"
+                  className="border-b border-r border-white/6 p-6 hover:bg-white/3 transition-colors"
                 >
-                  <Icon className="w-4 h-4 text-[var(--accent-primary)] mb-4" />
+                  <Icon className="w-4 h-4 text-(--accent-primary) mb-4" />
                   <h3 className="text-sm font-semibold text-white/90 mb-1">
                     {t(`india.exams.${key}.title`)}
                   </h3>
@@ -280,19 +280,19 @@ const IndiaLandingPage = () => {
         </section>
 
         {/* Features */}
-        <section className="border-t border-white/[0.06]">
+        <section className="border-t border-white/6">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
             <Eyebrow>{t('india.features.eyebrow')}</Eyebrow>
             <h2 className="text-2xl sm:text-3xl font-heading font-semibold tracking-tight mb-10">
               {t('india.features.title')}
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-l border-white/[0.06]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 border-t border-l border-white/6">
               {featureCards.map(({ icon: Icon, key }) => (
                 <div
                   key={key}
-                  className="border-b border-r border-white/[0.06] p-6 hover:bg-white/[0.03] transition-colors"
+                  className="border-b border-r border-white/6 p-6 hover:bg-white/3 transition-colors"
                 >
-                  <Icon className="w-4 h-4 text-[var(--accent-primary)] mb-4" />
+                  <Icon className="w-4 h-4 text-(--accent-primary) mb-4" />
                   <h3 className="text-sm font-semibold text-white/90 mb-1">
                     {t(`india.features.${key}.title`)}
                   </h3>
@@ -306,13 +306,13 @@ const IndiaLandingPage = () => {
         </section>
 
         {/* FAQ */}
-        <section className="border-t border-white/[0.06]">
+        <section className="border-t border-white/6">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16">
             <Eyebrow>{t('india.faq.eyebrow')}</Eyebrow>
             <h2 className="text-2xl sm:text-3xl font-heading font-semibold tracking-tight mb-10">
               {t('india.faq.title')}
             </h2>
-            <div className="max-w-3xl divide-y divide-white/[0.06] border-t border-b border-white/[0.06]">
+            <div className="max-w-3xl divide-y divide-white/6 border-t border-b border-white/6">
               {faqItems.map((item) => (
                 <details key={item.q} className="group py-4">
                   <summary className="flex items-center justify-between gap-4 cursor-pointer list-none text-sm font-semibold text-white/85 hover:text-white transition-colors">
@@ -329,7 +329,7 @@ const IndiaLandingPage = () => {
         </section>
 
         {/* Final CTA */}
-        <section className="border-t border-white/[0.06]">
+        <section className="border-t border-white/6">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-20">
             <Eyebrow>{t('india.cta.eyebrow')}</Eyebrow>
             <h2 className="text-2xl sm:text-4xl font-heading font-bold tracking-tight mb-3">
@@ -340,7 +340,7 @@ const IndiaLandingPage = () => {
               <Link
                 to="/app"
                 onClick={startOnboarding}
-                className="inline-flex items-center gap-1.5 px-6 py-3 rounded-md font-semibold text-sm transition-opacity border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+                className="inline-flex items-center gap-1.5 px-6 py-3 rounded-md font-semibold text-sm transition-opacity border-2 border-(--accent-primary) text-(--accent-primary) hover:bg-(--accent-primary)/10"
               >
                 {t('india.cta.button')}
                 <ArrowRight className="w-4 h-4" />
@@ -359,7 +359,7 @@ const IndiaLandingPage = () => {
         </section>
 
         {/* Footer */}
-        <footer className="border-t border-white/[0.06]">
+        <footer className="border-t border-white/6">
           <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <span className="text-xs text-white/40">{t('india.footer.copyright')}</span>
             <div className="flex items-center gap-5 text-[13px] text-white/40">

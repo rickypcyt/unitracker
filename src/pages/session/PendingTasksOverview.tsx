@@ -27,24 +27,24 @@ const PendingTasksOverview = ({ limit = 6 }: { limit?: number }) => {
       style={{ padding: 'clamp(0.75rem, 0.6rem + 0.6vw, 1.25rem)' }}
     >
       <div className="flex items-center gap-2 mb-2">
-        <CircleDot size={18} className="text-[var(--accent-primary)]" />
-        <h2 className="font-semibold text-[var(--text-primary)] text-base sm:text-lg">
+        <CircleDot size={18} className="text-(--accent-primary)" />
+        <h2 className="font-semibold text-(--text-primary) text-base sm:text-lg">
           Pending Tasks
         </h2>
-        <span className="text-sm text-[var(--text-secondary)]">
+        <span className="text-sm text-(--text-secondary)">
           {totalCount}
         </span>
       </div>
 
       {tasksLoading ? (
         <div className="flex items-center gap-2 py-2">
-          <Loader2 size={14} className="text-[var(--accent-primary)] animate-spin" />
-          <p className="text-sm text-[var(--text-secondary)]">
+          <Loader2 size={14} className="text-(--accent-primary) animate-spin" />
+          <p className="text-sm text-(--text-secondary)">
             Loading tasks...
           </p>
         </div>
       ) : pendingTasks.length === 0 ? (
-        <p className="text-sm text-[var(--text-secondary)] py-2">
+        <p className="text-sm text-(--text-secondary) py-2">
           None — you're all caught up!
         </p>
       ) : (
@@ -53,25 +53,25 @@ const PendingTasksOverview = ({ limit = 6 }: { limit?: number }) => {
             <div
               key={task.id}
               onClick={handleClick}
-              className="group cursor-pointer flex items-center gap-2.5 bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg px-3 py-2 hover:border-[var(--accent-primary)] transition-all duration-200"
+              className="group cursor-pointer flex items-center gap-2.5 bg-(--bg-secondary) border-2 border-(--border-primary) rounded-lg px-3 py-2 hover:border-(--accent-primary) transition-all duration-200"
             >
-              <span className="w-2 h-2 rounded-full bg-[var(--accent-primary)] flex-shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-(--accent-primary) shrink-0" />
               <span
-                className="text-sm text-[var(--text-primary)] truncate flex-1"
+                className="text-sm text-(--text-primary) truncate flex-1"
                 title={task.title}
               >
                 {task.title}
               </span>
               {task.assignment && (
                 <span
-                  className="text-xs text-[var(--text-secondary)] flex-shrink-0 px-2 py-0.5 rounded bg-[var(--bg-primary)]"
+                  className="text-xs text-(--text-secondary) shrink-0 px-2 py-0.5 rounded bg-(--bg-primary)"
                 >
                   {task.assignment}
                 </span>
               )}
               <ChevronRight
                 size={14}
-                className="text-[var(--text-secondary)] group-hover:text-[var(--accent-primary)] transition-colors flex-shrink-0"
+                className="text-(--text-secondary) group-hover:text-(--accent-primary) transition-colors shrink-0"
               />
             </div>
           ))}

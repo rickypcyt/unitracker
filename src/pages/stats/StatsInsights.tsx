@@ -123,58 +123,58 @@ const StatsInsights = () => {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 p-2 sm:p-4">
-      <div className="bg-[var(--bg-secondary)] rounded-lg p-2 sm:p-3 text-center hover:shadow-md transition-shadow">
+      <div className="bg-(--bg-secondary) rounded-lg p-2 sm:p-3 text-center hover:shadow-md transition-shadow">
         <div className="flex items-center justify-center mb-2">
-          <Clock className="w-4 h-4 text-[var(--accent-primary)]" />
+          <Clock className="w-4 h-4 text-(--accent-primary)" />
         </div>
-        <div className="text-xs text-[var(--text-secondary)] mb-1">Total Time</div>
-        <div className="text-xs sm:text-sm font-semibold text-[var(--text-primary)]">
+        <div className="text-xs text-(--text-secondary) mb-1">Total Time</div>
+        <div className="text-xs sm:text-sm font-semibold text-(--text-primary)">
           {formatMinutesToHM(insights.totalStudyTime)}
         </div>
       </div>
 
-      <div className="bg-[var(--bg-secondary)] rounded-lg p-2 sm:p-3 text-center hover:shadow-md transition-shadow">
+      <div className="bg-(--bg-secondary) rounded-lg p-2 sm:p-3 text-center hover:shadow-md transition-shadow">
         <div className="flex items-center justify-center mb-2">
-          <Target className="w-4 h-4 text-[var(--accent-primary)]" />
+          <Target className="w-4 h-4 text-(--accent-primary)" />
         </div>
-        <div className="text-xs text-[var(--text-secondary)] mb-1">Daily Average</div>
-        <div className="text-xs sm:text-sm font-semibold text-[var(--text-primary)]">
+        <div className="text-xs text-(--text-secondary) mb-1">Daily Average</div>
+        <div className="text-xs sm:text-sm font-semibold text-(--text-primary)">
           {formatMinutesToHM(Math.round(insights.averageDailyTime))}
         </div>
       </div>
 
-      <div className="bg-[var(--bg-secondary)] rounded-lg p-2 sm:p-3 text-center hover:shadow-md transition-shadow">
+      <div className="bg-(--bg-secondary) rounded-lg p-2 sm:p-3 text-center hover:shadow-md transition-shadow">
         <div className="flex items-center justify-center mb-2">
-          <Calendar className="w-4 h-4 text-[var(--accent-primary)]" />
+          <Calendar className="w-4 h-4 text-(--accent-primary)" />
         </div>
-        <div className="text-xs text-[var(--text-secondary)] mb-1">Best Day</div>
-        <div className="text-xs sm:text-sm font-semibold text-[var(--text-primary)]">
+        <div className="text-xs text-(--text-secondary) mb-1">Best Day</div>
+        <div className="text-xs sm:text-sm font-semibold text-(--text-primary)">
           {insights.mostProductiveDay ? formatDate(insights.mostProductiveDay) : 'None'}
         </div>
       </div>
 
-      <div className="bg-[var(--bg-secondary)] rounded-lg p-2 sm:p-3 text-center hover:shadow-md transition-shadow">
+      <div className="bg-(--bg-secondary) rounded-lg p-2 sm:p-3 text-center hover:shadow-md transition-shadow">
         <div className="flex items-center justify-center gap-1 mb-2">
           {getTrendIcon(insights.weeklyTrend)}
         </div>
-        <div className="text-xs text-[var(--text-secondary)] mb-1">Weekly Trend</div>
-        <div className="text-xs sm:text-sm font-semibold text-[var(--text-primary)] capitalize">
+        <div className="text-xs text-(--text-secondary) mb-1">Weekly Trend</div>
+        <div className="text-xs sm:text-sm font-semibold text-(--text-primary) capitalize">
           {insights.weeklyTrend === 'up' ? 'Up' : insights.weeklyTrend === 'down' ? 'Down' : 'Neutral'}
         </div>
       </div>
 
-      <div className="bg-[var(--bg-secondary)] rounded-lg p-2 sm:p-3 text-center hover:shadow-md transition-shadow">
+      <div className="bg-(--bg-secondary) rounded-lg p-2 sm:p-3 text-center hover:shadow-md transition-shadow">
         <div className="flex items-center justify-center mb-2">
-          <Target className="w-4 h-4 text-[var(--accent-primary)]" />
+          <Target className="w-4 h-4 text-(--accent-primary)" />
         </div>
-        <div className="text-xs text-[var(--text-secondary)] mb-1">Monthly Goal</div>
+        <div className="text-xs text-(--text-secondary) mb-1">Monthly Goal</div>
         <div className="relative">
-          <div className="text-xs sm:text-sm font-semibold text-[var(--text-primary)]">
+          <div className="text-xs sm:text-sm font-semibold text-(--text-primary)">
             {Math.round(insights.monthlyProgress)}%
           </div>
-          <div className="w-full bg-[var(--bg-tertiary)] rounded-full h-1 mt-1">
+          <div className="w-full bg-(--bg-tertiary) rounded-full h-1 mt-1">
             <div 
-              className="bg-[var(--accent-primary)] h-1 rounded-full transition-all duration-300"
+              className="bg-(--accent-primary) h-1 rounded-full transition-all duration-300"
               style={{ width: `${insights.monthlyProgress}%` }}
             />
           </div>

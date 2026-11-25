@@ -31,7 +31,7 @@ export const FormInput: React.FC<FormInputProps> = ({
   <div className="flex flex-col h-full">
     <div className="flex-1 flex flex-col">
       {label && (
-        <label htmlFor={id} className="block text-sm font-medium text-[var(--text-primary)] mb-2 min-h-[20px]">
+        <label htmlFor={id} className="block text-sm font-medium text-(--text-primary) mb-2 min-h-[20px]">
           {label} {required && (!value || String(value).trim() === '') && <span className="text-red-500">*</span>}
         </label>
       )}
@@ -41,9 +41,9 @@ export const FormInput: React.FC<FormInputProps> = ({
           type={type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${
-            error ? 'border-red-500' : 'border-[var(--border-primary)]'
-          } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] ${className}`}
+          className={`w-full px-3 py-2 bg-(--bg-primary) border-2 ${
+            error ? 'border-red-500' : 'border-(--border-primary)'
+          } rounded-lg text-(--text-primary) placeholder-(--text-secondary) focus:outline-none focus:border-(--accent-primary) ${className}`}
           placeholder={placeholder}
           min={min}
           max={max}
@@ -81,7 +81,7 @@ export const FormTextarea: React.FC<FormTextareaProps> = ({
 }) => (
   <div className="mb-4">
     {label && (
-      <label htmlFor={id} className="block text-base font-medium text-[var(--text-primary)] mb-2">
+      <label htmlFor={id} className="block text-base font-medium text-(--text-primary) mb-2">
         {label} {required && (!value || value.trim() === '') && <span className="text-red-500">*</span>}
       </label>
     )}
@@ -89,9 +89,9 @@ export const FormTextarea: React.FC<FormTextareaProps> = ({
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${
-        error ? 'border-red-500' : 'border-[var(--border-primary)]'
-      } rounded-lg text-[var(--text-primary)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--accent-primary)] ${className}`}
+      className={`w-full px-3 py-2 bg-(--bg-primary) border-2 ${
+        error ? 'border-red-500' : 'border-(--border-primary)'
+      } rounded-lg text-(--text-primary) placeholder-(--text-secondary) focus:outline-none focus:border-(--accent-primary) ${className}`}
       placeholder={placeholder}
       rows={rows}
       {...props}
@@ -129,7 +129,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
 }) => (
   <div className="mb-4">
     {label && (
-      <label htmlFor={id} className="block text-base font-medium text-[var(--text-primary)] mb-2">
+      <label htmlFor={id} className="block text-base font-medium text-(--text-primary) mb-2">
         {label} {required && (!value || value.trim() === '') && <span className="text-red-500">*</span>}
       </label>
     )}
@@ -137,13 +137,13 @@ export const FormSelect: React.FC<FormSelectProps> = ({
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`w-full px-3 py-2 bg-[var(--bg-primary)] border-2 ${
-        error ? 'border-red-500' : 'border-[var(--border-primary)]'
-      } rounded-lg text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] ${className}`}
+      className={`w-full px-3 py-2 bg-(--bg-primary) border-2 ${
+        error ? 'border-red-500' : 'border-(--border-primary)'
+      } rounded-lg text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary) ${className}`}
       {...props}
     >
       {options.map((option: SelectOption) => (
-        <option key={option.value} value={option.value} className="bg-[var(--bg-primary)] text-[var(--text-primary)]">
+        <option key={option.value} value={option.value} className="bg-(--bg-primary) text-(--text-primary)">
           {option.label}
         </option>
       ))}
@@ -175,8 +175,8 @@ export const FormButton: React.FC<FormButtonProps> = ({
 }) => {
   const baseClasses = 'px-4 py-2 border-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2';
   const variantClasses = {
-    primary: 'border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10',
-    secondary: 'bg-transparent text-[var(--text-secondary)] border-2 border-[var(--text-secondary)] hover:bg-transparent hover:text-[var(--text-primary)]',
+    primary: 'border-2 border-(--accent-primary) text-(--accent-primary) bg-transparent hover:bg-(--accent-primary)/10',
+    secondary: 'bg-transparent text-(--text-secondary) border-2 border-(--text-secondary) hover:bg-transparent hover:text-(--text-primary)',
     danger: 'bg-red-500 text-white hover:bg-red-600',
     custom: '',
   };

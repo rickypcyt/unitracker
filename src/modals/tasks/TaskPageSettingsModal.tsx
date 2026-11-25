@@ -51,7 +51,7 @@ const TaskPageSettingsModal: React.FC<TaskPageSettingsModalProps> = ({
       <div className="space-y-6 p-6">
         {/* View mode selector */}
         <div>
-          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Group By</h3>
+          <h3 className="text-sm font-semibold text-(--text-primary) mb-3">Group By</h3>
           <div className="grid grid-cols-2 gap-2">
             {VIEW_MODE_OPTIONS.map((opt) => {
               const Icon = opt.icon;
@@ -62,8 +62,8 @@ const TaskPageSettingsModal: React.FC<TaskPageSettingsModalProps> = ({
                   onClick={() => onViewModeChange(opt.value)}
                   className={`flex items-center gap-2 py-3 px-4 rounded-lg border transition-all ${
                     isActive
-                      ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
-                      : 'border-[var(--border-primary)] text-[var(--text-secondary)] hover:border-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                      ? 'border-(--accent-primary) bg-(--accent-primary)/10 text-(--accent-primary)'
+                      : 'border-(--border-primary) text-(--text-secondary) hover:border-(--text-secondary) hover:text-(--text-primary)'
                   }`}
                 >
                   <Icon size={18} />
@@ -76,7 +76,7 @@ const TaskPageSettingsModal: React.FC<TaskPageSettingsModalProps> = ({
 
         {/* Column count selector - only for assignment mode */}
         <div>
-          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Number of Columns</h3>
+          <h3 className="text-sm font-semibold text-(--text-primary) mb-3">Number of Columns</h3>
           <div className="grid grid-cols-4 gap-2">
             {COLUMN_OPTIONS.map((opt) => {
               const Icon = opt.icon;
@@ -87,8 +87,8 @@ const TaskPageSettingsModal: React.FC<TaskPageSettingsModalProps> = ({
                   onClick={() => onColumnCountChange(opt.value)}
                   className={`flex flex-col items-center gap-1.5 py-3 rounded-lg border transition-all ${
                     isActive
-                      ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
-                      : 'border-[var(--border-primary)] text-[var(--text-secondary)] hover:border-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                      ? 'border-(--accent-primary) bg-(--accent-primary)/10 text-(--accent-primary)'
+                      : 'border-(--border-primary) text-(--text-secondary) hover:border-(--text-secondary) hover:text-(--text-primary)'
                   }`}
                 >
                   <Icon size={20} />
@@ -101,10 +101,10 @@ const TaskPageSettingsModal: React.FC<TaskPageSettingsModalProps> = ({
 
         {/* FAB position selector */}
         <div>
-          <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Add Button Position</h3>
+          <h3 className="text-sm font-semibold text-(--text-primary) mb-3">Add Button Position</h3>
           <div className="flex items-center gap-4">
             {/* Visual corner selector */}
-            <div className="relative w-32 h-32 rounded-lg border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)] flex-shrink-0">
+            <div className="relative w-32 h-32 rounded-lg border-2 border-(--border-primary) bg-(--bg-secondary) shrink-0">
               {POSITION_OPTIONS.map((opt) => {
                 const isActive = fabPosition === opt.value;
                 return (
@@ -113,8 +113,8 @@ const TaskPageSettingsModal: React.FC<TaskPageSettingsModalProps> = ({
                     onClick={() => onFabPositionChange(opt.value)}
                     className={`absolute w-7 h-7 rounded-full border-2 transition-all flex items-center justify-center ${opt.className} ${
                       isActive
-                        ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)] text-white scale-110'
-                        : 'border-[var(--text-secondary)]/40 bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:border-[var(--accent-primary)]'
+                        ? 'border-(--accent-primary) bg-(--accent-primary) text-white scale-110'
+                        : 'border-(--text-secondary)/40 bg-(--bg-primary) text-(--text-secondary) hover:border-(--accent-primary)'
                     }`}
                     aria-label={opt.label}
                     title={opt.label}
@@ -133,8 +133,8 @@ const TaskPageSettingsModal: React.FC<TaskPageSettingsModalProps> = ({
                   onClick={() => onFabPositionChange(opt.value)}
                   className={`text-sm text-left px-3 py-1.5 rounded-lg transition-colors ${
                     fabPosition === opt.value
-                      ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] font-medium'
-                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'
+                      ? 'bg-(--accent-primary)/10 text-(--accent-primary) font-medium'
+                      : 'text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-secondary)'
                   }`}
                 >
                   {opt.label}

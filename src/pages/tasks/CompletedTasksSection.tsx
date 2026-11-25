@@ -56,7 +56,7 @@ export const CompletedTasksSection: React.FC<CompletedTasksSectionProps> = ({
     /* Floating footer island — anchored bottom-left at the same level as the
        FABs, always visible; click the header to expand the list upward */
     <div className="fixed z-40 bottom-36 left-3 right-3 sm:left-6 sm:right-auto sm:bottom-6 sm:w-[24rem]">
-      <div className="w-full bg-[var(--bg-secondary)] rounded-xl border-2 border-[var(--border-primary)] shadow-xl overflow-hidden">
+      <div className="w-full bg-(--bg-secondary) rounded-xl border-2 border-(--border-primary) shadow-xl overflow-hidden">
         {/* Collapsible task list sorted most recent first — expands upward */}
         <div
           className="relative hide-scrollbar max-h-[50vh] overflow-y-auto px-3"
@@ -65,10 +65,10 @@ export const CompletedTasksSection: React.FC<CompletedTasksSectionProps> = ({
           {tasksByMonth.map((group) => (
             <div key={group.label}>
               <div className="flex items-center gap-2 px-1 pt-2 pb-1 select-none">
-                <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
+                <span className="text-xs font-semibold uppercase tracking-wider text-(--text-secondary)">
                   {group.label}
                 </span>
-                <span className="text-xs text-[var(--text-secondary)]">
+                <span className="text-xs text-(--text-secondary)">
                   {group.tasks.length} task{group.tasks.length === 1 ? '' : 's'}
                 </span>
               </div>
@@ -85,26 +85,26 @@ export const CompletedTasksSection: React.FC<CompletedTasksSectionProps> = ({
 
         {/* Header bar — stays pinned to the bottom edge */}
         <div
-          className="flex items-center justify-between w-full px-3 py-2.5 cursor-pointer select-none border-t border-[var(--border-primary)]"
+          className="flex items-center justify-between w-full px-3 py-2.5 cursor-pointer select-none border-t border-(--border-primary)"
           onClick={onToggleShowCompleted}
         >
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <CheckCircle2 size={18} className="text-emerald-400 flex-shrink-0" />
+            <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
             <h3 className="font-semibold text-base text-emerald-400 truncate">
               Completed Tasks
             </h3>
-            <span className="text-sm text-[var(--text-secondary)] flex-shrink-0">
+            <span className="text-sm text-(--text-secondary) shrink-0">
               {completedTasks.length} done
             </span>
             <ChevronDown
               size={18}
-              className={`text-[var(--text-secondary)] transition-transform duration-200 flex-shrink-0 ${showCompleted ? '' : 'rotate-180'}`}
+              className={`text-(--text-secondary) transition-transform duration-200 shrink-0 ${showCompleted ? '' : 'rotate-180'}`}
             />
           </div>
           {showCompleted && (
             <button
               onClick={(e) => { e.stopPropagation(); onDeleteAllCompletedTasks(); }}
-              className="flex items-center gap-1 text-xs text-red-500 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10 flex-shrink-0 ml-2"
+              className="flex items-center gap-1 text-xs text-red-500 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10 shrink-0 ml-2"
             >
               <Trash2 size={14} />
               Clear all

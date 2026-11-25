@@ -51,9 +51,9 @@ const AddAssignmentModal = ({
       maxWidth="max-w-md"
     >
       <div className="space-y-4">
-        <div className="flex items-center gap-3 text-[var(--text-secondary)]">
-          <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
-            <BookOpen size={20} className="text-[var(--accent-primary)]" />
+        <div className="flex items-center gap-3 text-(--text-secondary)">
+          <div className="p-2 rounded-lg bg-(--accent-primary)/10">
+            <BookOpen size={20} className="text-(--accent-primary)" />
           </div>
           <p className="text-sm">
             Create a new assignment (subject). You'll be able to add tasks to it next.
@@ -63,7 +63,7 @@ const AddAssignmentModal = ({
         <div>
           <label
             htmlFor="assignment-name"
-            className="block text-sm font-medium text-[var(--text-secondary)] mb-1.5"
+            className="block text-sm font-medium text-(--text-secondary) mb-1.5"
           >
             Assignment name
           </label>
@@ -78,7 +78,7 @@ const AddAssignmentModal = ({
             }}
             onKeyDown={handleKeyDown}
             placeholder="e.g. Calculus, Physics, History..."
-            className="w-full bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg px-3 py-2.5 text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-colors"
+            className="w-full bg-(--bg-secondary) border-2 border-(--border-primary) rounded-lg px-3 py-2.5 text-(--text-primary) focus:outline-none focus:border-(--accent-primary) transition-colors"
             autoFocus
           />
           {error && (
@@ -89,13 +89,13 @@ const AddAssignmentModal = ({
         <div className="flex justify-end gap-2 pt-2">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors text-sm font-medium"
+            className="px-4 py-2 rounded-lg text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-secondary) transition-colors text-sm font-medium"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 rounded-lg transition-opacity text-sm font-medium border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10"
+            className="px-4 py-2 rounded-lg transition-opacity text-sm font-medium border-2 border-(--accent-primary) text-(--accent-primary) hover:bg-(--accent-primary)/10"
           >
             Create & Add Task
           </button>

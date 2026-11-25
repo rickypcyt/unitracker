@@ -135,21 +135,21 @@ export const StatisticsGrid = ({ statsData }: { statsData: StatData }) => {
   return (
     <section
       aria-label="Study time by period"
-      className="overflow-hidden rounded-2xl border-2 border-[var(--border-primary)] bg-[var(--bg-secondary)]"
+      className="overflow-hidden rounded-2xl border-2 border-(--border-primary) bg-(--bg-secondary)"
     >
       {/* Card header */}
-      <div className="flex items-center justify-between gap-3 border-b border-[var(--border-primary)] px-4 py-3">
+      <div className="flex items-center justify-between gap-3 border-b border-(--border-primary) px-4 py-3">
         <div className="flex items-center gap-2">
-          <Clock size={16} className="text-[var(--accent-primary)]" />
-          <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--text-secondary)]">Study time</h3>
+          <Clock size={16} className="text-(--accent-primary)" />
+          <h3 className="text-sm font-bold uppercase tracking-wider text-(--text-secondary)">Study time</h3>
         </div>
-        <span className="text-xs tabular-nums text-[var(--text-secondary)]">
+        <span className="text-xs tabular-nums text-(--text-secondary)">
           {statsData.sessionsYear} sessions this year
         </span>
       </div>
 
       {/* Cells separated by 1px dividers (gap reveals the border colour behind) */}
-      <div className="grid grid-cols-2 gap-px bg-[var(--border-primary)] sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-px bg-(--border-primary) sm:grid-cols-3 lg:grid-cols-6">
         {periods.map(({ label, timeKey, sessionKey }) => {
           const color = PERIOD_COLORS[label] ?? 'var(--accent-primary)';
           const minutes = statsData[timeKey] || 0;
@@ -157,14 +157,14 @@ export const StatisticsGrid = ({ statsData }: { statsData: StatData }) => {
           const active = minutes > 0;
           const pct = Math.round((minutes / maxMinutes) * 100);
           return (
-            <div key={label} className="flex flex-col gap-1.5 bg-[var(--bg-secondary)] px-4 py-4">
+            <div key={label} className="flex flex-col gap-1.5 bg-(--bg-secondary) px-4 py-4">
               <div className="flex items-center gap-2">
                 <span
-                  className="h-2 w-2 flex-shrink-0 rounded-full"
+                  className="h-2 w-2 shrink-0 rounded-full"
                   style={{ backgroundColor: color, opacity: active ? 1 : 0.4 }}
                   aria-hidden="true"
                 />
-                <span className="truncate text-xs font-semibold uppercase tracking-wide text-[var(--text-secondary)]">{label}</span>
+                <span className="truncate text-xs font-semibold uppercase tracking-wide text-(--text-secondary)">{label}</span>
               </div>
               <span
                 className="text-xl font-bold leading-tight tabular-nums sm:text-2xl"
@@ -172,7 +172,7 @@ export const StatisticsGrid = ({ statsData }: { statsData: StatData }) => {
               >
                 {formatMinutesToHMS(minutes)}
               </span>
-              <span className="text-xs tabular-nums text-[var(--text-secondary)]">
+              <span className="text-xs tabular-nums text-(--text-secondary)">
                 {sessions} {sessions === 1 ? 'session' : 'sessions'}
               </span>
               <div

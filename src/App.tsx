@@ -152,7 +152,7 @@ const PageContent: FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] w-full overflow-x-clip flex flex-col">
+    <div className="min-h-screen bg-(--bg-primary) w-full overflow-x-clip flex flex-col">
       <DemoBanner />
       <Navbar />
       <main className="min-w-0 flex-1 relative">

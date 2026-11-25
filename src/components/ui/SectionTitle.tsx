@@ -77,7 +77,7 @@ const SectionTitle: React.FC<SectionTitleProps> = ({
         tabIndex={0}
         aria-describedby={anchor ? tooltipId : undefined}
       >
-        <h2 className={`${sizeClasses[size]} text-[var(--text-primary)] ${className}`}>
+        <h2 className={`${sizeClasses[size]} text-(--text-primary) ${className}`}>
           {title}
         </h2>
       </div>
@@ -86,7 +86,7 @@ const SectionTitle: React.FC<SectionTitleProps> = ({
         <div
           id={tooltipId}
           role="tooltip"
-          className="fixed z-[100000] pointer-events-none rounded-lg border-2 border-[var(--accent-primary)] bg-[var(--bg-primary)] p-3 shadow-xl"
+          className="fixed z-100000 pointer-events-none rounded-lg border-2 border-(--accent-primary) bg-(--bg-primary) p-3 shadow-xl"
           style={{
             left: anchor.left,
             top: anchor.top,
@@ -95,9 +95,9 @@ const SectionTitle: React.FC<SectionTitleProps> = ({
           }}
         >
           {anchor.below
-            ? <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-r-[8px] border-b-[8px] border-transparent border-b-[var(--accent-primary)]" />
-            : <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-transparent border-t-[var(--accent-primary)]" />}
-          <p className="text-sm text-[var(--text-primary)] leading-relaxed">
+            ? <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-(--accent-primary)" />
+            : <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-(--accent-primary)" />}
+          <p className="text-sm text-(--text-primary) leading-relaxed">
             {tooltip}
           </p>
         </div>,

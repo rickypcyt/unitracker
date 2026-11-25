@@ -41,7 +41,7 @@ const SOUND_THEMES = {
   brown: {
     iconBg: "bg-amber-500/10",
     iconText: "text-amber-600 dark:text-amber-400",
-    gradient: "bg-gradient-to-r from-amber-400 to-amber-600",
+    gradient: "bg-linear-to-r from-amber-400 to-amber-600",
     activeBorder: "border-amber-500/40",
     activeRing: "ring-amber-500/30",
     badge: "bg-amber-500/10",
@@ -53,7 +53,7 @@ const SOUND_THEMES = {
   rain: {
     iconBg: "bg-blue-500/10",
     iconText: "text-blue-600 dark:text-blue-400",
-    gradient: "bg-gradient-to-r from-blue-400 to-blue-600",
+    gradient: "bg-linear-to-r from-blue-400 to-blue-600",
     activeBorder: "border-blue-500/40",
     activeRing: "ring-blue-500/30",
     badge: "bg-blue-500/10",
@@ -65,7 +65,7 @@ const SOUND_THEMES = {
   ocean: {
     iconBg: "bg-cyan-500/10",
     iconText: "text-cyan-600 dark:text-cyan-400",
-    gradient: "bg-gradient-to-r from-cyan-400 to-cyan-600",
+    gradient: "bg-linear-to-r from-cyan-400 to-cyan-600",
     activeBorder: "border-cyan-500/40",
     activeRing: "ring-cyan-500/30",
     badge: "bg-cyan-500/10",
@@ -99,10 +99,10 @@ function SoundControl({
 
   return (
     <motion.div
-      className={`noise-item relative overflow-hidden rounded-2xl border bg-[var(--bg-primary)] p-4 transition-all duration-300 hover:shadow-md ${
+      className={`noise-item relative overflow-hidden rounded-2xl border bg-(--bg-primary) p-4 transition-all duration-300 hover:shadow-md ${
         isPlaying
           ? `${theme.activeBorder} shadow-md ring-1 ${theme.activeRing}`
-          : "border-[var(--border-primary)]"
+          : "border-(--border-primary)"
       }`}
     >
       <div className="flex items-center gap-4">
@@ -135,7 +135,7 @@ function SoundControl({
         <div className="flex-1 min-w-0">
           <div className="noise-item-head flex items-center justify-between gap-2 mb-2">
             <div className="flex min-w-0 flex-1 items-center gap-1.5">
-            <span className="font-semibold text-[var(--text-primary)] truncate">
+            <span className="font-semibold text-(--text-primary) truncate">
               {label}
             </span>
             {isPlaying && (
@@ -164,8 +164,8 @@ function SoundControl({
           </div>
 
           <ReactSlider
-            className="h-2 w-full bg-[var(--border-primary)] rounded-full"
-            thumbClassName={`h-5 w-5 rounded-full ${theme.thumb} border-2 border-[var(--bg-primary)] shadow-md cursor-pointer -translate-y-1.5 transition-transform hover:scale-110 focus:outline-none focus:ring-2`}
+            className="h-2 w-full bg-(--border-primary) rounded-full"
+            thumbClassName={`h-5 w-5 rounded-full ${theme.thumb} border-2 border-(--bg-primary) shadow-md cursor-pointer -translate-y-1.5 transition-transform hover:scale-110 focus:outline-none focus:ring-2`}
             trackClassName="h-2 rounded-full"
             renderTrack={(
               props: { key?: React.Key } & React.HTMLProps<HTMLDivElement>,
@@ -179,7 +179,7 @@ function SoundControl({
                   className={`h-2 rounded-full transition-opacity ${
                     state.index === 0
                       ? theme.gradient
-                      : "bg-[var(--border-primary)]"
+                      : "bg-(--border-primary)"
                   }`}
                 />
               );
@@ -203,7 +203,7 @@ function SoundControl({
           className={`noise-play flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all duration-200 hover:scale-105 ${
             isPlaying
               ? `${theme.iconBg} ${theme.iconText}`
-              : `bg-[var(--bg-secondary)] text-[var(--text-secondary)] ${theme.buttonHover}`
+              : `bg-(--bg-secondary) text-(--text-secondary) ${theme.buttonHover}`
           }`}
         >
           {isPlaying ? (
@@ -258,10 +258,10 @@ export default function NoiseGenerator() {
         className="noise-header flex items-center justify-between pb-3"
       >
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
-              <Headphones size={18} className="text-[var(--accent-primary)]" />
+            <div className="p-2 rounded-lg bg-(--accent-primary)/10">
+              <Headphones size={18} className="text-(--accent-primary)" />
             </div>
-            <h3 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] leading-tight">
+            <h3 className="text-base sm:text-lg font-semibold text-(--text-primary) leading-tight">
               {t('session.noise.title')}
             </h3>
           </div>

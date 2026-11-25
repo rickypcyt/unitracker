@@ -123,42 +123,42 @@ const FirstTaskPrompt: React.FC = () => {
       maxWidth="max-w-md"
     >
       <div className="flex flex-col gap-4 py-2">
-        <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{t('firstTask.body')}</p>
+        <p className="text-sm text-(--text-secondary) leading-relaxed">{t('firstTask.body')}</p>
         <ol className="flex flex-col gap-2">
           {steps.map((step, i) => (
             <li
               key={step.title}
               className={`flex items-center gap-3 rounded-xl border-2 p-3 transition-colors ${
                 i === activeStep
-                  ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10'
-                  : 'border-[var(--border-primary)]/30 bg-[var(--bg-secondary)]/30 opacity-70'
+                  ? 'border-(--accent-primary) bg-(--accent-primary)/10'
+                  : 'border-(--border-primary)/30 bg-(--bg-secondary)/30 opacity-70'
               }`}
             >
-              <span className="flex-shrink-0 w-9 h-9 rounded-lg bg-[var(--accent-primary)]/15 flex items-center justify-center">
+              <span className="shrink-0 w-9 h-9 rounded-lg bg-(--accent-primary)/15 flex items-center justify-center">
                 {step.done ? (
-                  <Check className="w-4 h-4 text-[var(--accent-primary)]" strokeWidth={3} />
+                  <Check className="w-4 h-4 text-(--accent-primary)" strokeWidth={3} />
                 ) : (
-                  <step.icon className="w-4 h-4 text-[var(--accent-primary)]" />
+                  <step.icon className="w-4 h-4 text-(--accent-primary)" />
                 )}
               </span>
               <div className="min-w-0">
-                <div className="text-sm font-semibold text-[var(--text-primary)]">
+                <div className="text-sm font-semibold text-(--text-primary)">
                   {i + 1}. {step.title}
                 </div>
-                <div className="text-xs text-[var(--text-secondary)]">{step.desc}</div>
+                <div className="text-xs text-(--text-secondary)">{step.desc}</div>
               </div>
             </li>
           ))}
         </ol>
         <button
-          className="w-full rounded-xl border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] font-bold py-2.5 bg-[var(--accent-primary)]/10 hover:bg-[var(--accent-primary)]/20 transition-colors"
+          className="w-full rounded-xl border-2 border-(--accent-primary) text-(--accent-primary) font-bold py-2.5 bg-(--accent-primary)/10 hover:bg-(--accent-primary)/20 transition-colors"
           onClick={handleCreate}
           autoFocus
         >
           {needsWorkspace ? t('firstTask.startWorkspace') : t('firstTask.startTask')}
         </button>
         <button
-          className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          className="text-sm text-(--text-secondary) hover:text-(--text-primary) transition-colors"
           onClick={handleDismiss}
         >
           {t('firstTask.later')}

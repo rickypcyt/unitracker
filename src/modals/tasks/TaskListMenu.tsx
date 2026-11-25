@@ -177,7 +177,7 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
   const currentStatusTextColor = currentStatusInfo.textColor;
   const currentStatusBgColor = currentStatusInfo.bgColor;
   return <>
-      <div ref={menuRef} className="fixed z-50 min-w-[220px] rounded-lg bg-[var(--bg-primary)] p-2 shadow-xl" style={{
+      <div ref={menuRef} className="fixed z-50 min-w-[220px] rounded-lg bg-(--bg-primary) p-2 shadow-xl" style={{
       position: 'fixed',
       left: menuPosition?.x ?? contextMenu.x,
       top: menuPosition?.y ?? contextMenu.y,
@@ -186,7 +186,7 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
     }}>
         <div className="space-y-1">
           <div className="relative">
-            <button onClick={handleStatusButtonClick} className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center justify-between gap-2 transition-all duration-200 hover:ring-2 hover:ring-[var(--accent-primary)] hover:ring-opacity-50">
+            <button onClick={handleStatusButtonClick} className="w-full px-2 py-2 text-left text-base text-(--text-primary) hover:bg-(--bg-secondary) rounded-md flex items-center justify-between gap-2 transition-all duration-200 hover:ring-2 hover:ring-(--accent-primary) hover:ring-opacity-50">
               <div className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${currentStatusBgColor}`}></span>
                 <span className={currentStatusTextColor}>{currentStatusLabel}</span>
@@ -200,7 +200,7 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
           <button onClick={() => {
           onEditTask(contextMenu.task);
           onClose();
-        }} className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-all duration-200 hover:ring-2 hover:ring-[var(--accent-primary)] hover:ring-opacity-50">
+        }} className="w-full px-2 py-2 text-left text-base text-(--text-primary) hover:bg-(--bg-secondary) rounded-md flex items-center gap-2 transition-all duration-200 hover:ring-2 hover:ring-(--accent-primary) hover:ring-opacity-50">
             <Info size={16} />
             Edit Task
           </button>
@@ -212,7 +212,7 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
           };
           onSetDate?.(contextMenu.task, position);
           onClose();
-        }} className="w-full px-2 py-2 text-left text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-all duration-200 hover:ring-2 hover:ring-[var(--accent-primary)] hover:ring-opacity-50">
+        }} className="w-full px-2 py-2 text-left text-base text-(--text-primary) hover:bg-(--bg-secondary) rounded-md flex items-center gap-2 transition-all duration-200 hover:ring-2 hover:ring-(--accent-primary) hover:ring-opacity-50">
             <Calendar size={16} />
             Date
           </button>
@@ -220,14 +220,14 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
           <button onClick={() => {
           onDeleteTask(contextMenu.task.id);
           onClose();
-        }} className="w-full px-2 py-2 text-left text-base text-red-500 hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-all duration-200 hover:ring-2 hover:ring-red-500 hover:ring-opacity-30">
+        }} className="w-full px-2 py-2 text-left text-base text-red-500 hover:bg-(--bg-secondary) rounded-md flex items-center gap-2 transition-all duration-200 hover:ring-2 hover:ring-red-500 hover:ring-opacity-30">
             <Trash2 size={16} />
             Delete Task
           </button>
         </div>
       </div>
 
-      {showStatusMenu && <div ref={statusMenuRef} className="fixed z-50 min-w-[180px] rounded-lg bg-[var(--bg-primary)] p-2 shadow-xl" style={{
+      {showStatusMenu && <div ref={statusMenuRef} className="fixed z-50 min-w-[180px] rounded-lg bg-(--bg-primary) p-2 shadow-xl" style={{
       position: 'fixed',
       left: statusPosition.x,
       top: statusPosition.y,
@@ -237,7 +237,7 @@ export const TaskListMenu: React.FC<TaskListMenuProps> = ({
           <div className="space-y-1">
             {TASK_STATUSES.map(status => <button key={status.id} onClick={() => {
           handleStatusSelect(status.id);
-        }} className={`w-full px-2 py-2 text-left text-base rounded-md flex items-center gap-2 transition-all duration-200 hover:bg-[var(--bg-secondary)] ${status.textColor} ${currentStatus === status.id ? 'font-semibold' : ''}`}>
+        }} className={`w-full px-2 py-2 text-left text-base rounded-md flex items-center gap-2 transition-all duration-200 hover:bg-(--bg-secondary) ${status.textColor} ${currentStatus === status.id ? 'font-semibold' : ''}`}>
                 <span className="w-2 h-2 rounded-full bg-current"></span>
                 {status.label}
               </button>)}

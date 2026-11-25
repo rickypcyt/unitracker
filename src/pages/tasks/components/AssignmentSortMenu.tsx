@@ -46,16 +46,16 @@ export const AssignmentSortMenu: React.FC<AssignmentSortMenuProps> = ({
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 text-sm bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-lg hover:bg-[var(--bg-secondary)]/80 transition-colors"
+        className="flex items-center gap-2 px-3 py-2 text-sm bg-(--bg-secondary) border-2 border-(--border-primary) rounded-lg hover:bg-(--bg-secondary)/80 transition-colors"
       >
-        <ArrowUpDown className="w-4 h-4 text-[var(--text-secondary)]" />
-        <span className="text-[var(--text-primary)]">{currentOption?.label || 'Sort'}</span>
-        <ChevronDown className={`w-4 h-4 text-[var(--text-secondary)] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        <ArrowUpDown className="w-4 h-4 text-(--text-secondary)" />
+        <span className="text-(--text-primary)">{currentOption?.label || 'Sort'}</span>
+        <ChevronDown className={`w-4 h-4 text-(--text-secondary) transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-48 bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg z-50">
+        <div className="absolute top-full left-0 mt-1 w-48 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg shadow-lg z-50">
           <div className="py-1">
             {SORT_OPTIONS.map((option) => (
               <button
@@ -64,12 +64,12 @@ export const AssignmentSortMenu: React.FC<AssignmentSortMenuProps> = ({
                   onSortChange(option.id);
                   setIsOpen(false);
                 }}
-                className={`w-full px-3 py-2 text-left text-sm hover:bg-[var(--bg-secondary)] transition-colors ${
-                  currentSort === option.id ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'
+                className={`w-full px-3 py-2 text-left text-sm hover:bg-(--bg-secondary) transition-colors ${
+                  currentSort === option.id ? 'bg-(--accent-primary)/10 text-(--accent-primary)' : 'text-(--text-primary)'
                 }`}
               >
                 <div className="font-medium">{option.label}</div>
-                <div className="text-xs text-[var(--text-secondary)]">{option.description}</div>
+                <div className="text-xs text-(--text-secondary)">{option.description}</div>
               </button>
             ))}
           </div>

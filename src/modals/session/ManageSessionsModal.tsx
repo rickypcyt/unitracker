@@ -305,14 +305,14 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
     return <BaseModal isOpen={isOpen} onClose={onClose} title="" maxWidth="max-w-6xl" padding="none" showHeader={false}>
         <div className="p-4">
           <div className="relative flex items-center justify-center mb-6">
-            <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+            <h2 className="text-xl font-semibold text-(--text-primary)">
               Manage Sessions
             </h2>
-            <button onClick={onClose} className="absolute right-0 p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Close">
+            <button onClick={onClose} className="absolute right-0 p-1 text-(--text-secondary) hover:text-(--text-primary) transition-colors" aria-label="Close">
               <X size={24} />
             </button>
           </div>
-          <div className="p-6 text-center text-[var(--text-secondary)]">
+          <div className="p-6 text-center text-(--text-secondary)">
             No sessions yet. Please log in first to start tracking your study sessions.
           </div>
         </div>
@@ -324,22 +324,22 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
     return <BaseModal isOpen={isOpen} onClose={onClose} title="" maxWidth="max-w-6xl" padding="none" showHeader={false}>
         <div className="p-4">
           <div className="relative flex items-center justify-center mb-6">
-            <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+            <h2 className="text-xl font-semibold text-(--text-primary)">
               Manage Sessions
             </h2>
-            <button onClick={onClose} className="absolute right-0 p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Close">
+            <button onClick={onClose} className="absolute right-0 p-1 text-(--text-secondary) hover:text-(--text-primary) transition-colors" aria-label="Close">
               <X size={24} />
             </button>
           </div>
           <div className="p-8 text-center">
             <div className="mx-auto w-16 h-16 bg-[var(--accent-primary)/10] rounded-full flex items-center justify-center mb-4">
-              <BookOpen size={24} className="text-[var(--accent-primary)]" />
+              <BookOpen size={24} className="text-(--accent-primary)" />
             </div>
-            <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">No study sessions yet</h3>
-            <p className="text-[var(--text-secondary)] mb-6">
+            <h3 className="text-lg font-medium text-(--text-primary) mb-2">No study sessions yet</h3>
+            <p className="text-(--text-secondary) mb-6">
               Start a new study session to see your progress here.
             </p>
-            <button onClick={onClose} className="px-4 py-2 border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent rounded-lg hover:bg-[var(--accent-primary)]/10 transition-colors">
+            <button onClick={onClose} className="px-4 py-2 border-2 border-(--accent-primary) text-(--accent-primary) bg-transparent rounded-lg hover:bg-(--accent-primary)/10 transition-colors">
               Start
             </button>
           </div>
@@ -347,16 +347,16 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
       </BaseModal>;
   }
   return <BaseModal isOpen={isOpen} onClose={onClose} title="" maxWidth="max-w-6xl" padding="none" showHeader={false}>
-      <div className="w-full h-full bg-[var(--bg-primary)] flex flex-col">
-        <div className="p-4 flex-shrink-0">
+      <div className="w-full h-full bg-(--bg-primary) flex flex-col">
+        <div className="p-4 shrink-0">
           <div className="relative flex items-center justify-center mb-6">
-            {selectedMonth ? <button onClick={() => setSelectedMonth(null)} className="absolute left-0 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2">
+            {selectedMonth ? <button onClick={() => setSelectedMonth(null)} className="absolute left-0 text-(--text-secondary) hover:text-(--text-primary) transition-colors flex items-center gap-2">
                 <ArrowLeft size={20} className="-ml-1" /> Back to All Sessions
               </button> : null}
-            <h2 className="text-xl font-semibold text-[var(--text-primary)]">
+            <h2 className="text-xl font-semibold text-(--text-primary)">
               {selectedMonth ? selectedMonth : 'Manage Sessions'}
             </h2>
-            <button onClick={onClose} className="absolute right-0 p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors" aria-label="Close">
+            <button onClick={onClose} className="absolute right-0 p-1 text-(--text-secondary) hover:text-(--text-primary) transition-colors" aria-label="Close">
               <X size={24} />
             </button>
           </div>
@@ -371,40 +371,40 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
               const weeksData = groupSessionsByWeeks(monthLaps, selectedMonth || undefined);
               return <div className="space-y-6 pb-6">
                       {/* Month Statistics Header */}
-                      <div className="bg-gradient-to-r from-[var(--accent-primary)/10] to-[var(--accent-primary)/5]  rounded-2xl mb-6">
+                      <div className="bg-linear-to-r from-[var(--accent-primary)/10] to-[var(--accent-primary)/5]  rounded-2xl mb-6">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          <div className="bg-[var(--bg-primary)] rounded-xl p-4 border-2 border-[var(--border-primary)]">
+                          <div className="bg-(--bg-primary) rounded-xl p-4 border-2 border-(--border-primary)">
                             <div className="flex items-center gap-2 mb-2">
-                              <BookOpen size={16} className="text-[var(--accent-primary)]" />
-                              <span className="text-sm text-[var(--text-secondary)] font-medium">Sessions</span>
+                              <BookOpen size={16} className="text-(--accent-primary)" />
+                              <span className="text-sm text-(--text-secondary) font-medium">Sessions</span>
                             </div>
-                            <p className="text-2xl font-bold text-[var(--text-primary)]">{monthStats.totalSessions}</p>
+                            <p className="text-2xl font-bold text-(--text-primary)">{monthStats.totalSessions}</p>
                           </div>
                           
-                          <div className="bg-[var(--bg-primary)] rounded-xl p-4 border-2 border-[var(--border-primary)]">
+                          <div className="bg-(--bg-primary) rounded-xl p-4 border-2 border-(--border-primary)">
                             <div className="flex items-center gap-2 mb-2">
-                              <Clock size={16} className="text-[var(--accent-primary)]" />
-                              <span className="text-sm text-[var(--text-secondary)] font-medium">Total Time</span>
+                              <Clock size={16} className="text-(--accent-primary)" />
+                              <span className="text-sm text-(--text-secondary) font-medium">Total Time</span>
                             </div>
-                            <p className="text-2xl font-bold text-[var(--text-primary)]">
+                            <p className="text-2xl font-bold text-(--text-primary)">
                               {formatHMS(monthStats.totalSeconds)}
                             </p>
                           </div>
                           
-                          <div className="bg-[var(--bg-primary)] rounded-xl p-4 border-2 border-[var(--border-primary)]">
+                          <div className="bg-(--bg-primary) rounded-xl p-4 border-2 border-(--border-primary)">
                             <div className="flex items-center gap-2 mb-2">
-                              <Zap size={16} className="text-[var(--accent-primary)]" />
-                              <span className="text-sm text-[var(--text-secondary)] font-medium">Avg Duration</span>
+                              <Zap size={16} className="text-(--accent-primary)" />
+                              <span className="text-sm text-(--text-secondary) font-medium">Avg Duration</span>
                             </div>
-                            <p className="text-2xl font-bold text-[var(--text-primary)]">{formatHMS(monthStats.avgDuration)}</p>
+                            <p className="text-2xl font-bold text-(--text-primary)">{formatHMS(monthStats.avgDuration)}</p>
                           </div>
                           
-                          <div className="bg-[var(--bg-primary)] rounded-xl p-4 border-2 border-[var(--border-primary)]">
+                          <div className="bg-(--bg-primary) rounded-xl p-4 border-2 border-(--border-primary)">
                             <div className="flex items-center gap-2 mb-2">
-                              <Calendar size={16} className="text-[var(--accent-primary)]" />
-                              <span className="text-sm text-[var(--text-secondary)] font-medium">Days Active</span>
+                              <Calendar size={16} className="text-(--accent-primary)" />
+                              <span className="text-sm text-(--text-secondary) font-medium">Days Active</span>
                             </div>
-                            <p className="text-2xl font-bold text-[var(--text-primary)]">
+                            <p className="text-2xl font-bold text-(--text-primary)">
                               {new Set(monthLaps.map(lap => new Date(lap.created_at).toDateString())).size}
                             </p>
                           </div>
@@ -413,48 +413,48 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
 
                       {/* Weeks View */}
                       {weeksData.length > 0 ? <div className="space-y-6">
-                          {weeksData.map(week => <div key={week.weekNumber} className="bg-[var(--bg-secondary)] rounded-xl p-4 sm:p-5 border-2 border-[var(--border-primary)]">
+                          {weeksData.map(week => <div key={week.weekNumber} className="bg-(--bg-secondary) rounded-xl p-4 sm:p-5 border-2 border-(--border-primary)">
                               <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center gap-2.5">
-                                  <div className="w-1.5 h-6 bg-[var(--accent-primary)] rounded-full"></div>
-                                  <h3 className="text-base font-bold text-[var(--text-primary)]">
+                                  <div className="w-1.5 h-6 bg-(--accent-primary) rounded-full"></div>
+                                  <h3 className="text-base font-bold text-(--text-primary)">
                                     {week.weekName}
                                   </h3>
                                 </div>
-                                <span className="text-xs text-[var(--text-secondary)] bg-[var(--bg-primary)] px-2.5 py-1 rounded-full border border-[var(--border-primary)] font-medium">
+                                <span className="text-xs text-(--text-secondary) bg-(--bg-primary) px-2.5 py-1 rounded-full border border-(--border-primary) font-medium">
                                   {week.totalSessions} {week.totalSessions === 1 ? 'session' : 'sessions'}
                                 </span>
                               </div>
 
-                              <div className="divide-y divide-[var(--border-primary)]">
+                              <div className="divide-y divide-(--border-primary)">
                                 {sortDaysByCurrentFirst(week.days).map((day, dayIndex) => <div key={dayIndex} className="flex gap-3 sm:gap-4 py-3 first:pt-0 last:pb-0">
-                                    <div className="w-12 flex-shrink-0 pt-0.5 text-center">
-                                      <div className={`text-xs font-semibold uppercase tracking-wide ${day.isToday ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>
+                                    <div className="w-12 shrink-0 pt-0.5 text-center">
+                                      <div className={`text-xs font-semibold uppercase tracking-wide ${day.isToday ? 'text-(--accent-primary)' : 'text-(--text-secondary)'}`}>
                                         {day.dayName.substring(0, 3)}
                                       </div>
-                                      <div className={`text-lg font-bold leading-tight ${day.isToday ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+                                      <div className={`text-lg font-bold leading-tight ${day.isToday ? 'text-(--accent-primary)' : 'text-(--text-primary)'}`}>
                                         {day.dayNumber}
                                       </div>
                                     </div>
 
-                                    <div className="flex-1 min-w-0 divide-y divide-[var(--border-primary)]/50">
-                                      {day.sessions.map(lap => <div key={lap.id} className="group flex items-center justify-between gap-3 -mx-2 px-2 py-2 rounded-md hover:bg-[var(--accent-primary)]/5 cursor-pointer transition-colors" onClick={() => setSelectedSession(lap)} onContextMenu={e => handleSessionContextMenu(e, lap)}>
+                                    <div className="flex-1 min-w-0 divide-y divide-(--border-primary)/50">
+                                      {day.sessions.map(lap => <div key={lap.id} className="group flex items-center justify-between gap-3 -mx-2 px-2 py-2 rounded-md hover:bg-(--accent-primary)/5 cursor-pointer transition-colors" onClick={() => setSelectedSession(lap)} onContextMenu={e => handleSessionContextMenu(e, lap)}>
                                           <div className="flex min-w-0 items-center gap-2">
-                                            <span className="flex-shrink-0 text-xs font-bold text-[var(--accent-primary)]">
+                                            <span className="shrink-0 text-xs font-bold text-(--accent-primary)">
                                               #{lap.session_number}
                                             </span>
-                                            <span className="truncate text-sm font-medium text-[var(--text-primary)]">
+                                            <span className="truncate text-sm font-medium text-(--text-primary)">
                                               {lap.name || `Session ${lap.session_number}`}
                                             </span>
                                           </div>
-                                          <div className="flex flex-shrink-0 items-center gap-1.5">
-                                            <span className="text-sm font-mono text-[var(--text-secondary)]">
+                                          <div className="flex shrink-0 items-center gap-1.5">
+                                            <span className="text-sm font-mono text-(--text-secondary)">
                                               {formatDurationHMS(lap.duration)}
                                             </span>
                                             <button onClick={e => {
                                       e.stopPropagation();
                                       handleDeleteClick(lap.id);
-                                    }} className="p-1 rounded text-[var(--text-secondary)] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Delete session">
+                                    }} className="p-1 rounded text-(--text-secondary) hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Delete session">
                                               <Trash2 size={13} />
                                             </button>
                                           </div>
@@ -463,12 +463,12 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                                   </div>)}
                               </div>
                             </div>)}
-                        </div> : <div className="text-center py-16 bg-[var(--bg-secondary)] rounded-2xl border-2 border-[var(--border-primary)]">
+                        </div> : <div className="text-center py-16 bg-(--bg-secondary) rounded-2xl border-2 border-(--border-primary)">
                           <div className="mx-auto w-20 h-20 bg-[var(--accent-primary)/10] rounded-full flex items-center justify-center mb-6">
-                            <BookOpen size={32} className="text-[var(--accent-primary)]" />
+                            <BookOpen size={32} className="text-(--accent-primary)" />
                           </div>
-                          <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">No sessions this month</h3>
-                          <p className="text-[var(--text-secondary)] max-w-md mx-auto">
+                          <h3 className="text-xl font-bold text-(--text-primary) mb-3">No sessions this month</h3>
+                          <p className="text-(--text-secondary) max-w-md mx-auto">
                             Start a new study session to see your progress here. Keep tracking your study habits to build your learning streak!
                           </p>
                         </div>}
@@ -525,7 +525,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                 const monthOrder = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as const;
                 return Object.entries(monthsByYear).sort(([yearA], [yearB]) => parseInt(yearB) - parseInt(yearA)).map(([year, months]) => <div key={year} className="space-y-4">
                         <div className="w-full flex justify-center mb-4">
-                          <h2 className="text-xl font-bold text-[var(--text-primary)] bg-[var(--bg-secondary)] px-6 py-2 rounded-full border-2 border-[var(--border-primary)]">
+                          <h2 className="text-xl font-bold text-(--text-primary) bg-(--bg-secondary) px-6 py-2 rounded-full border-2 border-(--border-primary)">
                             {year}
                           </h2>
                         </div>
@@ -537,12 +537,12 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                       lapsOfMonth
                     }) => {
                       const stats = getMonthStats(lapsOfMonth);
-                      return <div key={monthYear} className="bg-gradient-to-br from-[var(--bg-secondary)] to-[var(--bg-tertiary)] rounded-xl p-5 border-2 border-[var(--border-primary)] hover:border-[var(--accent-primary)] hover:shadow-lg transition-all duration-300 cursor-pointer group relative overflow-hidden" onClick={() => setSelectedMonth(monthYear)}>
-                                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-[var(--accent-primary)/20] to-transparent rounded-bl-full opacity-50"></div>
+                      return <div key={monthYear} className="bg-linear-to-br from-(--bg-secondary) to-(--bg-tertiary) rounded-xl p-5 border-2 border-(--border-primary) hover:border-(--accent-primary) hover:shadow-lg transition-all duration-300 cursor-pointer group relative overflow-hidden" onClick={() => setSelectedMonth(monthYear)}>
+                                  <div className="absolute top-0 right-0 w-20 h-20 bg-linear-to-br from-[var(--accent-primary)/20] to-transparent rounded-bl-full opacity-50"></div>
                                   <div className="relative z-10">
                                     <div className="flex items-center justify-between mb-4">
-                                      <h3 className="text-lg font-bold text-[var(--text-primary)]">{month}</h3>
-                                      <div className="flex items-center gap-2 bg-[var(--accent-primary)/10] text-[var(--accent-primary)] text-sm font-semibold px-3 py-1.5 rounded-full  ">
+                                      <h3 className="text-lg font-bold text-(--text-primary)">{month}</h3>
+                                      <div className="flex items-center gap-2 bg-[var(--accent-primary)/10] text-(--accent-primary) text-sm font-semibold px-3 py-1.5 rounded-full  ">
                                         <BookOpen size={16} />
                                         <span>{lapsOfMonth.length} {lapsOfMonth.length === 1 ? 'session' : 'sessions'}</span>
                                       </div>
@@ -550,24 +550,24 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
                                     
                                     <div className="space-y-3">
                                       <div className="flex items-center justify-between">
-                                        <span className="text-sm text-[var(--text-secondary)] font-medium">Total Time</span>
+                                        <span className="text-sm text-(--text-secondary) font-medium">Total Time</span>
                                         <div className="flex items-center gap-2">
                                           <div className="w-8 h-8 bg-[var(--accent-primary)/10] rounded-lg flex items-center justify-center">
-                                            <Clock size={16} className="text-[var(--accent-primary)]" />
+                                            <Clock size={16} className="text-(--accent-primary)" />
                                           </div>
-                                          <span className="font-mono font-bold text-[var(--text-primary)]">
+                                          <span className="font-mono font-bold text-(--text-primary)">
                                             {formatHMS(stats.totalSeconds)}
                                           </span>
                                         </div>
                                       </div>
                                       
                                       <div className="flex items-center justify-between text-sm">
-                                        <span className="text-[var(--text-secondary)] font-medium">Avg. Session</span>
+                                        <span className="text-(--text-secondary) font-medium">Avg. Session</span>
                                         <div className="flex items-center gap-2">
-                                          <div className="w-6 h-6 bg-[var(--bg-primary)] rounded flex items-center justify-center">
-                                            <Zap size={14} className="text-[var(--accent-primary)]" />
+                                          <div className="w-6 h-6 bg-(--bg-primary) rounded flex items-center justify-center">
+                                            <Zap size={14} className="text-(--accent-primary)" />
                                           </div>
-                                          <span className="font-bold text-[var(--text-primary)]">{formatHMS(stats.avgDuration)}</span>
+                                          <span className="font-bold text-(--text-primary)">{formatHMS(stats.avgDuration)}</span>
                                         </div>
                                       </div>
                                     </div>
@@ -585,7 +585,7 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
 
           <DeleteSessionModal isOpen={isDeleteModalOpen} onClose={handleCloseDeleteModal} onConfirm={handleConfirmDelete} />
 
-          {contextMenu && <div className="fixed bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg p-2 flex flex-col min-w-[160px]" style={{
+          {contextMenu && <div className="fixed bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg shadow-lg p-2 flex flex-col min-w-[160px]" style={{
           position: 'fixed',
           left: contextMenu.x,
           top: contextMenu.y,
@@ -601,13 +601,13 @@ const ManageSessionsModal: React.FC<ManageSessionsModalProps> = ({
               <button onClick={() => {
             setSelectedSession(contextMenu.lap);
             setContextMenu(null);
-          }} className="w-full px-2 py-2 text-center text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors">
+          }} className="w-full px-2 py-2 text-center text-base text-(--text-primary) hover:bg-(--bg-secondary) rounded-md flex items-center gap-2 transition-colors">
                 <Info size={16} /> Edit Session
               </button>
               <button onClick={() => {
             handleDeleteClick(contextMenu.lap.id);
             setContextMenu(null);
-          }} className="w-full px-2 py-2 text-center text-base text-red-500 hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors">
+          }} className="w-full px-2 py-2 text-center text-base text-red-500 hover:bg-(--bg-secondary) rounded-md flex items-center gap-2 transition-colors">
                 <Trash2 size={16} /> Delete Session
               </button>
             </div>}

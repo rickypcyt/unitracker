@@ -150,7 +150,7 @@ export const PomodoroDemo = () => {
                 {secs.toString().padStart(2, '0')}
               </span>
             </div>
-            <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mt-1">
+            <span className="text-xs font-medium text-(--text-secondary) uppercase tracking-wider mt-1">
               {mode === 'work' ? 'Focus' : 'Break'}
             </span>
           </Ring>
@@ -188,7 +188,7 @@ export const PomodoroDemo = () => {
         </div>
       ) : (
         <div className="mt-auto shrink-0 pt-2 pb-2 h-[52px] flex items-center">
-          <span className="text-[11px] font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+          <span className="text-[11px] font-medium text-(--text-secondary) uppercase tracking-wider">
             Synced with Study Timer
           </span>
         </div>
@@ -246,11 +246,11 @@ export const StudyTimerDemo = () => {
       {/* Sync toggle — same control as StartSessionModal */}
       <button
         onClick={() => setSyncPomo((v) => !v)}
-        className="mb-1 flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+        className="mb-1 flex items-center gap-2 text-xs font-medium text-(--text-secondary) hover:text-(--text-primary) transition-colors"
       >
         <span
           className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${
-            syncPomo ? 'bg-[var(--accent-primary)]' : 'bg-[var(--border-primary)]'
+            syncPomo ? 'bg-(--accent-primary)' : 'bg-(--border-primary)'
           }`}
         >
           <span
@@ -287,15 +287,15 @@ export const StudyTimerDemo = () => {
           )}
           <Ring progress={hourProgress} color="var(--accent-primary)" spinning={paused}>
             <div className="flex items-center gap-0.5">
-              <span className={`text-lg font-mono font-bold tabular-nums leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+              <span className={`text-lg font-mono font-bold tabular-nums leading-none ${running ? 'text-(--accent-primary)' : 'text-(--text-primary)'}`}>
                 {h.toString().padStart(2, '0')}
               </span>
-              <span className={`text-base font-mono font-bold leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>:</span>
-              <span className={`text-lg font-mono font-bold tabular-nums leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+              <span className={`text-base font-mono font-bold leading-none ${running ? 'text-(--accent-primary)' : 'text-(--text-secondary)'}`}>:</span>
+              <span className={`text-lg font-mono font-bold tabular-nums leading-none ${running ? 'text-(--accent-primary)' : 'text-(--text-primary)'}`}>
                 {m.toString().padStart(2, '0')}
               </span>
-              <span className={`text-base font-mono font-bold leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-secondary)]'}`}>:</span>
-              <span className={`text-lg font-mono font-bold tabular-nums leading-none ${running ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+              <span className={`text-base font-mono font-bold leading-none ${running ? 'text-(--accent-primary)' : 'text-(--text-secondary)'}`}>:</span>
+              <span className={`text-lg font-mono font-bold tabular-nums leading-none ${running ? 'text-(--accent-primary)' : 'text-(--text-primary)'}`}>
                 {s.toString().padStart(2, '0')}
               </span>
             </div>

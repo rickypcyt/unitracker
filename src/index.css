@@ -4,16 +4,235 @@
 /* src/index.css */
 
 /* Import @dayflow/core styles */
-@import '@dayflow/core/dist/styles.css';
+@import '@dayflow/core/dist/styles.css' layer(base);
 
 /* Import highlight.js styles for syntax highlighting */
-@import 'highlight.js/styles/github.css';
+@import 'highlight.js/styles/github.css' layer(base);
 
 /* Importa las capas base, componentes y utilidades de Tailwind */
-@config "../tailwind.config.js";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+@source '../node_modules/@dayflow/core';
+@plugin '@tailwindcss/forms' {
+  strategy: 'class';
+}
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-mono:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --color-bg-primary: #000000;
+  --color-bg-secondary: #1c1c1e;
+  --color-bg-tertiary: #2c2c2e;
+  --color-bg-surface: #3a3a3c;
+  --color-bg-highlight: #48484a;
+  --color-accent-primary: #0a84ff;
+  --color-accent-secondary: #0071e3;
+  --color-accent-tertiary: #0077ed;
+  --color-accent-deep: #004aad;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #98989d;
+  --color-text-tertiary: #636366;
+  --color-border-primary: #4a4a4c;
+  --color-border-secondary: #3c3c3e;
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --animate-slide-left: slide-left 0.3s ease-out;
+  --animate-slide-right: slide-right 0.3s ease-out;
+  --animate-fadeIn: fadeIn 0.3s ease-out;
+  --animate-slideUp: slideUp 0.4s ease-out;
+  --animate-scaleIn: scaleIn 0.3s ease-out;
+
+  @keyframes slide-left {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+  @keyframes slide-right {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes slideUp {
+    0% {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  @keyframes scaleIn {
+    0% {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+}
+
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+/* Custom button utilities (used with @apply) */
+@utility btn-base {
+  @apply transition-colors duration-75;
+}
+
+@utility btn-rounded-full {
+  @apply rounded-full;
+}
+
+@utility btn-rounded-lg {
+  @apply rounded-lg;
+}
+
+@utility btn-padding-2 {
+  @apply p-4;
+}
+
+@utility btn-padding-1 {
+  @apply p-1;
+}
+
+@utility btn-padding-px4-py2 {
+  @apply px-6 py-3;
+}
+
+@utility btn-bg-secondary {
+  background-color: var(--bg-secondary);
+}
+
+@utility btn-bg-accent-primary {
+  background-color: var(--accent-primary);
+}
+
+@utility btn-text-primary {
+  color: var(--text-primary);
+}
+
+@utility btn-text-secondary {
+  color: var(--text-secondary);
+}
+
+@utility btn-text-white {
+  color: #fff;
+}
+
+@utility btn-hover-bg-accent-primary {
+  &:hover:not(:disabled) {
+    background-color: var(--accent-primary);
+  }
+}
+
+@utility btn-hover-bg-secondary-opacity-30 {
+  &:hover:not(:disabled) {
+    background-color: rgba(var(--bg-secondary), 0.3);
+  }
+}
+
+@utility btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@utility btn-flex-center {
+  @apply flex items-center justify-center;
+}
+
+@utility btn-flex-items-center-gap-2 {
+  @apply flex items-center gap-2;
+}
+
+@utility btn-hover-bg-accent-deep {
+  &:hover {
+    background-color: var(--accent-deep);
+  }
+}
+
+@utility btn-font-semibold {
+  @apply font-semibold;
+}
+
+@utility btn-hover-bg-primary {
+  &:hover {
+    background-color: var(--bg-primary);
+  }
+}
+
 
 /* Theme toggle icon animation */
 @keyframes theme-icon-in {
@@ -470,7 +689,7 @@
   }
 
   .textinput {
-    @apply w-full p-3 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-opacity-50;
+    @apply w-full p-3 rounded-lg text-base focus:outline-hidden focus:ring-2 focus:ring-blue-500/50;
     background-color: var(--bg-primary);
     border: 2px solid var(--border-primary);
     color: var(--text-primary);
@@ -487,7 +706,13 @@
   }
 
   .tasks {
-    @apply task-item-base task-item-default task-item-flex text-base;
+    @apply p-5 rounded-xl cursor-pointer transition-colors duration-75 flex items-center justify-between text-base;
+    background-color: var(--bg-secondary);
+    border: 2px solid var(--border-primary);
+    text-rendering: optimizeLegibility;
+    will-change: transform;
+    backface-visibility: hidden;
+    perspective: 1000px;
     font-weight: 500;
     letter-spacing: 0.01em;
     line-height: 1.5;
@@ -495,6 +720,11 @@
     -webkit-font-smoothing: subpixel-antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeSpeed;
+  }
+
+  .tasks:hover {
+    background-color: var(--bg-primary);
+    transition: all 75ms ease-in-out;
   }
 
   .plslogin {
@@ -635,7 +865,7 @@
     @apply flex items-center gap-4;
   }
   .bigaddtask {
-    @apply w-full mt-4 p-5 rounded-xl card-text-lg font-semibold cursor-pointer;
+    @apply w-full mt-4 p-5 rounded-xl text-lg font-semibold cursor-pointer;
   }
 
   /* Fix for flex items with icons and text */
@@ -858,9 +1088,11 @@
 /* =========================
    3. Utilidades Generales
    ========================= */
-h1 {
-  @apply text-5xl font-bold mb-10;
-  color: var(--text-primary);
+@layer base {
+  h1 {
+    @apply text-5xl font-bold mb-10;
+    color: var(--text-primary);
+  }
 }
 
 /* =========================
@@ -925,9 +1157,11 @@ h1 {
 }
 
 /* Focus Styles */
-:focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+  }
 }
 
 .countdown-time-input:focus,
@@ -1175,84 +1409,6 @@ h1 {
 
 .session-button:disabled {
   @apply btn-disabled;
-}
-
-/* Custom Utility Classes for Buttons */
-.btn-base {
-  @apply transition-colors duration-75;
-}
-
-.btn-rounded-full {
-  @apply rounded-full;
-}
-
-.btn-rounded-lg {
-  @apply rounded-lg;
-}
-
-.btn-padding-2 {
-  @apply p-4;
-}
-
-.btn-padding-1 {
-  @apply p-1;
-}
-
-.btn-padding-px4-py2 {
-  @apply px-6 py-3;
-}
-
-.btn-bg-secondary {
-  background-color: var(--bg-secondary);
-}
-
-.btn-bg-accent-primary {
-  background-color: var(--accent-primary);
-}
-
-.btn-text-primary {
-  color: var(--text-primary);
-}
-
-.btn-text-secondary {
-  color: var(--text-secondary);
-}
-
-.btn-text-white {
-  color: #fff;
-}
-
-.btn-hover-bg-accent-primary:hover:not(:disabled) {
-  background-color: var(--accent-primary);
-}
-
-.btn-hover-bg-secondary-opacity-30:hover:not(:disabled) {
-  background-color: rgba(var(--bg-secondary), 0.3);
-}
-
-.btn-disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-flex-center {
-  @apply flex items-center justify-center;
-}
-
-.btn-flex-items-center-gap-2 {
-  @apply flex items-center gap-2;
-}
-
-.btn-hover-bg-accent-deep:hover {
-  background-color: var(--accent-deep);
-}
-
-.btn-font-semibold {
-  @apply font-semibold;
-}
-
-.btn-hover-bg-primary:hover {
-  background-color: var(--bg-primary);
 }
 
 /* Other styles */
@@ -2275,81 +2431,83 @@ h1 {
   --ui-content-max-width: 90rem;
 }
 
-html {
-  font-size: 16px;
-}
+@layer base {
+  html {
+    font-size: 16px;
+  }
 
-body {
-  font-size: 1rem;
-  line-height: 1.5;
-  letter-spacing: -0.005em;
-}
+  body {
+    font-size: 1rem;
+    line-height: 1.5;
+    letter-spacing: -0.005em;
+  }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  text-wrap: balance;
-  letter-spacing: -0.025em;
-}
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-wrap: balance;
+    letter-spacing: -0.025em;
+  }
 
-h1 {
-  font-size: clamp(1.5rem, 1.25rem + 0.8vw, 2.25rem);
-  line-height: 1.15;
-  margin-bottom: 1rem;
-}
+  h1 {
+    font-size: clamp(1.5rem, 1.25rem + 0.8vw, 2.25rem);
+    line-height: 1.15;
+    margin-bottom: 1rem;
+  }
 
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
 
-button,
-a,
-input,
-textarea,
-select {
-  -webkit-tap-highlight-color: transparent;
-}
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    -webkit-tap-highlight-color: transparent;
+  }
 
-button:not(:disabled),
-a[role="button"] {
-  cursor: pointer;
-}
+  button:not(:disabled),
+  a[role="button"] {
+    cursor: pointer;
+  }
 
-button:disabled,
-input:disabled,
-textarea:disabled,
-select:disabled {
-  cursor: not-allowed;
-}
+  button:disabled,
+  input:disabled,
+  textarea:disabled,
+  select:disabled {
+    cursor: not-allowed;
+  }
 
-:where(input:not([type="checkbox"]):not([type="radio"]),
-textarea,
-select) {
-  border-width: var(--ui-border-width);
-  border-color: var(--border-primary);
-  border-radius: 0.75rem;
-  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
-}
+  :where(input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select) {
+    border-width: var(--ui-border-width);
+    border-color: var(--border-primary);
+    border-radius: 0.75rem;
+    transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+  }
 
-:where(input:not([type="checkbox"]):not([type="radio"]),
-textarea,
-select):focus {
-  border-color: var(--accent-primary);
-  outline: none;
-  box-shadow: 0 0 0 var(--ui-focus-width) var(--ui-focus-color);
-}
+  :where(input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select):focus {
+    border-color: var(--accent-primary);
+    outline: none;
+    box-shadow: 0 0 0 var(--ui-focus-width) var(--ui-focus-color);
+  }
 
-button:focus-visible,
-a:focus-visible,
-:where(input, textarea, select):focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
+  button:focus-visible,
+  a:focus-visible,
+  :where(input, textarea, select):focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+  }
 }
 
 /* Scratchpad: borderless writing area — the card owns the border */
@@ -2412,13 +2570,15 @@ svg.lucide {
   }
 }
 
-@media (max-width: 639px) {
-  :root {
-    --ui-control-height: 2.625rem;
-  }
+@layer base {
+  @media (max-width: 639px) {
+    :root {
+      --ui-control-height: 2.625rem;
+    }
 
-  h1 {
-    font-size: clamp(1.375rem, 1.1rem + 1vw, 1.75rem);
+    h1 {
+      font-size: clamp(1.375rem, 1.1rem + 1vw, 1.75rem);
+    }
   }
 }
 
@@ -2686,29 +2846,6 @@ input.no-spinners {
 .scratchpad-mono,
 .scratchpad-mono * {
   font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
-}
-
-/* ─── @dayflow/core utility clash ───────────────────────────────────────
-   @dayflow/core/dist/styles.css ships prebuilt Tailwind v4 utilities that move
-   elements with the `translate` property. Our Tailwind v3 utilities with the
-   same class names use `transform`. Both apply, so the offset is doubled
-   (e.g. scratchpad checkboxes sat 8px too high). Keep only the v3 transform.
-   Remove this block after migrating to Tailwind 4. */
-.-translate-x-1\/2,
-.-translate-y-1\/2 {
-  translate: none;
-}
-@media (min-width: 640px) {
-  .sm\:-translate-y-1\/2 {
-    translate: none;
-  }
-}
-/* dayflow also redefines `.transform` without the translate/scale parts, which
-   cancels every `transform -translate-*` combo (e.g. the floating footer sat
-   half its width right of center). Restore the Tailwind v3 definition. */
-.transform {
-  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate))
-    skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
 /* ── Timer cards (session page) ──────────────────────────────────────────────

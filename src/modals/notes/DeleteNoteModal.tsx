@@ -21,7 +21,7 @@ const DeleteNoteModal = ({ isOpen, onClose, onConfirm, noteTitle = '' }: DeleteN
       fullWidthOnMd={true}
     >
       <div className="space-y-6 p-2 sm:p-0">
-        <p className="text-base sm:text-lg text-[var(--text-secondary)] leading-relaxed">
+        <p className="text-base sm:text-lg text-(--text-secondary) leading-relaxed">
           {t('notes.deleteConfirm', { title: noteTitle || t('notes.untitled') })}
           <br />
           <span className="text-red-500 font-medium">{t('notes.deleteWarning')}</span>

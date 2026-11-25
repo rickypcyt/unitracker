@@ -84,15 +84,15 @@ const MiniTimerPlayer = ({ onExpand, onClose }: MiniTimerPlayerProps) => {
     ? "text-emerald-400"
     : hasSession
       ? "text-amber-400"
-      : "text-[var(--text-secondary)]";
+      : "text-(--text-secondary)";
 
   return (
-    <div className="flex flex-col gap-2 w-full h-full min-h-0 p-1.5 text-[var(--text-primary)] select-none">
+    <div className="flex flex-col gap-2 w-full h-full min-h-0 p-1.5 text-(--text-primary) select-none">
       {/* Synced timers — one rectangular card each, title on top, timer below */}
       {extras.map(row => (
         <div
           key={row.id}
-          className="flex items-center justify-between gap-2 flex-1 min-h-[3.5rem] rounded-xl border border-[var(--border-primary)]/40 bg-[var(--bg-secondary)]/30 px-3 py-1.5"
+          className="flex items-center justify-between gap-2 flex-1 min-h-14 rounded-xl border border-(--border-primary)/40 bg-(--bg-secondary)/30 px-3 py-1.5"
         >
           <div className="flex flex-col min-w-0">
             <span
@@ -115,9 +115,9 @@ const MiniTimerPlayer = ({ onExpand, onClose }: MiniTimerPlayerProps) => {
       ))}
 
       {/* Study timer card — same size as the others, the only one with play/pause */}
-      <div className="flex items-center justify-between gap-2 flex-1 min-h-[3.5rem] rounded-xl border border-[var(--border-primary)]/40 bg-[var(--bg-secondary)]/30 px-3 py-1.5">
+      <div className="flex items-center justify-between gap-2 flex-1 min-h-14 rounded-xl border border-(--border-primary)/40 bg-(--bg-secondary)/30 px-3 py-1.5">
         <div className="flex flex-col min-w-0">
-          <span className="text-[9px] font-medium uppercase tracking-[0.2em] leading-tight text-[var(--text-secondary)] truncate">
+          <span className="text-[9px] font-medium uppercase tracking-[0.2em] leading-tight text-(--text-secondary) truncate">
             {t("session.miniPlayer.timer")} <span className={statusClass}>({t(statusKey)})</span>
           </span>
           {hasSession ? (
@@ -131,7 +131,7 @@ const MiniTimerPlayer = ({ onExpand, onClose }: MiniTimerPlayerProps) => {
               {formatHMS(elapsed)}
             </span>
           ) : (
-            <span className="text-sm font-medium leading-tight text-[var(--text-secondary)]">
+            <span className="text-sm font-medium leading-tight text-(--text-secondary)">
               {t("session.miniPlayer.noSessionHint")}
             </span>
           )}
@@ -139,7 +139,7 @@ const MiniTimerPlayer = ({ onExpand, onClose }: MiniTimerPlayerProps) => {
         <div className="flex items-center gap-0.5 shrink-0">
           <button
             onClick={handleToggle}
-            className="w-11 h-11 shrink-0 rounded-full flex items-center justify-center border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] hover:text-[var(--accent-primary)] transition-colors"
+            className="w-11 h-11 shrink-0 rounded-full flex items-center justify-center border-2 border-(--border-primary) text-(--text-primary) hover:border-(--accent-primary) hover:text-(--accent-primary) transition-colors"
             aria-label={isRunning ? t("session.studyTimer.pauseTimer") : t("session.studyTimer.resumeTimer")}
             title={isRunning ? t("session.studyTimer.pauseTimer") : t("session.studyTimer.resumeTimer")}
           >
@@ -148,7 +148,7 @@ const MiniTimerPlayer = ({ onExpand, onClose }: MiniTimerPlayerProps) => {
           {onClose ? (
             <button
               onClick={onClose}
-              className="w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-[var(--text-secondary)]/70 hover:text-[var(--text-primary)] transition-colors"
+              className="w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-(--text-secondary)/70 hover:text-(--text-primary) transition-colors"
               aria-label={t("session.miniPlayer.close")}
               title={t("session.miniPlayer.close")}
             >

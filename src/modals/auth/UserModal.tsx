@@ -233,12 +233,12 @@ const UserModal = ({ isOpen, onClose }: UserModalProps) => {
     return (
       <BaseModal isOpen={isOpen} onClose={onClose} title="User Info" maxWidth="max-w-md">
         <div className="flex flex-col items-center gap-4 px-6 py-8 text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--bg-secondary)] text-4xl text-[var(--accent-primary)]">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-(--bg-secondary) text-4xl text-(--accent-primary)">
             ?
           </div>
           <div>
-            <p className="text-lg font-semibold text-[var(--text-primary)]">{t('settings.account.notSignedIn')}</p>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">{t('settings.account.signInToSync')}</p>
+            <p className="text-lg font-semibold text-(--text-primary)">{t('settings.account.notSignedIn')}</p>
+            <p className="mt-1 text-sm text-(--text-secondary)">{t('settings.account.signInToSync')}</p>
           </div>
           <button
             type="button"
@@ -246,7 +246,7 @@ const UserModal = ({ isOpen, onClose }: UserModalProps) => {
               onClose();
               navigate('/login');
             }}
-            className="w-full rounded-lg border-2 border-[var(--accent-primary)] px-4 py-2.5 font-semibold text-[var(--accent-primary)] transition-colors hover:bg-[var(--accent-primary)]/10"
+            className="w-full rounded-lg border-2 border-(--accent-primary) px-4 py-2.5 font-semibold text-(--accent-primary) transition-colors hover:bg-(--accent-primary)/10"
           >
             {t('settings.account.logIn')}
           </button>
@@ -271,11 +271,11 @@ const UserModal = ({ isOpen, onClose }: UserModalProps) => {
           onClick={() => fileInputRef.current?.click()}
         >
           {preview ? (
-            <img src={preview} alt="Preview" className="w-28 h-28 rounded-full object-cover border-2 border-[var(--accent-primary)]" />
+            <img src={preview} alt="Preview" className="w-28 h-28 rounded-full object-cover border-2 border-(--accent-primary)" />
           ) : avatarUrl ? (
-            <img src={avatarUrl} alt="User avatar" className="w-28 h-28 rounded-full object-cover border-2 border-[var(--accent-primary)]" />
+            <img src={avatarUrl} alt="User avatar" className="w-28 h-28 rounded-full object-cover border-2 border-(--accent-primary)" />
           ) : (
-            <div className="w-28 h-28 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-5xl text-[var(--accent-primary)]">
+            <div className="w-28 h-28 rounded-full bg-(--bg-secondary) flex items-center justify-center text-5xl text-(--accent-primary)">
               {user?.email?.[0]?.toUpperCase() || user?.user_metadata?.['email']?.[0]?.toUpperCase() || '?'}
             </div>
           )}
@@ -284,7 +284,7 @@ const UserModal = ({ isOpen, onClose }: UserModalProps) => {
             <Pencil className="w-10 h-10 text-white" />
           </div>
         </div>
-        <div className="text-lg font-semibold text-[var(--text-primary)]">
+        <div className="text-lg font-semibold text-(--text-primary)">
           {user?.email || user?.user_metadata?.['email'] || 'No email found'}
         </div>
         {/* Username input modular */}
@@ -302,7 +302,7 @@ const UserModal = ({ isOpen, onClose }: UserModalProps) => {
                 disabled={usernameLoading}
               />
               <button
-                className="mt-2 px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] bg-transparent hover:bg-[var(--accent-primary)]/10 w-full disabled:opacity-60"
+                className="mt-2 px-4 py-2 rounded-lg border-2 border-(--accent-primary) text-(--accent-primary) bg-transparent hover:bg-(--accent-primary)/10 w-full disabled:opacity-60"
                 onClick={async () => {
                   await handleSaveUsername();
                   if (usernameValid && username) setEditingUsername(false);
@@ -321,13 +321,13 @@ const UserModal = ({ isOpen, onClose }: UserModalProps) => {
           ) : (
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-[var(--accent-primary)] break-all">{username}</span>
+                <span className="text-2xl font-bold text-(--accent-primary) break-all">{username}</span>
                 <button
-                  className="p-1 rounded-full hover:bg-[var(--bg-secondary)] border-2 border-transparent hover:border-[var(--accent-primary)] transition-colors"
+                  className="p-1 rounded-full hover:bg-(--bg-secondary) border-2 border-transparent hover:border-(--accent-primary) transition-colors"
                   onClick={() => setEditingUsername(true)}
                   aria-label="Edit username"
                 >
-                  <Pencil className="w-5 h-5 text-[var(--accent-primary)]" />
+                  <Pencil className="w-5 h-5 text-(--accent-primary)" />
                 </button>
               </div>
             </div>
@@ -343,7 +343,7 @@ const UserModal = ({ isOpen, onClose }: UserModalProps) => {
         />
         {preview && (
           <button
-            className="px-4 py-2 rounded-lg bg-[var(--bg-primary)] text-[var(--accent-primary)] border-2 border-[var(--accent-primary)] hover:bg-[var(--bg-secondary)] mt-2"
+            className="px-4 py-2 rounded-lg bg-(--bg-primary) text-(--accent-primary) border-2 border-(--accent-primary) hover:bg-(--bg-secondary) mt-2"
             onClick={handleUpload}
             disabled={uploading}
           >

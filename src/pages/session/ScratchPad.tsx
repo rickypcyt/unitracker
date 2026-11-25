@@ -364,24 +364,24 @@ const ScratchPad = memo(() => {
   };
 
   return (
-    <div className="w-full h-full min-h-[260px] max-h-[460px] rounded-2xl border border-[var(--border-primary)] bg-[var(--bg-primary)] p-4 flex flex-col overflow-hidden">
+    <div className="w-full h-full min-h-[260px] max-h-[460px] rounded-2xl border border-(--border-primary) bg-(--bg-primary) p-4 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-[var(--accent-primary)]/10">
-            <StickyNote size={18} className="text-[var(--accent-primary)]" />
+          <div className="p-2 rounded-lg bg-(--accent-primary)/10">
+            <StickyNote size={18} className="text-(--accent-primary)" />
           </div>
-          <h3 className="text-base sm:text-lg font-bold tracking-tight text-[var(--text-primary)] leading-tight">
+          <h3 className="text-base sm:text-lg font-bold tracking-tight text-(--text-primary) leading-tight">
             {t('session.scratchpad.title')}
           </h3>
           {totalTodos > 0 && (
-            <span className="rounded-full bg-[var(--accent-primary)]/15 px-2 py-0.5 text-xs font-semibold tabular-nums text-[var(--accent-primary)]">
+            <span className="rounded-full bg-(--accent-primary)/15 px-2 py-0.5 text-xs font-semibold tabular-nums text-(--accent-primary)">
               {doneTodos}/{totalTodos}
             </span>
           )}
           <button
             onClick={toggleCheckboxInSelection}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border-primary)] text-[var(--text-secondary)]"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-(--border-primary) text-(--text-secondary)"
             title={t('session.scratchpad.insertCheckbox')}
             aria-label={t('session.scratchpad.insertCheckbox')}
           >
@@ -391,7 +391,7 @@ const ScratchPad = memo(() => {
         <div className="flex items-center gap-2">
           {user?.id && (
             <span
-              className={`text-xs ${status === "error" ? "text-red-500" : "text-[var(--text-secondary)]"}`}
+              className={`text-xs ${status === "error" ? "text-red-500" : "text-(--text-secondary)"}`}
               role="status"
             >
               {status === "saving" ? "Saving…" : status === "error" ? "Not synced – retrying" : "Saved"}
@@ -400,7 +400,7 @@ const ScratchPad = memo(() => {
           {text && (
             <button
               onClick={() => handleChange("")}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-[var(--text-secondary)]"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-(--text-secondary)"
               title={t('session.scratchpad.clearNote')}
               aria-label={t('session.scratchpad.clearNote')}
             >
@@ -411,11 +411,11 @@ const ScratchPad = memo(() => {
       </div>
 
       {/* Body — one selectable surface: a transparent textarea over a mirror layer that draws the checkboxes */}
-      <div className="relative flex-1 min-h-[140px] overflow-hidden rounded-xl bg-[var(--bg-secondary)]/50">
+      <div className="relative flex-1 min-h-[140px] overflow-hidden rounded-xl bg-(--bg-secondary)/50">
         <div
           ref={mirrorRef}
           aria-hidden="true"
-          className="scratchpad-mono pointer-events-none absolute inset-0 overflow-hidden text-[var(--text-primary)]"
+          className="scratchpad-mono pointer-events-none absolute inset-0 overflow-hidden text-(--text-primary)"
           style={surfaceFont}
         >
           {lines.map((line, i) => {
@@ -430,7 +430,7 @@ const ScratchPad = memo(() => {
                 {p.checked && (
                   <span
                     data-trash={i}
-                    className="absolute right-0 top-0 flex h-6 w-6 items-center justify-center text-[var(--text-secondary)]"
+                    className="absolute right-0 top-0 flex h-6 w-6 items-center justify-center text-(--text-secondary)"
                   >
                     <Trash2 size={14} />
                   </span>
@@ -440,13 +440,13 @@ const ScratchPad = memo(() => {
                   <span className="text-transparent">{marker[0]}</span>
                   <span className="absolute top-1/2 flex -translate-y-1/2" style={{ left: "calc((3ch - 16px) / 2)" }}>
                     {p.checked ? (
-                      <CheckCircle2 size={16} strokeWidth={2.2} className="text-[var(--accent-primary)]" />
+                      <CheckCircle2 size={16} strokeWidth={2.2} className="text-(--accent-primary)" />
                     ) : (
-                      <Circle size={16} strokeWidth={2.2} className="text-[var(--text-secondary)]" />
+                      <Circle size={16} strokeWidth={2.2} className="text-(--text-secondary)" />
                     )}
                   </span>
                 </span>
-                <span className={p.checked ? "text-[var(--text-secondary)] line-through" : ""}>{rest}</span>
+                <span className={p.checked ? "text-(--text-secondary) line-through" : ""}>{rest}</span>
               </div>
             );
           })}
@@ -464,7 +464,7 @@ const ScratchPad = memo(() => {
           spellCheck={false}
           placeholder={t('session.scratchpad.textPlaceholder', { defaultValue: 'Write everything you need to do. Start a line with [ ] to make it a checkbox.' })}
           aria-label={t('session.scratchpad.title')}
-          className="scratchpad-mono hide-scrollbar absolute inset-0 h-full w-full resize-none overflow-y-auto border-0 bg-transparent text-transparent caret-[var(--text-primary)] outline-none placeholder:text-[var(--text-secondary)]/50 selection:bg-[var(--accent-primary)]/30 focus:outline-none"
+          className="scratchpad-mono hide-scrollbar absolute inset-0 h-full w-full resize-none overflow-y-auto border-0 bg-transparent text-transparent caret-(--text-primary) outline-none placeholder:text-(--text-secondary)/50 selection:bg-(--accent-primary)/30 focus:outline-none"
           style={surfaceFont}
         />
       </div>

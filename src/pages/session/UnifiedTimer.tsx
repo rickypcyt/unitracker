@@ -158,13 +158,13 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
 
   const renderActions = (id: TimerId) => {
     if (id === "study") {
-      const menuItem = "w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors text-left";
-      const itemIcon = "text-[var(--text-secondary)]";
+      const menuItem = "w-full flex items-center gap-2 px-3 py-2 text-sm text-(--text-primary) hover:bg-(--bg-secondary) transition-colors text-left";
+      const itemIcon = "text-(--text-secondary)";
       return (
         <>
           <button
             onClick={() => window.dispatchEvent(new CustomEvent(MINI_PLAYER_OPEN_EVENT))}
-            className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+            className="p-1.5 rounded-full text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-primary) transition-colors"
             aria-label={t("session.miniPlayer.openAria")} title={t("session.miniPlayer.openTitle")}
           >
             <PictureInPicture size={18} />
@@ -172,7 +172,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
           <div className="relative">
           <button
             onClick={() => setStudyMenuOpen(v => !v)}
-            className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+            className="p-1.5 rounded-full text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-primary) transition-colors"
             aria-label={t("session.unifiedTimer.sessionMenu")} title={t("session.unifiedTimer.sessionMenu")} aria-expanded={studyMenuOpen} aria-haspopup="menu"
           >
             <MoreVertical size={18} />
@@ -180,12 +180,12 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
           {studyMenuOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setStudyMenuOpen(false)} aria-hidden />
-              <div className="absolute right-0 top-full z-50 mt-1 w-44 py-1 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] shadow-lg" role="menu">
+              <div className="absolute right-0 top-full z-50 mt-1 w-44 py-1 rounded-lg border border-(--border-primary) bg-(--bg-primary) shadow-lg" role="menu">
                 <button
                   onClick={() => { window.dispatchEvent(new CustomEvent("study-add-lap")); setStudyMenuOpen(false); }}
                   className={menuItem} role="menuitem"
                 >
-                  <Flag size={15} className="text-[var(--accent-primary)]" /> {t("session.studyTimer.addLapNote")}
+                  <Flag size={15} className="text-(--accent-primary)" /> {t("session.studyTimer.addLapNote")}
                 </button>
                 <button
                   onClick={() => { openStudySettings(); setStudyMenuOpen(false); }}
@@ -193,7 +193,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
                 >
                   <Settings size={15} className={itemIcon} /> {t("session.unifiedTimer.sessionOptions")}
                 </button>
-                <div className="my-1 border-t border-[var(--border-primary)]" />
+                <div className="my-1 border-t border-(--border-primary)" />
                 <button
                   onClick={() => { window.dispatchEvent(new CustomEvent("study-exit-session")); setStudyMenuOpen(false); }}
                   className={menuItem} role="menuitem"
@@ -202,7 +202,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
                 </button>
                 <button
                   onClick={() => { window.dispatchEvent(new CustomEvent("study-delete-session")); setStudyMenuOpen(false); }}
-                  className={`${menuItem} !text-red-500`} role="menuitem"
+                  className={`${menuItem} text-red-500!`} role="menuitem"
                 >
                   <Trash2 size={15} /> {t("session.unifiedTimer.deleteSession")}
                 </button>
@@ -219,7 +219,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
           {!syncPomodoro && (
             <button
               onClick={() => window.dispatchEvent(new CustomEvent(EXTRA_TIMER_TOGGLE_EVENT, { detail: { id: "pomodoro" } }))}
-              className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+              className="p-1.5 rounded-full text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-primary) transition-colors"
               aria-label={t("session.miniPlayer.floatTimer", { timer: t("session.unifiedTimer.pomodoroLabel") })}
               title={t("session.miniPlayer.floatTimer", { timer: t("session.unifiedTimer.pomodoroLabel") })}
             >
@@ -227,12 +227,12 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
             </button>
           )}
           <button type="button" onClick={() => setSyncPomodoro(!syncPomodoro)} className="p-1.5 rounded-full hover:bg-red-500/10 transition-colors" aria-label={t("session.unifiedTimer.toggleSync")} title={syncPomodoro ? t("session.unifiedTimer.syncOn") : t("session.unifiedTimer.syncOff")}>
-            {syncPomodoro ? <RefreshCw size={18} className="text-red-500" /> : <RefreshCwOff size={18} className="text-[var(--text-secondary)]" />}
+            {syncPomodoro ? <RefreshCw size={18} className="text-red-500" /> : <RefreshCwOff size={18} className="text-(--text-secondary)" />}
           </button>
-          <button onClick={openPomoSettings} className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" aria-label={t("session.unifiedTimer.configurePomodoro")} title={t("session.unifiedTimer.options")}>
+          <button onClick={openPomoSettings} className="p-1.5 rounded-full text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-primary) transition-colors" aria-label={t("session.unifiedTimer.configurePomodoro")} title={t("session.unifiedTimer.options")}>
             <MoreVertical size={18} />
           </button>
-          <button onClick={togglePomoAlarm} className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" title={pomoAlarm ? t("session.unifiedTimer.disableAlarm") : t("session.unifiedTimer.enableAlarm")} aria-label={t("session.unifiedTimer.toggleAlarm")}>
+          <button onClick={togglePomoAlarm} className="p-1.5 rounded-full text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-primary) transition-colors" title={pomoAlarm ? t("session.unifiedTimer.disableAlarm") : t("session.unifiedTimer.enableAlarm")} aria-label={t("session.unifiedTimer.toggleAlarm")}>
             {pomoAlarm ? <Bell size={18} /> : <BellOff size={18} />}
           </button>
         </>
@@ -244,7 +244,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
           {!syncCountdown && (
             <button
               onClick={() => window.dispatchEvent(new CustomEvent(EXTRA_TIMER_TOGGLE_EVENT, { detail: { id: "countdown" } }))}
-              className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+              className="p-1.5 rounded-full text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-primary) transition-colors"
               aria-label={t("session.miniPlayer.floatTimer", { timer: t("session.unifiedTimer.countdownLabel") })}
               title={t("session.miniPlayer.floatTimer", { timer: t("session.unifiedTimer.countdownLabel") })}
             >
@@ -252,9 +252,9 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
             </button>
           )}
           <button type="button" onClick={() => setSyncCountdown(!syncCountdown)} className="p-1.5 rounded-full hover:bg-green-500/10 transition-colors" aria-label={t("session.unifiedTimer.toggleSync")} title={syncCountdown ? t("session.unifiedTimer.syncOn") : t("session.unifiedTimer.syncOff")}>
-            {syncCountdown ? <RefreshCw size={18} className="text-green-500" /> : <RefreshCwOff size={18} className="text-[var(--text-secondary)]" />}
+            {syncCountdown ? <RefreshCw size={18} className="text-green-500" /> : <RefreshCwOff size={18} className="text-(--text-secondary)" />}
           </button>
-          <button onClick={toggleCountdownAlarm} className="p-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors" title={countdownAlarm ? t("session.unifiedTimer.disableAlarm") : t("session.unifiedTimer.enableAlarm")} aria-label={t("session.unifiedTimer.toggleAlarm")}>
+          <button onClick={toggleCountdownAlarm} className="p-1.5 rounded-full text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-primary) transition-colors" title={countdownAlarm ? t("session.unifiedTimer.disableAlarm") : t("session.unifiedTimer.enableAlarm")} aria-label={t("session.unifiedTimer.toggleAlarm")}>
             {countdownAlarm ? <Bell size={18} /> : <BellOff size={18} />}
           </button>
         </>
@@ -280,7 +280,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
         variants={container}
         initial="hidden"
         animate="show"
-        className="grid gap-2 w-full grid-cols-1 lg:grid-cols-[repeat(2,minmax(0,1fr))] xl:grid-cols-[repeat(3,minmax(0,1fr))] lg:[&>*:nth-child(3)]:col-span-2 lg:[&>*:nth-child(3)]:justify-self-center lg:[&>*:nth-child(3)]:max-w-[24rem] xl:[&>*:nth-child(3)]:col-span-1 xl:[&>*:nth-child(3)]:max-w-none"
+        className="grid gap-2 w-full grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 lg:[&>*:nth-child(3)]:col-span-2 lg:[&>*:nth-child(3)]:justify-self-center lg:[&>*:nth-child(3)]:max-w-[24rem] xl:[&>*:nth-child(3)]:col-span-1 xl:[&>*:nth-child(3)]:max-w-none"
       >
         {visibleTimers.map(id => {
           const config = TIMER_CONFIG[id];
@@ -295,7 +295,7 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
               onDragOver={(e) => handleDragOver(e, id)}
               onDrop={(e) => handleDrop(e, id)}
               onDragEnd={handleDragEnd}
-              className={`timer-panel w-full h-72 ${id === "study" ? "order-1" : id === "pomodoro" ? "order-2" : "order-3"} lg:order-none ${config.panelClass} ${
+              className={`timer-panel w-full h-72 ${id === "study" ? "order-1" : id === "pomodoro" ? "order-2" : "order-3"} lg:order-0 ${config.panelClass} ${
                 draggedId === id ? "timer-panel-dragging" : ""
               } ${
                 dragOverId === id ? "timer-panel-drag-over" : ""

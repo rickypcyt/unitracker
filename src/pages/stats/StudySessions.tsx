@@ -214,7 +214,7 @@ const StudySessions: React.FC = () => {
                         <span>Study Sessions</span>
                     </div>
                 </div>
-                <div className="text-center text-[var(--text-secondary)] py-8">
+                <div className="text-center text-(--text-secondary) py-8">
                     No sessions yet. Please log in first to start tracking your study
                     sessions.
                 </div>
@@ -230,7 +230,7 @@ const StudySessions: React.FC = () => {
                         <span>Study Sessions</span>
                     </div>
                 </div>
-                <div className="text-center text-[var(--text-secondary)] py-8">
+                <div className="text-center text-(--text-secondary) py-8">
                     Create your first Study Sessions first!
                 </div>
             </div>
@@ -238,19 +238,19 @@ const StudySessions: React.FC = () => {
     }
 
     return (
-        <div className="w-full h-full bg-[var(--bg-primary)]/90 border-2 border-[var(--border-primary)] py-3 px-6 rounded-lg sticky z-50 backdrop-blur-sm flex flex-col">
+        <div className="w-full h-full bg-(--bg-primary)/90 border-2 border-(--border-primary) py-3 px-6 rounded-lg sticky z-50 backdrop-blur-sm flex flex-col">
             {selectedMonth ? (
                 // Month detail view
                 <div className="space-y-4">
                     <div className="flex items-center justify-center mb-4 relative">
                         <button
                             onClick={() => setSelectedMonth(null)}
-                            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors flex items-center gap-2 absolute left-0"
+                            className="text-(--text-secondary) hover:text-(--text-primary) transition-colors flex items-center gap-2 absolute left-0"
                         >
                             <ArrowLeft size={20} />
                             Back to Months
                         </button>
-                        <h3 className="text-lg font-semibold text-[var(--text-primary)] mx-auto">
+                        <h3 className="text-lg font-semibold text-(--text-primary) mx-auto">
                             {selectedMonth}
                         </h3>
                     </div>
@@ -261,32 +261,32 @@ const StudySessions: React.FC = () => {
                                 groupedLaps[selectedMonth]?.map((lap) => (
                                     <div
                                         key={lap.id}
-                                        className="stat-card bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)] hover:border-[#444] dark:hover:border-[#444] transition-all duration-200 cursor-pointer w-full flex flex-col"
+                                        className="stat-card bg-(--bg-secondary) rounded-lg p-4 border-2 border-(--border-primary) hover:border-[#444] dark:hover:border-[#444] transition-all duration-200 cursor-pointer w-full flex flex-col"
                                         onDoubleClick={() => setSelectedSession(lap)}
                                         onContextMenu={(e) => handleSessionContextMenu(e, lap)}
                                     >
                                         <div className="flex justify-between items-start w-full">
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-lg font-bold text-[var(--accent-primary)]">
+                                                    <span className="text-lg font-bold text-(--accent-primary)">
                                                         #{lap.session_number}
                                                     </span>
-                                                    <h4 className="text-base font-medium text-[var(--text-primary)]">
+                                                    <h4 className="text-base font-medium text-(--text-primary)">
                                                         {lap.name || `Session ${lap.session_number}`}
                                                     </h4>
                                                 </div>
 
                                                 <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
-                                                    <div className="flex items-center gap-1 text-[var(--text-secondary)]">
+                                                    <div className="flex items-center gap-1 text-(--text-secondary)">
                                                         <Calendar size={14} />
                                                         <span>{formatDateShort(lap.created_at)}</span>
                                                     </div>
-                                                    <div className="flex items-center gap-1 text-[var(--text-secondary)]">
+                                                    <div className="flex items-center gap-1 text-(--text-secondary)">
                                                         <Clock size={14} />
                                                         <span>{formatDurationHMS(lap.duration)}</span>
                                                     </div>
                                                     {lap.tasks_completed > 0 && (
-                                                        <div className="flex items-center gap-1 text-[var(--text-secondary)]">
+                                                        <div className="flex items-center gap-1 text-(--text-secondary)">
                                                             <CheckCircle2 size={14} />
                                                             <span>
                                                                 {lap.tasks_completed} task
@@ -302,7 +302,7 @@ const StudySessions: React.FC = () => {
                                                     e.stopPropagation();
                                                     handleDeleteClick(lap.id);
                                                 }}
-                                                className="text-[var(--text-secondary)] hover:text-red-500 transition-colors p-1"
+                                                className="text-(--text-secondary) hover:text-red-500 transition-colors p-1"
                                             >
                                                 <Trash2 size={16} />
                                             </button>
@@ -368,7 +368,7 @@ const StudySessions: React.FC = () => {
                             .sort(([yearA], [yearB]) => parseInt(yearB) - parseInt(yearA))
                             .map(([year, months]) => (
                                 <div key={year} className="mb-6">
-                                    <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">
+                                    <h2 className="text-xl font-bold text-(--text-primary) mb-4">
                                         {year}
                                     </h2>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -383,23 +383,23 @@ const StudySessions: React.FC = () => {
                                                 return (
                                                     <div
                                                         key={monthYear}
-                                                        className="bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all duration-200 cursor-pointer"
+                                                        className="bg-(--bg-secondary) rounded-lg p-4 border-2 border-(--border-primary) hover:border-(--accent-primary) transition-all duration-200 cursor-pointer"
                                                         onClick={() => setSelectedMonth(monthYear)}
                                                     >
                                                         <div className="flex items-center justify-between mb-3">
-                                                            <h3 className="text-lg font-semibold text-[var(--text-primary)]">
+                                                            <h3 className="text-lg font-semibold text-(--text-primary)">
                                                                 {month}
                                                             </h3>
-                                                            <span className="text-base text-[var(--text-secondary)] ">
+                                                            <span className="text-base text-(--text-secondary) ">
                                                                 {lapsOfMonth.length} sessions
                                                             </span>
                                                         </div>
                                                         <div className="space-y-2 text-sm">
                                                             <div className="flex justify-between">
-                                                                <span className="text-[var(--text-secondary)] text-base">
+                                                                <span className="text-(--text-secondary) text-base">
                                                                     Total Time:
                                                                 </span>
-                                                                <span className="text-[var(--accent-primary)] font-mono text-base">
+                                                                <span className="text-(--accent-primary) font-mono text-base">
                                                                     {formatMinutesToHHMM(stats.totalMinutes)}
                                                                 </span>
                                                             </div>
@@ -429,7 +429,7 @@ const StudySessions: React.FC = () => {
 
             {contextMenu && (
                 <div
-                    className="fixed bg-[var(--bg-primary)] border-2 border-[var(--border-primary)] rounded-lg shadow-lg p-2 flex flex-col min-w-[160px]"
+                    className="fixed bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg shadow-lg p-2 flex flex-col min-w-[160px]"
                     style={{
                         position: "fixed",
                         left: contextMenu.x,
@@ -450,7 +450,7 @@ const StudySessions: React.FC = () => {
                             setSelectedSession(contextMenu.lap);
                             setContextMenu(null);
                         }}
-                        className="w-full px-2 py-2 text-center text-base text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
+                        className="w-full px-2 py-2 text-center text-base text-(--text-primary) hover:bg-(--bg-secondary) rounded-md flex items-center gap-2 transition-colors"
                     >
                         <Info size={16} /> Edit Session
                     </button>
@@ -459,7 +459,7 @@ const StudySessions: React.FC = () => {
                             handleDeleteClick(contextMenu.lap.id);
                             setContextMenu(null);
                         }}
-                        className="w-full px-2 py-2 text-center text-base text-red-500 hover:bg-[var(--bg-secondary)] rounded-md flex items-center gap-2 transition-colors"
+                        className="w-full px-2 py-2 text-center text-base text-red-500 hover:bg-(--bg-secondary) rounded-md flex items-center gap-2 transition-colors"
                     >
                         <Trash2 size={16} /> Delete Session
                     </button>

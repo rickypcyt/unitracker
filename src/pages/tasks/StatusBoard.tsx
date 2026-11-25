@@ -47,8 +47,8 @@ export const StatusBoard: React.FC<StatusBoardProps> = ({
         id: 'todo',
         title: 'To Do',
         icon: Circle,
-        color: 'text-[var(--text-secondary)]',
-        dotClass: 'bg-[var(--text-secondary)]',
+        color: 'text-(--text-secondary)',
+        dotClass: 'bg-(--text-secondary)',
         tasks: todo,
       },
       {
@@ -78,22 +78,22 @@ export const StatusBoard: React.FC<StatusBoardProps> = ({
           return (
             <div
               key={col.id}
-              className="w-full bg-[var(--bg-secondary)] rounded-xl border-2 border-[var(--border-primary)] p-3 shadow-md flex flex-col"
+              className="w-full bg-(--bg-secondary) rounded-xl border-2 border-(--border-primary) p-3 shadow-md flex flex-col"
             >
               {/* Column header */}
               <div className="flex items-center justify-between mb-3 px-1">
                 <div className="flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full ${col.dotClass}`} />
-                  <span className="text-sm font-semibold text-[var(--text-primary)]">
+                  <span className="text-sm font-semibold text-(--text-primary)">
                     {col.title}
                   </span>
-                  <span className="text-xs text-[var(--text-secondary)]/50 font-medium">
+                  <span className="text-xs text-(--text-secondary)/50 font-medium">
                     {col.tasks.length}
                   </span>
                 </div>
                 <button
                   onClick={() => onAddTask(null)}
-                  className="p-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors"
+                  className="p-1 rounded-md text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--bg-primary) transition-colors"
                   aria-label="Add task"
                 >
                   <Plus size={14} />
@@ -105,7 +105,7 @@ export const StatusBoard: React.FC<StatusBoardProps> = ({
                 {col.tasks.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
                     <Icon size={20} className={`mb-2 opacity-30 ${col.color}`} />
-                    <p className="text-xs text-[var(--text-secondary)]/50">
+                    <p className="text-xs text-(--text-secondary)/50">
                       No tasks
                     </p>
                   </div>

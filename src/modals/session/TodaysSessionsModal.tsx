@@ -146,23 +146,23 @@ const SessionsModal = ({
   // Stay hidden until we know there is something to show (no flash of an empty modal)
   if (!ready) return null;
   return createPortal(<div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-[var(--bg-primary)] rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border-2 border-[var(--border-primary)] relative">
-        <button onClick={onClose} className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-[var(--bg-secondary)] transition-colors z-20" aria-label="Close">
+      <div className="bg-(--bg-primary) rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border-2 border-(--border-primary) relative">
+        <button onClick={onClose} className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-(--bg-secondary) transition-colors z-20" aria-label="Close">
           <X size={18} />
         </button>
 
         {/* Tabs */}
-        <div className="flex border-b border-[var(--border-primary)]">
-          <button onClick={() => setActiveTab('unfinished')} className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'unfinished' ? 'text-[var(--accent-primary)] border-b-2 border-[var(--accent-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}>
+        <div className="flex border-b border-(--border-primary)">
+          <button onClick={() => setActiveTab('unfinished')} className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'unfinished' ? 'text-(--accent-primary) border-b-2 border-(--accent-primary)' : 'text-(--text-secondary) hover:text-(--text-primary)'}`}>
             <div className="flex items-center justify-center gap-2">
               <AlertCircle size={16} />
               Unfinished
-              {hasUnfinished && <span className="bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] px-2 py-0.5 rounded-full text-xs">
+              {hasUnfinished && <span className="bg-(--accent-primary)/20 text-(--accent-primary) px-2 py-0.5 rounded-full text-xs">
                   {unfinishedSessions.length}
                 </span>}
             </div>
           </button>
-          <button onClick={() => setActiveTab('today')} className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'today' ? 'text-[var(--accent-primary)] border-b-2 border-[var(--accent-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}>
+          <button onClick={() => setActiveTab('today')} className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'today' ? 'text-(--accent-primary) border-b-2 border-(--accent-primary)' : 'text-(--text-secondary) hover:text-(--text-primary)'}`}>
             <div className="flex items-center justify-center gap-2">
               <CheckCircle size={16} />
               Today's
@@ -175,8 +175,8 @@ const SessionsModal = ({
 
         <div className="p-4 space-y-4">
   {loading ? <div className="flex justify-center py-8">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)]"></div>
-    </div> : currentSessions.length === 0 ? <div className="text-center py-8 text-[var(--text-secondary)]">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-(--accent-primary)"></div>
+    </div> : currentSessions.length === 0 ? <div className="text-center py-8 text-(--text-secondary)">
       {activeTab === 'unfinished' ? <>
           <AlertCircle size={48} className="mx-auto mb-2 opacity-50" />
           <p>No unfinished sessions</p>
@@ -187,7 +187,7 @@ const SessionsModal = ({
           <p className="text-sm mt-1">Start a new study session to begin tracking!</p>
         </>}
     </div> : <div className="space-y-3">
-      {currentSessions.map(session => <motion.div key={session.id} className={`bg-[var(--bg-secondary)] rounded-lg p-4 border-2 border-[var(--border-primary)] ${activeTab === 'today' ? 'hover:border-[var(--accent-primary)]/30 transition-colors cursor-pointer' : ''}`} initial={{
+      {currentSessions.map(session => <motion.div key={session.id} className={`bg-(--bg-secondary) rounded-lg p-4 border-2 border-(--border-primary) ${activeTab === 'today' ? 'hover:border-(--accent-primary)/30 transition-colors cursor-pointer' : ''}`} initial={{
             opacity: 0,
             y: 10
           }} animate={{
@@ -199,17 +199,17 @@ const SessionsModal = ({
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-medium text-[var(--text-primary)]">
+                <h3 className="font-medium text-(--text-primary)">
                   {session.name || `Session #${session.session_number}`}
                 </h3>
                 {activeTab === 'today' && <CheckCircle size={16} className="text-green-500" />}
               </div>
               
-              {session.description && <p className="text-sm text-[var(--text-secondary)] mb-2 line-clamp-2">
+              {session.description && <p className="text-sm text-(--text-secondary) mb-2 line-clamp-2">
                   {session.description}
                 </p>}
               
-              <div className="flex items-center gap-4 text-sm text-[var(--text-secondary)]">
+              <div className="flex items-center gap-4 text-sm text-(--text-secondary)">
                 <div className="flex items-center gap-1">
                   <Clock size={14} />
                   <span>Duration: {formatDurationHMS(session.duration)}</span>
@@ -224,7 +224,7 @@ const SessionsModal = ({
                   </div>}
               </div>
                       
-                      <div className="text-xs text-[var(--text-secondary)] mt-2">
+                      <div className="text-xs text-(--text-secondary) mt-2">
                         {activeTab === 'unfinished' ? (() => {
                     const created = safeParseDate(session.created_at) || safeParseDate(session.started_at);
                     return `Started ${created ? formatDistanceToNowStrict(created, {
@@ -253,7 +253,7 @@ const SessionsModal = ({
                         </> : <button onClick={e => {
                   e.stopPropagation();
                   handleContinueSession(session.id);
-                }} className="p-2 rounded-md text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors" title="Continue this session" aria-label="Continue this session">
+                }} className="p-2 rounded-md text-(--accent-primary) hover:bg-(--accent-primary)/10 transition-colors" title="Continue this session" aria-label="Continue this session">
                           <Play size={18} />
                         </button>}
                       <button onClick={e => handleDeleteSession(session.id, e)} className="p-2 rounded-md text-red-500 hover:bg-red-500/10 transition-colors" title="Delete this session" aria-label="Delete this session">
@@ -265,12 +265,12 @@ const SessionsModal = ({
             </div>}
         </div>
         
-        <div className="p-4 border-t border-[var(--border-primary)] flex justify-between flex-wrap gap-2 sticky bottom-0 bg-[var(--bg-primary)] z-10">
+        <div className="p-4 border-t border-(--border-primary) flex justify-between flex-wrap gap-2 sticky bottom-0 bg-(--bg-primary) z-10">
           {activeTab === 'unfinished' && onFinishAllSessions && unfinishedSessions.length > 0 && <button onClick={onFinishAllSessions} className="px-4 py-2 rounded-lg border-2 border-amber-500 text-amber-500 hover:bg-amber-500/10 transition-colors">
               Finish All Sessions
             </button>}
           <div className="flex space-x-3 ml-auto">
-            <button onClick={onClose} className="px-4 py-2 rounded-lg border-2 border-[var(--border-primary)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors">
+            <button onClick={onClose} className="px-4 py-2 rounded-lg border-2 border-(--border-primary) text-(--text-primary) hover:bg-(--bg-secondary) transition-colors">
               Cancel
             </button>
             <button onClick={() => {
@@ -279,7 +279,7 @@ const SessionsModal = ({
             if (onStartNewSession) {
               onStartNewSession();
             }
-          }} className="px-4 py-2 rounded-lg border-2 border-[var(--accent-primary)] text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors">
+          }} className="px-4 py-2 rounded-lg border-2 border-(--accent-primary) text-(--accent-primary) hover:bg-(--accent-primary)/10 transition-colors">
               New
             </button>
           </div>

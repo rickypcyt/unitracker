@@ -52,33 +52,33 @@ export const ColumnMenu = ({
       y={y}
       onClose={onClose}
       aria-label="Column options"
-      className="bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] z-[9999]"
+      className="bg-(--bg-secondary) border-2 border-(--border-primary) z-9999"
     >
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         <li
           style={optionStyle}
-          className="hover:bg-[var(--bg-primary)] transition-colors duration-75"
+          className="hover:bg-(--bg-primary) transition-colors duration-75"
           onClick={handleAddTask}
         >
           Add Task
         </li>
         <li
           style={optionStyle}
-          className="hover:bg-[var(--bg-primary)] transition-colors duration-75"
+          className="hover:bg-(--bg-primary) transition-colors duration-75"
           onClick={handleSortTasks}
         >
           Sort Tasks
         </li>
         <li
           style={optionStyle}
-          className="hover:bg-[var(--bg-primary)] transition-colors duration-75"
+          className="hover:bg-(--bg-primary) transition-colors duration-75"
           onClick={handleTogglePin}
         >
           {pinned ? 'Unpin Column' : 'Pin Column'}
         </li>
         <li
           style={optionStyle}
-          className="hover:bg-[var(--bg-primary)] transition-colors duration-75"
+          className="hover:bg-(--bg-primary) transition-colors duration-75"
         >
           {tasks.length} tasks
         </li>

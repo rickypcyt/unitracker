@@ -45,11 +45,11 @@ const AnimatedBackdrop: FC<{ fixed?: boolean }> = ({ fixed = false }) => (
 <div aria-hidden="true" className={`pointer-events-none ${fixed ? 'fixed' : 'absolute'} inset-0 -z-10 overflow-hidden`}>
         <div className="lg-colors absolute inset-0">
           <div
-            className="lg-orb-a absolute -left-[10%] -top-[15%] h-[620px] w-[620px] rounded-full opacity-40 blur-3xl"
+            className="lg-orb-a absolute left-[-10%] top-[-15%] h-[620px] w-[620px] rounded-full opacity-40 blur-3xl"
             style={{ background: 'radial-gradient(circle, var(--accent-primary) 0%, transparent 65%)' }}
           />
           <div
-            className="lg-orb-b absolute -bottom-[20%] -right-[10%] h-[700px] w-[700px] rounded-full opacity-35 blur-3xl"
+            className="lg-orb-b absolute bottom-[-20%] right-[-10%] h-[700px] w-[700px] rounded-full opacity-35 blur-3xl"
             style={{ background: 'radial-gradient(circle, var(--accent-deep, #187bcd) 0%, transparent 65%)' }}
           />
           <div

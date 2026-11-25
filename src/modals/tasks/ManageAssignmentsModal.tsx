@@ -143,12 +143,12 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
       >
         <div className="p-6 max-h-[85vh] overflow-y-auto">
           <div className="relative flex items-center justify-center mb-6">
-            <h2 className="text-xl font-semibold text-[var(--text-primary)] text-center">
+            <h2 className="text-xl font-semibold text-(--text-primary) text-center">
               Manage Assignments
             </h2>
             <button
               onClick={onClose}
-              className="absolute right-0 p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+              className="absolute right-0 p-1 text-(--text-secondary) hover:text-(--text-primary) transition-colors"
               aria-label="Close"
             >
               <X size={24} />
@@ -156,9 +156,9 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
           </div>
             {assignments.length === 0 ? (
               <div className="text-center py-8">
-                <BookOpen size={48} className="mx-auto text-[var(--text-secondary)] mb-4" />
-                <p className="text-[var(--text-secondary)] text-lg">No assignments found</p>
-                <p className="text-[var(--text-secondary)] mt-2">Create tasks with assignments to see them here</p>
+                <BookOpen size={48} className="mx-auto text-(--text-secondary) mb-4" />
+                <p className="text-(--text-secondary) text-lg">No assignments found</p>
+                <p className="text-(--text-secondary) mt-2">Create tasks with assignments to see them here</p>
               </div>
             ) : (
               <div className="flex flex-col lg:flex-row gap-5">
@@ -173,10 +173,10 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                     return (
                       <div
                         key={assignment}
-                        className={`bg-[var(--bg-secondary)] border-2 ${
+                        className={`bg-(--bg-secondary) border-2 ${
                           isSelected
-                            ? 'border-[var(--accent-primary)] shadow-md shadow-[var(--accent-primary)]/10'
-                            : 'border-[var(--border-primary)] hover:border-[var(--accent-primary)]/60 hover:shadow-sm'
+                            ? 'border-(--accent-primary) shadow-md shadow-(--accent-primary)/10'
+                            : 'border-(--border-primary) hover:border-(--accent-primary)/60 hover:shadow-sm'
                         } transition-all duration-200 cursor-pointer rounded-xl p-3.5`}
                         onClick={() => setSelectedAssignment(assignment)}
                       >
@@ -184,7 +184,7 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                           <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                             <input
                               type="text"
-                              className="flex-1 min-w-0 bg-transparent border-b-2 border-[var(--accent-primary)] text-[var(--text-primary)] font-semibold focus:outline-none"
+                              className="flex-1 min-w-0 bg-transparent border-b-2 border-(--accent-primary) text-(--text-primary) font-semibold focus:outline-none"
                               value={editingAssignment.name}
                               onChange={(e) => setEditingAssignment({...editingAssignment, name: e.target.value})}
                               onKeyDown={(e) => {
@@ -220,16 +220,16 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                         ) : (
                           <>
                             <div className="flex items-center justify-between gap-2">
-                              <h3 className="min-w-0 truncate font-semibold text-[var(--text-primary)]">
+                              <h3 className="min-w-0 truncate font-semibold text-(--text-primary)">
                                 {assignment}
                               </h3>
-                              <div className="flex flex-shrink-0 items-center gap-0.5">
+                              <div className="flex shrink-0 items-center gap-0.5">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     startEditing(assignment);
                                   }}
-                                  className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 transition-colors"
+                                  className="p-1.5 rounded-lg text-(--text-secondary) hover:text-(--accent-primary) hover:bg-(--accent-primary)/10 transition-colors"
                                   title="Rename assignment"
                                 >
                                   <Edit2 size={15} />
@@ -239,7 +239,7 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                                     e.stopPropagation();
                                     handleDeleteAssignment(assignment);
                                   }}
-                                  className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                                  className="p-1.5 rounded-lg text-(--text-secondary) hover:text-red-500 hover:bg-red-500/10 transition-colors"
                                   title="Delete assignment and all its tasks"
                                 >
                                   <Trash2 size={15} />
@@ -247,10 +247,10 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                               </div>
                             </div>
 
-                            <div className="mt-1.5 flex items-center gap-3 text-xs text-[var(--text-secondary)]">
+                            <div className="mt-1.5 flex items-center gap-3 text-xs text-(--text-secondary)">
                               <span className="font-medium">{assignmentTasks.length} task{pluralize(assignmentTasks.length)}</span>
                               <span className="flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-(--accent-primary)" />
                                 {pendingCount} pending
                               </span>
                               <span className="flex items-center gap-1">
@@ -266,14 +266,14 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                 </div>
 
                 <div className="lg:w-3/5">
-                  <div className="bg-[var(--bg-secondary)] border-2 border-[var(--border-primary)] rounded-xl p-4 sm:p-5 h-full min-h-[320px] flex flex-col">
+                  <div className="bg-(--bg-secondary) border-2 border-(--border-primary) rounded-xl p-4 sm:p-5 h-full min-h-[320px] flex flex-col">
                     {selectedAssignment ? (
                       <>
                         <div className="mb-4">
-                          <h3 className="text-lg font-semibold text-[var(--text-primary)] truncate">
+                          <h3 className="text-lg font-semibold text-(--text-primary) truncate">
                             {selectedAssignment}
                           </h3>
-                          <p className="text-sm text-[var(--text-secondary)]">
+                          <p className="text-sm text-(--text-secondary)">
                             {selectedAssignmentTasks.length} task{pluralize(selectedAssignmentTasks.length)} · {pendingTasks.length} pending · {completedTasks.length} done
                           </p>
                         </div>
@@ -281,12 +281,12 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                         <div className="space-y-5">
                           <section>
                             <header className="mb-2 flex items-center gap-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
-                              <h4 className="text-xs font-semibold uppercase tracking-wide text-[var(--accent-primary)]">Pending</h4>
-                              <span className="text-xs text-[var(--text-secondary)]">{pendingTasks.length}</span>
+                              <span className="w-1.5 h-1.5 rounded-full bg-(--accent-primary)" />
+                              <h4 className="text-xs font-semibold uppercase tracking-wide text-(--accent-primary)">Pending</h4>
+                              <span className="text-xs text-(--text-secondary)">{pendingTasks.length}</span>
                             </header>
                             {pendingTasks.length === 0 ? (
-                              <p className="text-sm text-[var(--text-secondary)]">No pending tasks. Nice!</p>
+                              <p className="text-sm text-(--text-secondary)">No pending tasks. Nice!</p>
                             ) : (
                               <ul className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
                                 {sortedPendingTasks.map((task) => {
@@ -296,17 +296,17 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                                   return (
                                     <li
                                       key={task.id}
-                                      className="flex items-center justify-between gap-3 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)]/80 px-3 py-2"
+                                      className="flex items-center justify-between gap-3 rounded-lg border border-(--border-primary) bg-(--bg-primary)/80 px-3 py-2"
                                     >
-                                      <span className="min-w-0 truncate text-sm font-medium text-[var(--text-primary)]">
+                                      <span className="min-w-0 truncate text-sm font-medium text-(--text-primary)">
                                         {task.title || 'Untitled task'}
                                       </span>
-                                      <span className="flex flex-shrink-0 items-center gap-2 text-xs">
+                                      <span className="flex shrink-0 items-center gap-2 text-xs">
                                         {showStatus && (
                                           <span className={statusCfg.textColor}>{statusCfg.label}</span>
                                         )}
                                         {dueLabel && (
-                                          <span className="font-medium text-[var(--accent-primary)] whitespace-nowrap">
+                                          <span className="font-medium text-(--accent-primary) whitespace-nowrap">
                                             Due {dueLabel}
                                           </span>
                                         )}
@@ -322,22 +322,22 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                             <header className="mb-2 flex items-center gap-2">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                               <h4 className="text-xs font-semibold uppercase tracking-wide text-emerald-400">Completed</h4>
-                              <span className="text-xs text-[var(--text-secondary)]">{completedTasks.length}</span>
+                              <span className="text-xs text-(--text-secondary)">{completedTasks.length}</span>
                             </header>
                             {completedTasks.length === 0 ? (
-                              <p className="text-sm text-[var(--text-secondary)]">No completed tasks yet.</p>
+                              <p className="text-sm text-(--text-secondary)">No completed tasks yet.</p>
                             ) : (
                               <ul className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
                                 {sortedCompletedTasks.map((task) => (
                                   <li
                                     key={task.id}
-                                    className="flex items-center justify-between gap-3 rounded-lg border border-[var(--border-primary)]/60 bg-[var(--bg-primary)]/40 px-3 py-2"
+                                    className="flex items-center justify-between gap-3 rounded-lg border border-(--border-primary)/60 bg-(--bg-primary)/40 px-3 py-2"
                                   >
-                                    <span className="min-w-0 truncate text-sm text-[var(--text-secondary)] line-through">
+                                    <span className="min-w-0 truncate text-sm text-(--text-secondary) line-through">
                                       {task.title || 'Untitled task'}
                                     </span>
                                     {task.completed_at && (
-                                      <span className="flex-shrink-0 text-xs text-[var(--text-secondary)] whitespace-nowrap">
+                                      <span className="shrink-0 text-xs text-(--text-secondary) whitespace-nowrap">
                                         {new Date(task.completed_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                       </span>
                                     )}
@@ -349,7 +349,7 @@ const ManageAssignmentsModal: React.FC<ManageAssignmentsModalProps> = ({
                         </div>
                       </>
                     ) : (
-                      <div className="h-full flex flex-col items-center justify-center text-center gap-2 text-[var(--text-secondary)]">
+                      <div className="h-full flex flex-col items-center justify-center text-center gap-2 text-(--text-secondary)">
                         <BookOpen size={32} />
                         <p className="text-sm">Select an assignment to view its tasks.</p>
                       </div>
