@@ -60,75 +60,172 @@ const parseLine = (line: string) => {
   };
 };
 
+type SyncStatus = "saved" | "saving" | "error";
+
+const SAVE_DEBOUNCE_MS = 600;
+const RETRY_BASE_MS = 3000;
+const RETRY_MAX_MS = 60000;
+
 const ScratchPad = memo(() => {
   const { user } = useAuth();
   const { t } = useTranslation();
   const [text, setText] = useState(loadNote);
+  const [status, setStatus] = useState<SyncStatus>("saved");
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const mirrorRef = useRef<HTMLDivElement | null>(null);
+  const userIdRef = useRef<string | null>(null);
+  const latestRef = useRef(text);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const remoteDisabledRef = useRef(false);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const retryCountRef = useRef(0);
+  const inFlightRef = useRef(false);
+  const loadedRef = useRef(false); // never push to the cloud before reconciling with it
+  const lastSyncedRef = useRef<string | null>(null);
 
-  const remoteSave = async (userId: string, value: string) => {
-    const { error } = await supabase
-      .from("profiles")
-      .update({ scratchpad: value })
-      .eq("id", userId);
-    if (error) {
-      // Keep the "unsynced" flag so the local copy wins on next load
-      remoteDisabledRef.current = true;
-      return;
+  userIdRef.current = user?.id ?? null;
+
+  // Serialized push: one request at a time, always sends the newest text, retries with backoff.
+  const pushRemote = async () => {
+    const userId = userIdRef.current;
+    if (!userId || !loadedRef.current || inFlightRef.current) return;
+    inFlightRef.current = true;
+    try {
+      while (userIdRef.current === userId) {
+        const value = latestRef.current;
+        if (value === lastSyncedRef.current) {
+          setPending(false);
+          setStatus("saved");
+          retryCountRef.current = 0;
+          return;
+        }
+        setStatus("saving");
+        const { data, error } = await supabase
+          .from("profiles")
+          .update({ scratchpad: value })
+          .eq("id", userId)
+          .select("id");
+        // RLS / missing row makes update succeed with 0 rows: that is a failure, not a save
+        if (error || !data || data.length === 0) {
+          setStatus("error");
+          const delay = Math.min(RETRY_BASE_MS * 2 ** retryCountRef.current, RETRY_MAX_MS);
+          retryCountRef.current += 1;
+          if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+          retryTimerRef.current = setTimeout(() => void pushRemote(), delay);
+          return;
+        }
+        lastSyncedRef.current = value;
+        // loop: if more was typed while this request was in flight, send that too
+      }
+    } finally {
+      inFlightRef.current = false;
     }
-    // Only clear the flag if nothing newer was typed while the request was in flight
-    if (loadNote() === value) setPending(false);
   };
 
-  // Pull the user's saved note on login; migrate the local one if the cloud copy is empty
-  useEffect(() => {
-    if (!user?.id || remoteDisabledRef.current) return;
-    let cancelled = false;
-    void (async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("scratchpad")
-        .eq("id", user.id)
-        .single();
-      if (cancelled) return;
-      if (error) {
-        remoteDisabledRef.current = true;
-        return;
-      }
-      const remote = (data?.scratchpad as string | null) ?? "";
-      if (isPending()) {
-        // Local edits never reached the cloud (e.g. refresh within the debounce window): local wins
-        const local = loadNote();
-        if (local !== remote) await remoteSave(user.id, local);
-        else setPending(false);
-      } else if (remote) {
-        if (remote !== loadNote()) {
-          setText(remote);
-          saveLocal(remote);
-        }
+  // Last-chance save when the page hides/closes: fetch with keepalive survives unload
+  const flushBeacon = async () => {
+    const userId = userIdRef.current;
+    const value = latestRef.current;
+    if (!userId || !loadedRef.current || value === lastSyncedRef.current) return;
+    try {
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (!token) return;
+      const env = import.meta.env as Record<string, string>;
+      void fetch(`${env['VITE_SUPABASE_URL']}/rest/v1/profiles?id=eq.${userId}`, {
+        method: "PATCH",
+        keepalive: true,
+        headers: {
+          apikey: env['VITE_SUPABASE_ANON_KEY'] ?? "",
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({ scratchpad: value }),
+      });
+    } catch {
+      // local copy + pending flag still protect the data
+    }
+  };
+
+  const scheduleSave = () => {
+    if (!userIdRef.current) return;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    setStatus("saving");
+    saveTimerRef.current = setTimeout(() => void pushRemote(), SAVE_DEBOUNCE_MS);
+  };
+
+  // Reconcile with the cloud: pending local edits win, otherwise the cloud copy wins
+  const pullRemote = async (userId: string) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("scratchpad")
+      .eq("id", userId)
+      .single();
+    if (userIdRef.current !== userId) return;
+    if (error) {
+      setStatus("error");
+      retryTimerRef.current = setTimeout(() => void pullRemote(userId), RETRY_BASE_MS);
+      return;
+    }
+    const remote = (data?.scratchpad as string | null) ?? "";
+    lastSyncedRef.current = remote;
+    const local = loadNote();
+    if (isPending() || (!remote && local)) {
+      // Local edits never reached the cloud (refresh/crash/offline) or first-time migration
+      latestRef.current = local;
+      loadedRef.current = true;
+      void pushRemote();
+    } else {
+      loadedRef.current = true;
+      if (remote !== latestRef.current) {
+        latestRef.current = remote;
+        setText(remote);
+        saveLocal(remote);
         setPending(false);
-      } else {
-        const local = loadNote();
-        if (local) await remoteSave(user.id, local);
       }
-    })();
-    return () => {
-      cancelled = true;
+      setStatus("saved");
+    }
+  };
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const userId = user.id;
+    loadedRef.current = false;
+    lastSyncedRef.current = null;
+    void pullRemote(userId);
+
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        void flushBeacon();
+      } else if (!isPending() && !inFlightRef.current) {
+        // Pick up edits from other devices, never clobbering unsynced local ones
+        void pullRemote(userId);
+      }
     };
+    const onPageHide = () => void flushBeacon();
+    const onOnline = () => void pushRemote();
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("online", onOnline);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", onPageHide);
+      window.removeEventListener("online", onOnline);
+      // Unmount (route change): send what's pending now instead of dropping the debounce
+      void flushBeacon();
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+      loadedRef.current = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const handleChange = (value: string) => {
     setText(value);
+    latestRef.current = value;
     saveLocal(value);
-    if (user?.id && !remoteDisabledRef.current) {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-      saveTimerRef.current = setTimeout(() => {
-        void remoteSave(user.id, value);
-      }, 800);
-    }
+    scheduleSave();
   };
 
   const lines = text === "" ? [] : text.split("\n");
@@ -292,6 +389,14 @@ const ScratchPad = memo(() => {
           </button>
         </div>
         <div className="flex items-center gap-2">
+          {user?.id && (
+            <span
+              className={`text-xs ${status === "error" ? "text-red-500" : "text-[var(--text-secondary)]"}`}
+              role="status"
+            >
+              {status === "saving" ? "Saving…" : status === "error" ? "Not synced – retrying" : "Saved"}
+            </span>
+          )}
           {text && (
             <button
               onClick={() => handleChange("")}
