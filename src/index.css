@@ -2858,12 +2858,12 @@ input.no-spinners {
 
 /* Study timer: the four side buttons sit in the corners of the ring
    (lap + reset on the left, finish + cancel on the right) at any card width. */
-.timer-card .study-side-left,
-.timer-card .study-side-right {
+:is(.timer-card, .timer-panel) .study-side-left,
+:is(.timer-card, .timer-panel) .study-side-right {
   /* Buttons sit just outside the ring at its four diagonal points:
      centres at 30deg from horizontal, just outside the circle */
-  --side-x: calc(var(--ring) * 0.067 - 2.6rem);
-  --side-y: calc(var(--ring) * 0.25 - 2.03rem);
+  --side-x: calc(var(--ring, 8rem) * 0.067 - 2.6rem);
+  --side-y: calc(var(--ring, 8rem) * 0.25 - 2.03rem);
   top: var(--side-y);
   bottom: var(--side-y);
   margin: 0;
@@ -2872,11 +2872,11 @@ input.no-spinners {
   flex-direction: column;
   justify-content: space-between;
 }
-.timer-card .study-side-left {
+:is(.timer-card, .timer-panel) .study-side-left {
   right: auto;
   left: var(--side-x);
 }
-.timer-card .study-side-right {
+:is(.timer-card, .timer-panel) .study-side-right {
   left: auto;
   right: var(--side-x);
 }
