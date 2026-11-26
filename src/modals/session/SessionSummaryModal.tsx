@@ -94,7 +94,7 @@ const SessionSummaryModal: React.FC<SessionSummaryModalProps> = ({
           <div className="flex gap-3 pt-2">
             <button
               onClick={onClose}
-              className="flex-1 px-6 py-3 rounded-xl bg-linear-to-r from-(--accent-primary) to-(--accent-secondary) text-white font-semibold shadow-lg"
+              className="flex-1 px-6 py-3 rounded-xl border-2 border-(--accent-primary) text-(--accent-primary) font-semibold transition-all hover:bg-(--accent-primary)/10"
             >
               Continue
             </button>
