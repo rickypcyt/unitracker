@@ -2860,8 +2860,12 @@ input.no-spinners {
    (lap + reset on the left, finish + cancel on the right) at any card width. */
 .timer-card .study-side-left,
 .timer-card .study-side-right {
-  top: -0.25rem;
-  bottom: -0.25rem;
+  /* Buttons sit just outside the ring at its four diagonal points:
+     centres at 30deg from horizontal, just outside the circle */
+  --side-x: calc(var(--ring) * 0.067 - 2.6rem);
+  --side-y: calc(var(--ring) * 0.25 - 2.03rem);
+  top: var(--side-y);
+  bottom: var(--side-y);
   margin: 0;
   transform: none;
   translate: none;
@@ -2870,11 +2874,11 @@ input.no-spinners {
 }
 .timer-card .study-side-left {
   right: auto;
-  left: -3rem;
+  left: var(--side-x);
 }
 .timer-card .study-side-right {
   left: auto;
-  right: -3rem;
+  right: var(--side-x);
 }
 
 @container (max-width: 300px) {
@@ -2901,21 +2905,8 @@ input.no-spinners {
   }
   .timer-card .study-side-left,
   .timer-card .study-side-right {
-    top: 0.25rem;
-    bottom: 0.25rem;
-    margin: 0;
-    transform: none;
-    translate: none;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-  .timer-card .study-side-left {
-    right: auto;
-    left: -2.25rem;
-  }
-  .timer-card .study-side-right {
-    left: auto;
-    right: -2.25rem;
+    --side-x: calc(var(--ring) * 0.067 - 2.13rem);
+    --side-y: calc(var(--ring) * 0.25 - 1.65rem);
   }
   .timer-card .study-side-left .timer-ctrl-btn,
   .timer-card .study-side-right .timer-ctrl-btn {
