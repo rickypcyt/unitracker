@@ -285,8 +285,6 @@ export default defineConfig(({ command, mode }) => {
         'react',
         'react-dom',
         'react-dom/client',
-        'react-redux',
-        '@reduxjs/toolkit',
         'framer-motion',
         'lucide-react',
         '@supabase/supabase-js',
