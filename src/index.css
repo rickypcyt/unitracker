@@ -2868,7 +2868,9 @@ input.no-spinners {
   bottom: var(--side-y);
   margin: 0;
   transform: none;
-  translate: none;
+  /* Cancels Tailwind's -translate-y-1/2. Don't use `translate: none`: the
+     production minifier merges it into `transform` and the offset comes back. */
+  --tw-translate-y: 0px;
   flex-direction: column;
   justify-content: space-between;
 }
