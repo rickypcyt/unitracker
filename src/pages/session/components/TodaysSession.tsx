@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { SYNC_EVENTS } from '@/utils/constants';
 import { durationToSeconds, formatDurationHMS } from '@/utils/timeUtils';
 import { getLocalDateString } from '@/utils/dateUtils';
-import { motion } from 'framer-motion';
 import { useLaps } from '@/store/appStore';
 import type { Lap } from '@/types/lap';
 const TodaysSession = () => {
@@ -154,53 +153,22 @@ const TodaysSession = () => {
     } catch {}
   }, [laps, todaysPomodoros, totalStudyTimeFormatted]); // Remove derived values from dependencies
 
-  // Animation variants
-  const container = {
-    hidden: {
-      opacity: 0
-    },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-  const item = {
-    hidden: {
-      opacity: 0,
-      y: 10
-    },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.3
-      }
-    }
-  };
 
   // UI-safe values to prevent flicker during transient fetch states
   const displayStudyTime = totalStudyTimeFormatted && totalStudyTimeFormatted !== '00:00:00' ? totalStudyTimeFormatted : stableMetrics.totalStudyTimeFormatted;
   const displayPomodoros = typeof todaysPomodoros === 'number' && todaysPomodoros > 0 ? todaysPomodoros : stableMetrics.todaysPomodoros;
   return <div className="w-full space-y-4 md:space-y-5 relative">
       {/* Header */}
-      <motion.div initial={{
-      opacity: 0,
-      y: -10
-    }} animate={{
-      opacity: 1,
-      y: 0
-    }} className="flex items-center justify-center pb-2 border-b border-(--border-primary)">
+      <div className="animate-in fade-in slide-in-from-top-2 duration-300 flex items-center justify-center pb-2 border-b border-(--border-primary)">
         <h3 className="text-base sm:text-lg font-semibold text-(--text-primary) flex items-center gap-2">
           <span className="text-sm sm:text-base md:text-lg">Today's Session</span>
         </h3>
-      </motion.div>
+      </div>
 
       {/* Stats Row */}
-      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
         {/* Total Study Time */}
-        <motion.div variants={item} className="relative overflow-hidden bg-linear-to-br from-blue-500/5 to-indigo-500/5 p-2 sm:p-3 md:p-4 rounded-lg border-(--border-primary) hover:shadow-md transition-all duration-300 w-full flex flex-col items-center text-center">
+        <div className="relative overflow-hidden bg-linear-to-br from-blue-500/5 to-indigo-500/5 p-2 sm:p-3 md:p-4 rounded-lg border-(--border-primary) hover:shadow-md transition-all duration-300 w-full flex flex-col items-center text-center">
           <div className="text-xl sm:text-2xl md:text-3xl lg:text-xl xl:text-3xl font-bold text-blue-500 mb-0.5 sm:mb-1">
             {displayStudyTime}
           </div>
@@ -208,10 +176,10 @@ const TodaysSession = () => {
             Study Time
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-linear-to-r from-blue-500 to-indigo-500"></div>
-        </motion.div>
+        </div>
 
         {/* Pomodoros Completed */}
-        <motion.div variants={item} className="relative overflow-hidden bg-linear-to-br from-purple-500/5 to-pink-500/5 p-2 sm:p-3 md:p-4 rounded-lg border-(--border-primary) hover:shadow-md transition-all duration-300 w-full flex flex-col items-center text-center">
+        <div className="relative overflow-hidden bg-linear-to-br from-purple-500/5 to-pink-500/5 p-2 sm:p-3 md:p-4 rounded-lg border-(--border-primary) hover:shadow-md transition-all duration-300 w-full flex flex-col items-center text-center">
           <div className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-500 mb-0.5 sm:mb-1">
             {displayPomodoros}
           </div>
@@ -219,9 +187,9 @@ const TodaysSession = () => {
             Pomodoros
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-linear-to-r from-purple-500 to-pink-500"></div>
-        </motion.div>
+        </div>
 
-      </motion.div>
+      </div>
 
           </div>;
 };

@@ -128,7 +128,7 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div className="modal-animate fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div
         ref={menuRef}
         className="min-w-[320px] max-w-md rounded-lg bg-(--bg-primary) p-4 shadow-xl border-2 border-(--border-primary)"

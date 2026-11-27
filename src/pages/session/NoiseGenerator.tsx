@@ -10,7 +10,6 @@ import React, { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import ReactSlider from "react-slider";
-import { motion } from "framer-motion";
 import { useNoise } from "@/utils/NoiseContext";
 
 // -------------------------
@@ -98,7 +97,7 @@ function SoundControl({
   const percentage = Math.round((volume / max) * 100);
 
   return (
-    <motion.div
+    <div
       className={`noise-item relative overflow-hidden rounded-2xl border bg-(--bg-primary) p-4 transition-all duration-300 hover:shadow-md ${
         isPlaying
           ? `${theme.activeBorder} shadow-md ring-1 ${theme.activeRing}`
@@ -106,31 +105,18 @@ function SoundControl({
       }`}
     >
       <div className="flex items-center gap-4">
-        <motion.div
-          animate={isPlaying ? { scale: [1, 1.04, 1] } : { scale: 1 }}
-          transition={{
-            repeat: Infinity,
-            duration: 3,
-            ease: "easeInOut",
-            delay: index * 0.15,
-          }}
-          className={`noise-icon relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${theme.iconBg}`}
+        <div
+          style={{ animationDelay: `${index * 0.15}s` }}
+          className={`${isPlaying ? "animate-breathe" : ""} noise-icon relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${theme.iconBg}`}
         >
           <Icon size={22} className={theme.iconText} />
           {isPlaying && (
-            <motion.span
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: [0.35, 0], scale: [1, 1.5] }}
-              transition={{
-                repeat: Infinity,
-                duration: 3,
-                ease: "easeInOut",
-                delay: index * 0.15,
-              }}
-              className={`absolute inset-0 rounded-full ${theme.activeRing}`}
+            <span
+              style={{ animationDelay: `${index * 0.15}s` }}
+              className={`animate-noise-ring absolute inset-0 rounded-full ${theme.activeRing}`}
             />
           )}
-        </motion.div>
+        </div>
 
         <div className="flex-1 min-w-0">
           <div className="noise-item-head flex items-center justify-between gap-2 mb-2">
@@ -141,16 +127,10 @@ function SoundControl({
             {isPlaying && (
               <div className="flex items-end gap-0.5 h-3.5 shrink-0" aria-hidden>
                 {[0, 1, 2, 3].map((b) => (
-                  <motion.span
+                  <span
                     key={b}
-                    className={`w-0.5 rounded-full ${theme.gradient}`}
-                    animate={{ height: ["30%", "100%", "50%", "90%", "30%"] }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 1.2,
-                      ease: "easeInOut",
-                      delay: b * 0.15,
-                    }}
+                    className={`animate-equalizer w-0.5 rounded-full ${theme.gradient}`}
+                    style={{ animationDelay: `${b * 0.15}s` }}
                   />
                 ))}
               </div>
@@ -213,7 +193,7 @@ function SoundControl({
           )}
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -239,23 +219,12 @@ export default function NoiseGenerator() {
     [isInitialized, initializeAudio, startSound]
   );
 
-  // Animation variants
-  const container = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.08 } },
-  };
-  const item = {
-    hidden: { opacity: 0, y: 16 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-  };
 
   return (
     <div className="w-full h-full flex flex-col">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="noise-header flex items-center justify-between pb-3"
+      <div
+        className="animate-in fade-in slide-in-from-top-2 duration-300 noise-header flex items-center justify-between pb-3"
       >
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-lg bg-(--accent-primary)/10">
@@ -266,17 +235,14 @@ export default function NoiseGenerator() {
             </h3>
           </div>
 
-      </motion.div>
+      </div>
 
       {/* Sound controls */}
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="noise-list flex flex-col gap-3 py-2"
+      <div
+        className="animate-in fade-in slide-in-from-bottom-4 duration-300 noise-list flex flex-col gap-3 py-2"
       >
         {sounds.map((sound, idx) => (
-          <motion.div key={sound.key} variants={item}>
+          <div key={sound.key}>
             <SoundControl
               index={idx}
               soundKey={sound.key}
@@ -295,9 +261,9 @@ export default function NoiseGenerator() {
               stop={() => stopSound(idx)}
               max={sound.max}
             />
-          </motion.div>
+          </div>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }

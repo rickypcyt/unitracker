@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { motion } from "framer-motion";
 
+import { useFreeDrag } from "@/hooks/useFreeDrag";
 import FloatingExtraTimer from "@/pages/session/components/FloatingExtraTimer";
 import MiniTimerPlayer from "@/pages/session/components/MiniTimerPlayer";
 import {
@@ -45,6 +45,7 @@ const MINI_PLAYER_EXTRAS_KEY = "miniPlayerOpenExtras";
  * Open it by dispatching `MINI_PLAYER_OPEN_EVENT` on window.
  */
 const FloatingTimerPlayer = () => {
+  const drag = useFreeDrag();
   const { navigateTo } = useNavigation();
   const [pipHost, setPipHost] = useState<HTMLElement | null>(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
@@ -207,11 +208,10 @@ const FloatingTimerPlayer = () => {
     <>
       {pipHost ? createPortal(<MiniTimerPlayer onExpand={backToSession} />, pipHost) : null}
       {!pipSupported && overlayOpen ? (
-        <motion.div
-          drag
-          dragMomentum={false}
+        <div
+          {...drag.handlers}
           className="fixed bottom-20 right-4 z-100 w-[320px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] cursor-grab active:cursor-grabbing rounded-2xl border border-(--border-primary)/50 bg-(--bg-primary)/90 backdrop-blur-md shadow-xl"
-          style={{ resize: "both", overflow: "auto", minWidth: 240, minHeight: 120 }}
+          style={{ ...drag.style, resize: "both", overflow: "auto", minWidth: 240, minHeight: 120 }}
         >
           <MiniTimerPlayer
             onExpand={backToSession}
@@ -220,7 +220,7 @@ const FloatingTimerPlayer = () => {
               localStorage.setItem(MINI_PLAYER_OPEN_KEY, "0");
             }}
           />
-        </motion.div>
+        </div>
       ) : null}
       {visibleExtras.map((id, index) => (
         <FloatingExtraTimer

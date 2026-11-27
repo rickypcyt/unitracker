@@ -1,7 +1,6 @@
 import { Pause, Play, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 
 import {
   isExtraTimerRunning,
@@ -10,6 +9,7 @@ import {
   type ExtraTimerId,
 } from "@/utils/studyTimerRemote";
 import { formatHMS } from "@/utils/timeUtils";
+import { useFreeDrag } from "@/hooks/useFreeDrag";
 
 const CONFIG: Record<ExtraTimerId, { labelKey: string; color: string }> = {
   pomodoro: { labelKey: "session.unifiedTimer.pomodoroLabel", color: "#ef4444" },
@@ -29,6 +29,7 @@ const FloatingExtraTimer = ({ id, stackIndex = 0, onClose }: FloatingExtraTimerP
   const [seconds, setSeconds] = useState(0);
   const [running, setRunning] = useState(false);
   const { labelKey, color } = CONFIG[id];
+  const drag = useFreeDrag();
 
   useEffect(() => {
     const tick = () => {
@@ -41,11 +42,10 @@ const FloatingExtraTimer = ({ id, stackIndex = 0, onClose }: FloatingExtraTimerP
   }, [id]);
 
   return (
-    <motion.div
-      drag
-      dragMomentum={false}
+    <div
+      {...drag.handlers}
       className="fixed right-4 z-100 w-[240px] cursor-grab active:cursor-grabbing"
-      style={{ bottom: `${6 + stackIndex * 4.5}rem` }}
+      style={{ ...drag.style, bottom: `${6 + stackIndex * 4.5}rem` }}
     >
       <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-(--border-primary)/50 bg-(--bg-primary)/90 backdrop-blur-md text-(--text-primary) shadow-xl select-none">
         <div className="flex flex-col min-w-0">
@@ -85,7 +85,7 @@ const FloatingExtraTimer = ({ id, stackIndex = 0, onClose }: FloatingExtraTimerP
           </button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

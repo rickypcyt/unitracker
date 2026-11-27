@@ -1,9 +1,8 @@
-import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-
 import React, { useState } from 'react';
 
 import BaseModal from '@/modals/shared/BaseModal';
 import { ChevronDown } from 'lucide-react';
+import { Dropdown } from '@heroui/react';
 import { Workspace } from '@/types/workspace';
 
 interface ShareWorkspaceModalProps {
@@ -68,28 +67,28 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
           <label className="block text-sm font-medium mb-1 text-(--text-primary)">
             Workspace to Share
           </label>
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger asChild>
-              <button
-                className="w-full px-3 py-2 rounded-lg border-2 border-(--border-primary) bg-(--bg-secondary) text-(--text-primary) flex items-center justify-between hover:border-(--accent-primary) transition-colors focus:outline-none focus:border-(--accent-primary)"
-              >
+          <Dropdown>
+            <Dropdown.Trigger
+              className="w-full px-3 py-2 rounded-lg border-2 border-(--border-primary) bg-(--bg-secondary) text-(--text-primary) flex items-center justify-between hover:border-(--accent-primary) transition-colors focus:outline-none focus:border-(--accent-primary)"
+            >
                 <span className={selectedWorkspace ? 'text-(--text-primary)' : 'text-(--text-secondary)'}>
                   {selectedWorkspace ? selectedWorkspace.name : 'Select a workspace'}
                 </span>
                 <ChevronDown className="w-4 h-4 text-(--text-secondary)" />
-              </button>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content
-                className="min-w-[200px] max-h-[300px] rounded-lg p-1 border-2 border-(--border-primary) bg-(--bg-primary) z-10001 animate-in fade-in zoom-in-95 antialiased overflow-y-auto"
-                sideOffset={5}
-                align="start"
-                collisionPadding={10}
-              >
+              </Dropdown.Trigger>
+            <Dropdown.Popover
+              className="min-w-[200px] max-h-[300px] rounded-lg p-1 border-2 border-(--border-primary) bg-(--bg-primary) z-10001 animate-in fade-in zoom-in-95 antialiased overflow-y-auto"
+              offset={5}
+              placement="bottom start"
+              containerPadding={10}
+            >
+              <Dropdown.Menu>
                 {workspaces.map(ws => (
-                  <DropdownMenu.Item
+                  <Dropdown.Item
                     key={ws.id}
-                    onClick={() => setSelectedWorkspace(ws)}
+                    id={String(ws.id)}
+                    textValue={ws.name}
+                    onAction={() => setSelectedWorkspace(ws)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer outline-none transition-colors ${
                       selectedWorkspace?.id === ws.id
                         ? 'text-(--accent-primary) bg-(--accent-primary)/10 border-2 border-(--accent-primary)'
@@ -100,22 +99,21 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
                     {selectedWorkspace?.id === ws.id && (
                       <div className="w-2 h-2 rounded-full bg-(--accent-primary) ml-auto" />
                     )}
-                  </DropdownMenu.Item>
+                  </Dropdown.Item>
                 ))}
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
+              </Dropdown.Menu>
+              </Dropdown.Popover>
+          </Dropdown>
         </div>
         
         <div>
           <label className="block text-sm font-medium mb-1 text-(--text-primary)">
             Share With
           </label>
-          <DropdownMenu.Root>
-            <DropdownMenu.Trigger asChild>
-              <button
-                className="w-full px-3 py-2 rounded-lg border-2 border-(--border-primary) bg-(--bg-secondary) text-(--text-primary) flex items-center justify-between hover:border-(--accent-primary) transition-colors focus:outline-none focus:border-(--accent-primary)"
-              >
+          <Dropdown>
+            <Dropdown.Trigger
+              className="w-full px-3 py-2 rounded-lg border-2 border-(--border-primary) bg-(--bg-secondary) text-(--text-primary) flex items-center justify-between hover:border-(--accent-primary) transition-colors focus:outline-none focus:border-(--accent-primary)"
+            >
                 <span className={selectedFriend ? 'text-(--text-primary)' : 'text-(--text-secondary)'}>
                   {selectedFriend 
                     ? selectedFriend.username || selectedFriend.email || selectedFriend.id
@@ -125,20 +123,21 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
                   }
                 </span>
                 <ChevronDown className="w-4 h-4 text-(--text-secondary)" />
-              </button>
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content
-                className="min-w-[200px] max-h-[300px] rounded-lg p-1 border-2 border-(--border-primary) bg-(--bg-primary) z-10001 animate-in fade-in zoom-in-95 antialiased overflow-y-auto"
-                sideOffset={5}
-                align="start"
-                collisionPadding={10}
-              >
+              </Dropdown.Trigger>
+            <Dropdown.Popover
+              className="min-w-[200px] max-h-[300px] rounded-lg p-1 border-2 border-(--border-primary) bg-(--bg-primary) z-10001 animate-in fade-in zoom-in-95 antialiased overflow-y-auto"
+              offset={5}
+              placement="bottom start"
+              containerPadding={10}
+            >
+              <Dropdown.Menu>
                 {friends.length > 0 ? (
                   friends.map(friend => (
-                    <DropdownMenu.Item
+                    <Dropdown.Item
                       key={friend.id}
-                      onClick={() => setSelectedFriend(friend)}
+                      id={String(friend.id)}
+                      textValue={String(friend.username || friend.email || friend.id)}
+                      onAction={() => setSelectedFriend(friend)}
                       className={`flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer outline-none transition-colors ${
                         selectedFriend?.id === friend.id
                           ? 'text-(--accent-primary) bg-(--accent-primary)/10 border-2 border-(--accent-primary)'
@@ -154,19 +153,21 @@ const ShareWorkspaceModal: React.FC<ShareWorkspaceModalProps> = ({ isOpen, onClo
                       {selectedFriend?.id === friend.id && (
                         <div className="w-2 h-2 rounded-full bg-(--accent-primary) ml-auto" />
                       )}
-                    </DropdownMenu.Item>
+                    </Dropdown.Item>
                   ))
                 ) : (
-                  <DropdownMenu.Item
-                    onClick={onAddFriend || (() => {})}
+                  <Dropdown.Item
+                    id="add-friend"
+                    textValue="Add a friend to share workspace"
+                    onAction={() => onAddFriend?.()}
                     className="flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer outline-none transition-colors text-(--accent-primary) hover:text-(--accent-primary)/80 hover:bg-(--bg-primary) hover:border-2 hover:border-(--accent-primary) border-2 border-transparent"
                   >
                     <span>Add a friend to share workspace</span>
-                  </DropdownMenu.Item>
+                  </Dropdown.Item>
                 )}
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
+              </Dropdown.Menu>
+              </Dropdown.Popover>
+          </Dropdown>
         </div>
         
         <div className="flex justify-end">

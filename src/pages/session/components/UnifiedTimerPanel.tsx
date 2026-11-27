@@ -1,7 +1,6 @@
 import { Bell, BellOff, Clock, Flag, Link, MoreVertical, Pause, PictureInPicture, Play, Plus, RotateCcw, Settings, Timer as TimerIcon, Unlink, Watch } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 
 import Countdown from "@/pages/session/Countdown";
 import Pomodoro from "@/pages/session/Pomodoro";
@@ -229,15 +228,6 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
     return null;
   };
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.08 } },
-  };
-  const item = {
-    hidden: { opacity: 0, y: 16 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-  };
-
   // Shared bar controls the study session (synced companions follow it)
   const emit = (name: string) =>
     window.dispatchEvent(new CustomEvent(name, { detail: { baseTimestamp: Date.now() } }));
@@ -254,8 +244,7 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
     const myIdx = visibleTimers.indexOf(id);
     const prevId = myIdx > 0 ? visibleTimers[myIdx - 1] : null;
     return (
-      <motion.div
-        variants={item}
+      <div
         key={id}
         draggable
         onDragStart={() => handleDragStart(id)}
@@ -312,16 +301,13 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
         <div className="utp-body absolute inset-0 z-0 flex flex-col justify-center px-3">
           {renderTimer(id)}
         </div>
-      </motion.div>
+      </div>
     );
   };
 
   return (
-    <motion.div
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="utp flex w-full h-full flex-col"
+    <div
+      className="animate-in fade-in slide-in-from-bottom-4 duration-300 utp flex w-full h-full flex-col"
     >
       {/* Timer tiles */}
       <div aria-hidden={idle} className={`relative z-10 grid flex-1 gap-3 px-4 pt-1 grid-cols-1 ${idle ? "invisible" : ""} ${visibleTimers.length >= 3 ? "sm:grid-cols-3" : visibleTimers.length === 2 ? "sm:grid-cols-2" : ""}`}>
@@ -411,7 +397,7 @@ const UnifiedTimerPanel = ({ isSynced, isRunning }: { isSynced?: boolean; isRunn
       >
         <PictureInPicture size={22} />
       </button>
-    </motion.div>
+    </div>
   );
 };
 

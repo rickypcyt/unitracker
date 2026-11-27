@@ -248,7 +248,7 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
     }
   };
   if (!isOpen) return null;
-  return createPortal(<div className="fixed inset-0 bg-white/60 dark:bg-black/70 flex items-center justify-center z-10001 backdrop-blur-sm p-4">
+  return createPortal(<div className="modal-animate fixed inset-0 bg-white/60 dark:bg-black/70 flex items-center justify-center z-10001 backdrop-blur-sm p-4">
       <div className="bg-(--bg-primary) rounded-lg p-6 w-full max-w-3xl border-2 border-(--border-primary) shadow-xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold text-(--text-primary)">Finish Session</h2>
@@ -367,7 +367,7 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
         </div>
 
         {/* Task Selector Modal */}
-        {showTaskSelector && <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        {showTaskSelector && <div className="modal-animate fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-(--bg-primary) rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border-2 border-(--border-primary)">
               <div className="p-4 border-b border-(--border-primary) flex justify-between items-center sticky top-0 bg-(--bg-primary) z-10">
                 <h2 className="text-xl font-semibold">Add Finished Tasks</h2>

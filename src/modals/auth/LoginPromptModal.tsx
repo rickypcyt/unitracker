@@ -37,7 +37,7 @@ const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isOpen, onClose }) 
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 bg-white/60 dark:bg-black/70 flex items-center justify-center z-10001 backdrop-blur-xl">
+    <div className="modal-animate fixed inset-0 bg-white/60 dark:bg-black/70 flex items-center justify-center z-10001 backdrop-blur-xl">
       <div ref={modalRef} className="bg-(--bg-primary) rounded-lg p-6 max-w-md w-full mx-4 border-2 border-(--border-primary) shadow-xl">
         <h2 className="text-xl font-semibold mb-4 text-center text-(--text-primary)">{t('auth.login.required')}</h2>
         <p className="text-(--text-secondary) mb-6 text-center">

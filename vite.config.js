@@ -285,7 +285,6 @@ export default defineConfig(({ command, mode }) => {
         'react',
         'react-dom',
         'react-dom/client',
-        'framer-motion',
         'lucide-react',
         '@supabase/supabase-js',
         '@supabase/postgrest-js',

@@ -1,5 +1,4 @@
 import { memo, useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { useUi } from "@/store/appStore";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { LogIn } from "lucide-react";
@@ -66,20 +65,11 @@ const SessionPage = memo(() => {
     }
   }, [isSynced, isRunning, resetKey]);
 
-  // Animation variants
-  const container = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.08 } },
-  };
-  const item = {
-    hidden: { opacity: 0, y: 16 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-  };
 
   // `flat`: on 2xl the wrappers become `display: contents`, so the three timer cards are
   // direct items of the parent grid (used by the default layout).
   const renderTimers = (flat = false) => (
-    <motion.div variants={item} className={`w-full min-w-0 h-full flex flex-col ${flat ? "2xl:contents" : ""}`} data-tour="session-timer">
+    <div className={`w-full min-w-0 h-full flex flex-col ${flat ? "2xl:contents" : ""}`} data-tour="session-timer">
       {!isLoggedIn && (
         <button
           onClick={() => loginWithGoogle()}
@@ -90,18 +80,18 @@ const SessionPage = memo(() => {
         </button>
       )}
       <TimerCards isSynced={isSynced} isRunning={isRunning} className={flat ? "2xl:contents" : ""} />
-    </motion.div>
+    </div>
   );
   const timersSection = renderTimers();
 
   const tasksMonthRow = (
     <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4 items-start">
-      <motion.div variants={item} className="min-w-0">
+      <div className="min-w-0">
         <PendingTasks />
-      </motion.div>
-      <motion.div variants={item} className="min-w-0">
+      </div>
+      <div className="min-w-0">
         <MonthView />
-      </motion.div>
+      </div>
     </div>
   );
 
@@ -114,68 +104,68 @@ const SessionPage = memo(() => {
   const timersMonthRow = (
     <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-5 2xl:grid-rows-2 gap-4 items-stretch">
       {/* Timers: full width; on 2xl the cards are placed directly in this grid (row 1, cols 2-4) */}
-      <motion.div variants={item} className="min-w-0 order-1 md:col-span-2 2xl:contents">
+      <div className="min-w-0 order-1 md:col-span-2 2xl:contents">
         {renderTimers(true)}
-      </motion.div>
+      </div>
       {/* Scratchpad */}
-      <motion.div variants={item} className="min-w-0 min-h-0 order-2 md:order-5 2xl:col-start-2 2xl:col-span-3 2xl:row-start-2 2xl:relative">
+      <div className="min-w-0 min-h-0 order-2 md:order-5 2xl:col-start-2 2xl:col-span-3 2xl:row-start-2 2xl:relative">
         <div className="md:h-full md:*:max-h-none 2xl:absolute 2xl:inset-0 2xl:*:min-h-0">
           <ScratchPad />
         </div>
-      </motion.div>
+      </div>
       {/* Calendar */}
-      <motion.div variants={item} className="min-w-0 order-3 2xl:col-start-1 2xl:row-start-1 2xl:relative 2xl:min-h-0">
+      <div className="min-w-0 order-3 2xl:col-start-1 2xl:row-start-1 2xl:relative 2xl:min-h-0">
         <div className="md:h-full md:[&>section]:aspect-auto md:[&>section]:h-full 2xl:absolute 2xl:inset-0">
           <MonthView fillHeight />
         </div>
-      </motion.div>
+      </div>
       {/* Noise generator */}
-      <motion.div variants={item} className="order-4 md:order-2 2xl:col-start-1 2xl:row-start-2 min-w-0 2xl:relative 2xl:min-h-0">
+      <div className="order-4 md:order-2 2xl:col-start-1 2xl:row-start-2 min-w-0 2xl:relative 2xl:min-h-0">
         <div className="noise-fit dashboard-noise-card w-full overflow-hidden p-3 md:h-full 2xl:absolute 2xl:inset-0 2xl:overflow-y-auto">
           <NoiseGenerator />
         </div>
-      </motion.div>
+      </div>
       {/* Pending tasks — on 2xl it spans both rows (absolute, scrolls inside) */}
-      <motion.div variants={item} className="min-w-0 order-5 md:order-4 2xl:col-start-5 2xl:row-start-1 2xl:row-span-2 2xl:relative 2xl:min-h-0">
+      <div className="min-w-0 order-5 md:order-4 2xl:col-start-5 2xl:row-start-1 2xl:row-span-2 2xl:relative 2xl:min-h-0">
         <div className="md:h-full 2xl:absolute 2xl:inset-0">
           <PendingTasks fillHeight />
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 
   const toolsRow = (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
-      <motion.div variants={item} className="order-2 lg:order-1 dashboard-noise-card w-full h-full">
+      <div className="order-2 lg:order-1 dashboard-noise-card w-full h-full">
         <NoiseGenerator />
-      </motion.div>
-      <motion.div variants={item} className="order-1 lg:order-2 h-full">
+      </div>
+      <div className="order-1 lg:order-2 h-full">
         <ScratchPad />
-      </motion.div>
+      </div>
     </div>
   );
 
   const tasksRow = (
-    <motion.div variants={item} className="min-w-0">
+    <div className="min-w-0">
       <PendingTasks />
-    </motion.div>
+    </div>
   );
 
   const compactRow = (
     <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 items-start">
-      <motion.div variants={item} className="min-w-0">
+      <div className="min-w-0">
         <PendingTasks />
-      </motion.div>
-      <motion.div variants={item} className="min-w-0">
+      </div>
+      <div className="min-w-0">
         <MonthView />
-      </motion.div>
+      </div>
       <div className="min-w-0 flex flex-col gap-4">
-        <motion.div variants={item} className="dashboard-noise-card w-full">
+        <div className="dashboard-noise-card w-full">
           <NoiseGenerator />
-        </motion.div>
-        <motion.div variants={item} className="flex-1">
+        </div>
+        <div className="flex-1">
           <ScratchPad />
-        </motion.div>
+        </div>
       </div>
     </div>
   );
@@ -202,11 +192,8 @@ const SessionPage = memo(() => {
         <link rel="canonical" href="https://unitracker.me/session" />
       </Helmet>
       <div className="w-full session-page pb-24 sm:pb-4" style={{ fontSize: 'clamp(0.875rem, 0.85rem + 0.15vw, 1rem)' }}>
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="w-full max-w-360 lg:max-w-none mx-auto flex flex-col gap-4"
+        <div
+          className="animate-in fade-in slide-in-from-bottom-4 duration-300 w-full max-w-360 lg:max-w-none mx-auto flex flex-col gap-4"
         >
           {layout === "planning" ? (
             <>
@@ -229,7 +216,7 @@ const SessionPage = memo(() => {
               {timersMonthRow}
             </>
           )}
-        </motion.div>
+        </div>
       </div>
     </>
   );

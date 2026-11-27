@@ -5,7 +5,6 @@ import { createPortal } from 'react-dom';
 
 import DeleteSessionModal from './DeleteSessionModal';
 import { formatDurationHMS, formatHMS } from '@/utils/timeUtils';
-import { motion } from 'framer-motion';
 import { StudyService } from '@/services/StudyService';
 
 interface Session {
@@ -145,7 +144,7 @@ const SessionsModal = ({
   if (!isOpen) return null;
   // Stay hidden until we know there is something to show (no flash of an empty modal)
   if (!ready) return null;
-  return createPortal(<div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+  return createPortal(<div className="modal-animate fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-(--bg-primary) rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border-2 border-(--border-primary) relative">
         <button onClick={onClose} className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-(--bg-secondary) transition-colors z-20" aria-label="Close">
           <X size={18} />
@@ -187,15 +186,7 @@ const SessionsModal = ({
           <p className="text-sm mt-1">Start a new study session to begin tracking!</p>
         </>}
     </div> : <div className="space-y-3">
-      {currentSessions.map(session => <motion.div key={session.id} className={`bg-(--bg-secondary) rounded-lg p-4 border-2 border-(--border-primary) ${activeTab === 'today' ? 'hover:border-(--accent-primary)/30 transition-colors cursor-pointer' : ''}`} initial={{
-            opacity: 0,
-            y: 10
-          }} animate={{
-            opacity: 1,
-            y: 0
-          }} transition={{
-            duration: 0.2
-          }} onClick={() => activeTab === 'today' && handleContinueSession(session.id)}>
+      {currentSessions.map(session => <div key={session.id} className={`animate-in fade-in slide-in-from-bottom-2 duration-200 bg-(--bg-secondary) rounded-lg p-4 border-2 border-(--border-primary) ${activeTab === 'today' ? 'hover:border-(--accent-primary)/30 transition-colors cursor-pointer' : ''}`} onClick={() => activeTab === 'today' && handleContinueSession(session.id)}>
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
@@ -261,7 +252,7 @@ const SessionsModal = ({
                       </button>
                     </div>
                   </div>
-                </motion.div>)}
+                </div>)}
             </div>}
         </div>
         

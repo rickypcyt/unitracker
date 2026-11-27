@@ -224,7 +224,7 @@ const BaseModal = ({
   }[padding as string] ?? padding;
 
   const overlayClasses = `
-    BaseModal fixed inset-0 w-screen h-screen 
+    BaseModal modal-animate fixed inset-0 w-screen h-screen 
     ${overlayClassName ?? DEFAULT_OVERLAY_CLASS} 
     flex items-center justify-center ${zIndex} 
     ${backdropBlur ? 'backdrop-blur-md' : ''} w-full px-3 sm:px-4 overflow-hidden

@@ -2,7 +2,6 @@ import { Bell, BellOff, Clock, Flag, GripVertical, LogOut, MoreVertical, Picture
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createPortal } from "react-dom";
-import { motion } from "framer-motion";
 
 import Countdown from "./Countdown";
 import Pomodoro from "./Pomodoro";
@@ -263,32 +262,19 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
     return null;
   };
 
-  // Animation variants
-  const container = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.08 } },
-  };
-  const item = {
-    hidden: { opacity: 0, y: 16 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-  };
 
   return (
     <div className="flex flex-col gap-3">
       {/* Timer Panels */}
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid gap-2 w-full grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 lg:[&>*:nth-child(3)]:col-span-2 lg:[&>*:nth-child(3)]:justify-self-center lg:[&>*:nth-child(3)]:max-w-[24rem] xl:[&>*:nth-child(3)]:col-span-1 xl:[&>*:nth-child(3)]:max-w-none"
+      <div
+        className="animate-in fade-in slide-in-from-bottom-4 duration-300 grid gap-2 w-full grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 lg:[&>*:nth-child(3)]:col-span-2 lg:[&>*:nth-child(3)]:justify-self-center lg:[&>*:nth-child(3)]:max-w-[24rem] xl:[&>*:nth-child(3)]:col-span-1 xl:[&>*:nth-child(3)]:max-w-none"
       >
         {visibleTimers.map(id => {
           const config = TIMER_CONFIG[id];
           const Icon = config.icon;
           const portalTarget = panelHosts[id];
           return (
-            <motion.div
-              variants={item}
+            <div
               key={id}
               draggable
               onDragStart={() => handleDragStart(id)}
@@ -311,10 +297,10 @@ const UnifiedTimer = ({ isSynced, isRunning }: { isSynced?: boolean; isRunning?:
               </div>
               <div ref={getHostRef(id)} className="flex-1 min-h-0 flex flex-col" />
               {portalTarget ? createPortal(renderTimer(id), portalTarget) : null}
-            </motion.div>
+            </div>
           );
         })}
-      </motion.div>
+      </div>
 
     </div>
   );

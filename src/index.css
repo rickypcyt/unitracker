@@ -3069,3 +3069,37 @@ input.no-spinners {
     --ring: clamp(6.5rem, 46cqw, 8.5rem);
   }
 }
+
+@theme {
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-glow: glow 3s ease-in-out infinite;
+  --animate-breathe: breathe 3s ease-in-out infinite;
+  --animate-noise-ring: noise-ring 3s ease-in-out infinite both;
+  --animate-equalizer: equalizer 1.2s ease-in-out infinite both;
+
+  @keyframes float { 50% { transform: translateY(-12px); } }
+  @keyframes glow {
+    0%, 100% { opacity: 0.2; transform: scale(0.9); }
+    50% { opacity: 0.5; transform: scale(1.1); }
+  }
+  @keyframes breathe { 50% { transform: scale(1.04); } }
+  @keyframes noise-ring {
+    from { opacity: 0.35; transform: scale(1); }
+    to { opacity: 0; transform: scale(1.5); }
+  }
+  @keyframes equalizer {
+    0%, 100% { height: 30%; }
+    25% { height: 100%; }
+    50% { height: 50%; }
+    75% { height: 90%; }
+  }
+}
+
+/* Modal entrance: the overlay fades in and its panel rises and scales up. */
+.modal-animate { animation: modal-fade 0.2s ease-out; }
+.modal-animate > * { animation: modal-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes modal-fade { from { opacity: 0; } }
+@keyframes modal-pop { from { opacity: 0; translate: 0 12px; scale: 0.96; } }
+@media (prefers-reduced-motion: reduce) {
+  .modal-animate, .modal-animate > * { animation: none; }
+}

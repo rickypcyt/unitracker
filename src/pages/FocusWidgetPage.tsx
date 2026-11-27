@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import SessionsModal from "@/modals/session/TodaysSessionsModal";
 import StartSessionModal from "@/modals/session/StartSessionModal";
 import { formatDateShort } from "@/utils/dateUtils";
-import { motion } from "framer-motion";
 import { supabase } from "@/utils/supabaseClient";
 import { useAppStore } from "@/store/appStore";
 import { useNavigation } from "@/navigation/NavigationContext";
@@ -158,24 +157,17 @@ const FocusWidgetPage = () => {
       {/* Fun idle state shown when no session is running */}
       {studyState.sessionStatus !== 'active' && studyState.sessionStatus !== 'paused' && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 text-center max-w-md px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-6"
+          <div
+            className="space-y-6 animate-in fade-in slide-in-from-bottom-5 duration-500"
           >
             <div className="relative flex justify-center h-32">
-              <motion.div
-                animate={{ y: [0, -12, 0] }}
-                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                className="w-24 h-24 rounded-full bg-white/5 border-2 border-white/10 flex items-center justify-center"
+              <div
+                className="animate-float w-24 h-24 rounded-full bg-white/5 border-2 border-white/10 flex items-center justify-center"
               >
                 <Coffee size={48} className="text-(--accent-primary)" />
-              </motion.div>
-              <motion.div
-                animate={{ opacity: [0.2, 0.5, 0.2], scale: [0.9, 1.1, 0.9] }}
-                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                className="absolute bottom-2 left-1/2 -translate-x-1/2 w-20 h-4 rounded-full bg-white/10 blur-md"
+              </div>
+              <div
+                className="animate-glow absolute bottom-2 left-1/2 -translate-x-1/2 w-20 h-4 rounded-full bg-white/10 blur-md"
               />
             </div>
 
@@ -196,7 +188,7 @@ const FocusWidgetPage = () => {
               <Plus size={18} />
               Start a session
             </button>
-          </motion.div>
+          </div>
         </div>
       )}
 

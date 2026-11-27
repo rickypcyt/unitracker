@@ -56,7 +56,7 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
   };
 
   return (
-    <div className="fixed inset-0 z-99999 flex items-center justify-center bg-black/70 backdrop-blur-md p-3 sm:p-4 md:p-6 overflow-y-auto">
+    <div className="modal-animate fixed inset-0 z-99999 flex items-center justify-center bg-black/70 backdrop-blur-md p-3 sm:p-4 md:p-6 overflow-y-auto">
       <div
         ref={modalRef}
         className={`bg-(--bg-primary) rounded-2xl sm:rounded-3xl border-2 border-(--accent-primary) w-full max-w-2xl mx-1 sm:mx-2 md:mx-4 p-4 sm:p-6 md:p-8 relative shadow-2xl overflow-hidden transition-all duration-150 transform ${
