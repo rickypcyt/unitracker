@@ -690,7 +690,7 @@
   }
 
   .textinput {
-    @apply w-full p-3 rounded-lg text-base focus:outline-hidden focus:ring-2 focus:ring-blue-500/50;
+    @apply w-full p-3 rounded-lg text-base focus:outline-hidden;
     background-color: var(--bg-primary);
     border: 2px solid var(--border-primary);
     color: var(--text-primary);
@@ -1160,8 +1160,7 @@
 /* Focus Styles */
 @layer base {
   :focus-visible {
-    outline: 2px solid var(--accent-primary);
-    outline-offset: 2px;
+    outline: none;
   }
 }
 
@@ -2426,7 +2425,7 @@
 :root {
   --ui-border-width: 1px;
   --ui-focus-width: 3px;
-  --ui-focus-color: rgba(30, 144, 255, 0.24);
+  --ui-focus-color: color-mix(in srgb, var(--accent-primary) 24%, transparent);
   --ui-control-height: 2.75rem;
   --ui-content-gutter: clamp(1rem, 0.65rem + 1vw, 2rem);
   --ui-content-max-width: 90rem;
@@ -2500,14 +2499,14 @@
   select):focus {
     border-color: var(--accent-primary);
     outline: none;
-    box-shadow: 0 0 0 var(--ui-focus-width) var(--ui-focus-color);
+    box-shadow: none;
   }
 
   button:focus-visible,
   a:focus-visible,
   :where(input, textarea, select):focus-visible {
-    outline: 2px solid var(--accent-primary);
-    outline-offset: 2px;
+    outline: none;
+    
   }
 }
 

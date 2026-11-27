@@ -308,14 +308,14 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
               <label htmlFor="sessionTitle" className="block text-base font-medium text-(--text-secondary) mb-2">
                 Session Title
               </label>
-              <input type="text" id="sessionTitle" value={sessionTitle} onChange={e => setSessionTitle(e.target.value)} className="w-full px-3 py-2 bg-(--bg-secondary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)" placeholder="Session title" disabled />
+              <input type="text" id="sessionTitle" value={sessionTitle} onChange={e => setSessionTitle(e.target.value)} className="w-full px-3 py-2 bg-(--bg-secondary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none" placeholder="Session title" disabled />
             </div>
 
             <div>
               <label htmlFor="sessionDescription" className="block text-base font-medium text-(--text-secondary) mb-2">
                 Session Notes
               </label>
-              <textarea id="sessionDescription" value={sessionDescription} onChange={e => setSessionDescription(e.target.value)} className="w-full px-3 py-2 bg-(--bg-secondary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)" rows={3} placeholder="Add notes about this session..." />
+              <textarea id="sessionDescription" value={sessionDescription} onChange={e => setSessionDescription(e.target.value)} className="w-full px-3 py-2 bg-(--bg-secondary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none" rows={3} placeholder="Add notes about this session..." />
             </div>
           </div>
         </div>
@@ -345,7 +345,7 @@ const FinishSessionModal: React.FC<FinishSessionModalProps> = ({
               } else {
                 setSelectedTasks(prev => prev.filter(id => id !== task.id));
               }
-            }} className="w-4 h-4 text-(--accent-primary) border-(--border-primary) rounded focus:ring-(--accent-primary)" />
+            }} className="w-4 h-4 text-(--accent-primary) border-(--border-primary) rounded" />
                   <label htmlFor={`task-${task.id}`} className="flex-1 text-(--text-primary) cursor-pointer">
                     {task.title}
                   </label>

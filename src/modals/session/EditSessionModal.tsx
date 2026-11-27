@@ -225,7 +225,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
                   id="sessionTitle"
                   value={sessionTitle}
                   onChange={(e) => setSessionTitle(e.target.value)}
-                  className="w-full px-3 py-2 bg-(--bg-secondary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary) transition-colors"
+                  className="w-full px-3 py-2 bg-(--bg-secondary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none transition-colors"
                   placeholder="Enter session title"
                 />
               </div>
@@ -238,7 +238,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
                   id="sessionDescription"
                   value={sessionDescription}
                   onChange={(e) => setSessionDescription(e.target.value)}
-                  className="w-full px-3 py-2 bg-(--bg-secondary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary) transition-colors"
+                  className="w-full px-3 py-2 bg-(--bg-secondary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none transition-colors"
                   rows={3}
                   placeholder="Add notes about this session..."
                 />

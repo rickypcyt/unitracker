@@ -44,12 +44,16 @@ type HabitCache = {
 const HABITS_CACHE_TTL = 5 * 60 * 1000;
 const EMPTY: HabitCache = { habits: [], dailyNotes: {}, savedAt: 0 };
 
-export const habitsQueryKey = (userId: string | undefined) => ['habits', userId] as const;
+// Latest pending completion write per user/habit/day
+const pendingCompletionWrites = new Map<string, Promise<void>>();
 
-// localStorage copy so the page paints instantly on reload; TanStack Query owns the live cache
+export const habitsQueryKey =(userId: string | undefined) => ['habits', userId] as const;
+
+// localStorage copy so the page paints instantly on reload; TanStack Query owns the live cache.
+// v2: v1 copies were saved without completion history and must not be reused.
 const readHabitCache = (userId: string): HabitCache | null => {
   try {
-    const saved = localStorage.getItem(`habits-cache:${userId}`);
+    const saved = localStorage.getItem(`habits-cache:v2:${userId}`);
     if (!saved) return null;
     const parsed = JSON.parse(saved) as HabitCache;
     if (Array.isArray(parsed.habits) && parsed.dailyNotes && typeof parsed.savedAt === 'number') {
@@ -63,7 +67,7 @@ const readHabitCache = (userId: string): HabitCache | null => {
 
 const saveHabitCache = (userId: string, cache: HabitCache): void => {
   try {
-    localStorage.setItem(`habits-cache:${userId}`, JSON.stringify(cache));
+    localStorage.setItem(`habits-cache:v2:${userId}`, JSON.stringify(cache));
   } catch (error) {
     console.error('Error saving habits cache:', error);
   }
@@ -78,11 +82,12 @@ const toDateString = (date: Date): string => {
 };
 
 const fetchHabitData = async (userId: string): Promise<HabitCache> => {
-  const [habitsData, completionsData, notesData] = await Promise.all([
+  const [habitsData, notesData] = await Promise.all([
     HabitService.fetchHabits(userId),
-    HabitService.fetchCompletions(userId, []),
     HabitService.fetchJournalNotes(userId)
   ]);
+  // Completions are looked up by habit, so they need the habit ids first
+  const completionsData = await HabitService.fetchCompletions(userId, habitsData.map(habit => habit.id));
 
   const dailyNotes: Record<string, string> = {};
   notesData.forEach(note => {
@@ -177,25 +182,48 @@ export const useHabits = () => {
     }
   };
 
+  const setCompletionLocally = (habitId: string, dateString: string, completed: boolean) => {
+    updateCache(prev => ({
+      ...prev,
+      habits: prev.habits.map(habit => habit.id === habitId
+        ? { ...habit, completions: { ...habit.completions, [dateString]: completed } }
+        : habit),
+    }));
+  };
+
+  // Optimistic: the day flips on screen right away and the database catches up in the background
   const toggleHabitCompletion = async (habitId: string, date: Date): Promise<boolean> => {
     if (!userId) {
       console.error('toggleHabitCompletion: User not authenticated');
       return false;
     }
     const dateString = toDateString(date);
+    const cached = queryClient.getQueryData<HabitCache>(habitsQueryKey(userId));
+    const previous = Boolean(cached?.habits.find(habit => habit.id === habitId)?.completions[dateString]);
+    const completed = !previous;
+
+    // Keep a refetch in flight from overwriting the optimistic value
+    void queryClient.cancelQueries({ queryKey: habitsQueryKey(userId) });
+    setCompletionLocally(habitId, dateString, completed);
+
+    // Writes for the same day run in click order, so the last click always wins
+    const key = `${userId}:${habitId}:${dateString}`;
+    const write = (pendingCompletionWrites.get(key) ?? Promise.resolve())
+      .catch(() => undefined)
+      .then(() => HabitService.setCompletion(habitId, userId, dateString, completed));
+    pendingCompletionWrites.set(key, write);
+
     try {
-      const completed = await HabitService.toggleCompletion(habitId, userId, dateString);
-      updateCache(prev => ({
-        ...prev,
-        habits: prev.habits.map(habit => habit.id === habitId
-          ? { ...habit, completions: { ...habit.completions, [dateString]: completed } }
-          : habit),
-      }));
+      await write;
       if (posthog.__loaded) posthog.capture('habit_completion_toggled', { completed });
       return true;
     } catch (err) {
+      // Roll back only if no newer click on this day superseded this one
+      if (pendingCompletionWrites.get(key) === write) setCompletionLocally(habitId, dateString, previous);
       fail('Failed to update habit completion', err);
       return false;
+    } finally {
+      if (pendingCompletionWrites.get(key) === write) pendingCompletionWrites.delete(key);
     }
   };
 

@@ -34,7 +34,7 @@ const PATH_PAGES: Record<string, Page> = Object.entries(PAGE_PATHS).reduce(
 
 const DEFAULT_NAV_ORDER = [
   { page: 'tasks' as Page, icon: null, label: 'Tasks' },
-  { page: 'habits' as Page, icon: null, label: 'Journal' },
+  { page: 'habits' as Page, icon: null, label: 'Habits' },
   { page: 'session' as Page, icon: null, label: 'Study' },
   { page: 'notes' as Page, icon: null, label: 'Notes' },
   { page: 'analytics' as Page, icon: null, label: 'Analytics' },

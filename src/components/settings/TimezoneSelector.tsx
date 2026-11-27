@@ -139,7 +139,7 @@ const TimezoneSelector: React.FC<TimezoneSelectorProps> = ({
                 placeholder="Search timezone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-md text-sm text-(--text-primary) placeholder-(--text-secondary) focus:outline-none focus:ring-1 focus:ring-(--accent-primary)"
+                className="w-full px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-md text-sm text-(--text-primary) placeholder-(--text-secondary) focus:outline-none"
                 autoFocus
               />
             </div>

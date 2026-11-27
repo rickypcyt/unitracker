@@ -136,7 +136,7 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
         placeholder={placeholder}
         className={`w-full px-3 py-2 bg-(--bg-primary) border-2 ${
           error ? 'border-red-500' : 'border-(--border-primary)'
-        } rounded-lg text-(--text-primary) placeholder-(--text-secondary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)/30 focus:border-(--accent-primary) transition-all resize-none overflow-hidden leading-6 ${inputClassName}`}
+        } rounded-lg text-(--text-primary) placeholder-(--text-secondary) focus:outline-none focus:border-(--accent-primary) transition-all resize-none overflow-hidden leading-6 ${inputClassName}`}
         autoComplete="off"
         {...props}
       />

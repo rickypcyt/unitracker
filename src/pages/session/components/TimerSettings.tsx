@@ -69,7 +69,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="120"
                 value={pomodoroSettings.work}
                 onChange={(e) => handlePomodoroChange('work', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)"
+                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none"
               />
             </div>
             <div>
@@ -82,7 +82,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="60"
                 value={pomodoroSettings.break}
                 onChange={(e) => handlePomodoroChange('break', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)"
+                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none"
               />
             </div>
             <div>
@@ -95,7 +95,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="120"
                 value={pomodoroSettings.longBreak}
                 onChange={(e) => handlePomodoroChange('longBreak', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)"
+                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none"
               />
             </div>
             <div>
@@ -108,7 +108,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="10"
                 value={pomodoroSettings.workSessionsBeforeLongBreak}
                 onChange={(e) => handlePomodoroChange('workSessionsBeforeLongBreak', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)"
+                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none"
               />
             </div>
           </div>
@@ -131,7 +131,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="23"
                 value={countdownSettings.hours}
                 onChange={(e) => handleCountdownChange('hours', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)"
+                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none"
               />
             </div>
             <div>
@@ -144,7 +144,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="59"
                 value={countdownSettings.minutes}
                 onChange={(e) => handleCountdownChange('minutes', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)"
+                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none"
               />
             </div>
             <div>
@@ -157,7 +157,7 @@ const TimerSettings = ({ isOpen, onClose }: TimerSettingsProps) => {
                 max="59"
                 value={countdownSettings.seconds}
                 onChange={(e) => handleCountdownChange('seconds', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)"
+                className="w-full px-3 py-2 rounded-lg bg-(--bg-secondary) text-(--text-primary) border-2 border-(--border-primary) focus:outline-none"
               />
             </div>
           </div>

@@ -55,7 +55,7 @@ const HabitCreateModal: React.FC<HabitCreateModalProps> = ({
             type="text"
             {...register('name')}
             placeholder={t('habits.habitNamePlaceholder')}
-            className="w-full px-3 py-2 bg-(--bg-secondary) border-2 border-(--border-primary) rounded-xl focus:outline-none focus:ring-2 focus:ring-(--accent-primary) text-(--text-primary) placeholder-(--text-secondary)"
+            className="w-full px-3 py-2 bg-(--bg-secondary) border-2 border-(--border-primary) rounded-xl focus:outline-none text-(--text-primary) placeholder-(--text-secondary)"
             autoFocus
           />
         </div>

@@ -132,7 +132,7 @@ const MonthView = ({ fillHeight = false }: { fillHeight?: boolean }) => {
               aria-current={today ? 'date' : undefined}
               aria-haspopup="dialog"
               aria-expanded={selected}
-              className="flex min-h-0 w-full flex-col items-center justify-center gap-[3px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-(--accent-primary)"
+              className="flex min-h-0 w-full flex-col items-center justify-center gap-[3px]"
             >
               <time
                 dateTime={format(day, 'yyyy-MM-dd')}

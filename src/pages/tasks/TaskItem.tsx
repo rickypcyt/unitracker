@@ -169,7 +169,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
         <div
             className={`group relative grid grid-cols-[auto_minmax(0,1fr)] px-2 py-1.5 rounded-lg cursor-pointer gap-2 items-center overflow-hidden
                 bg-(--bg-primary) border border-(--border-primary)
-                focus:outline-none focus-visible:ring-2 focus-visible:ring-(--accent-primary)/40
+                focus:outline-none
                 ${task.completed ? 'opacity-50' : ''}
             `}
             onDoubleClick={handleDoubleClick}

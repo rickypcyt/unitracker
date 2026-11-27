@@ -14,14 +14,23 @@ export class HabitService {
 
   static async fetchCompletions(userId: string, habitIds: string[]) {
     if (habitIds.length === 0) return [];
-    const { data, error } = await supabase
-      .from('habit_completions')
-      .select('*')
-      .eq('user_id', userId)
-      .in('habit_id', habitIds);
+    // All-time history (streaks need it), read in pages: the API caps each response at 1000 rows
+    const PAGE = 1000;
+    const rows = [];
+    for (let from = 0; ; from += PAGE) {
+      const { data, error } = await supabase
+        .from('habit_completions')
+        .select('*')
+        .eq('user_id', userId)
+        .in('habit_id', habitIds)
+        .order('completion_date')
+        .order('id')
+        .range(from, from + PAGE - 1);
 
-    if (error) throw error;
-    return data ?? [];
+      if (error) throw error;
+      rows.push(...(data ?? []));
+      if (!data || data.length < PAGE) return rows;
+    }
   }
 
   static async fetchJournalNotes(userId: string) {
@@ -65,41 +74,23 @@ export class HabitService {
     if (error) throw error;
   }
 
-  static async toggleCompletion(habitId: string, userId: string, dateString: string) {
+  /** Writes an explicit state (not a flip), so repeating it is safe and quick clicks can't drift. */
+  static async setCompletion(habitId: string, userId: string, dateString: string, completed: boolean) {
     const { data: existing, error: selectError } = await supabase
       .from('habit_completions')
-      .select('*')
+      .select('id')
       .eq('habit_id', habitId)
       .eq('completion_date', dateString)
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
-    if (selectError && selectError.code !== 'PGRST116') throw selectError;
+    if (selectError) throw selectError;
 
-    const newCompletedState = !existing?.completed;
+    const { error } = existing
+      ? await supabase.from('habit_completions').update({ completed }).eq('id', existing.id).eq('user_id', userId)
+      : await supabase.from('habit_completions').insert({ habit_id: habitId, user_id: userId, completion_date: dateString, completed });
 
-    if (existing) {
-      const { error: updateError } = await supabase
-        .from('habit_completions')
-        .update({ completed: newCompletedState })
-        .eq('id', existing.id)
-        .eq('user_id', userId);
-
-      if (updateError) throw updateError;
-    } else {
-      const { error: insertError } = await supabase
-        .from('habit_completions')
-        .insert({
-          habit_id: habitId,
-          user_id: userId,
-          completion_date: dateString,
-          completed: newCompletedState
-        });
-
-      if (insertError) throw insertError;
-    }
-
-    return newCompletedState;
+    if (error) throw error;
   }
 
   static async saveJournalNote(userId: string, dateString: string, note: string) {

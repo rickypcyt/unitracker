@@ -179,7 +179,7 @@ const LoginPage: FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full rounded-lg border border-white/10 bg-white/3 px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-(--accent-primary)/60 focus:outline-none focus:ring-1 focus:ring-(--accent-primary)/60"
+                    className="w-full rounded-lg border border-white/10 bg-white/3 px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-(--accent-primary)/60 focus:outline-none"
                   />
                 </div>
                 <button

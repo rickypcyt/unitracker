@@ -139,7 +139,7 @@ export const FormSelect: React.FC<FormSelectProps> = ({
       onChange={(e) => onChange(e.target.value)}
       className={`w-full px-3 py-2 bg-(--bg-primary) border-2 ${
         error ? 'border-red-500' : 'border-(--border-primary)'
-      } rounded-lg text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary) ${className}`}
+      } rounded-lg text-(--text-primary) focus:outline-none ${className}`}
       {...props}
     >
       {options.map((option: SelectOption) => (

@@ -6,7 +6,7 @@ import { useHabits } from './useHabits';
 
 const mocks = vi.hoisted(() => ({
   fetchHabits: vi.fn(), fetchCompletions: vi.fn(), fetchJournalNotes: vi.fn(),
-  createHabit: vi.fn(), toggleCompletion: vi.fn(), saveJournalNote: vi.fn(),
+  createHabit: vi.fn(), setCompletion: vi.fn(), saveJournalNote: vi.fn(),
 }));
 vi.mock('@/hooks/auth/useAuth', () => ({ useAuth: () => ({ user: { id: 'u1' }, isLoggedIn: true }) }));
 vi.mock('@/services/HabitService', () => ({ HabitService: mocks }));
@@ -31,11 +31,11 @@ describe('useHabits', () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.habits).toEqual([expect.objectContaining({ id: 'h1', completions: { '2030-01-01': true } })]);
     expect(result.current.journalNotes).toEqual({ '2030-01-01': 'Good day' });
-    expect(JSON.parse(localStorage.getItem('habits-cache:u1')!).habits).toHaveLength(1);
+    expect(JSON.parse(localStorage.getItem('habits-cache:v2:u1')!).habits).toHaveLength(1);
   });
 
   it('paints from the local cache without hitting the server while fresh', () => {
-    localStorage.setItem('habits-cache:u1', JSON.stringify({ habits: [{ id: 'c1', name: 'Cached', completions: {} }], dailyNotes: {}, savedAt: Date.now() }));
+    localStorage.setItem('habits-cache:v2:u1', JSON.stringify({ habits: [{ id: 'c1', name: 'Cached', completions: {} }], dailyNotes: {}, savedAt: Date.now() }));
     const { result } = renderHook(() => useHabits(), { wrapper: wrapper() });
     expect(result.current.loading).toBe(false);
     expect(result.current.habits[0]?.name).toBe('Cached');
@@ -44,7 +44,7 @@ describe('useHabits', () => {
 
   it('updates the cache after create, toggle and journal mutations', async () => {
     mocks.createHabit.mockResolvedValue({ id: 'h2', user_id: 'u1', name: 'Run', created_at: '' });
-    mocks.toggleCompletion.mockResolvedValue(true);
+    mocks.setCompletion.mockResolvedValue(undefined);
     const { result } = renderHook(() => useHabits(), { wrapper: wrapper() });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
@@ -55,5 +55,21 @@ describe('useHabits', () => {
     // Query notifies subscribers on a timer, so wait for the re-render
     await waitFor(() => expect(result.current.journalNotes).toEqual({}));
     expect(result.current.habits.find(h => h.id === 'h2')?.completions).toEqual({ '2030-01-02': true });
+    expect(mocks.setCompletion).toHaveBeenCalledWith('h2', 'u1', '2030-01-02', true);
+  });
+
+  it('marks a day before the server answers and rolls back if saving fails', async () => {
+    let reject!: (error: Error) => void;
+    mocks.setCompletion.mockReturnValue(new Promise((_, r) => { reject = r; }));
+    const { result } = renderHook(() => useHabits(), { wrapper: wrapper() });
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    let pending!: Promise<boolean>;
+    act(() => { pending = result.current.toggleHabitCompletion('h1', new Date(2030, 0, 1)); });
+    await waitFor(() => expect(result.current.habits[0]?.completions['2030-01-01']).toBe(false));
+
+    await act(async () => { reject(new Error('offline')); await pending; });
+    await waitFor(() => expect(result.current.habits[0]?.completions['2030-01-01']).toBe(true));
+    expect(result.current.error).toBe('offline');
   });
 });

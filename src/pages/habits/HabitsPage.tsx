@@ -1,4 +1,4 @@
-import { Check, ChevronLeft, ChevronRight, Flame, Notebook, Plus, Target, Trophy } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Flame, Notebook, Pencil, Plus, Target, Trophy } from 'lucide-react';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -44,7 +44,8 @@ const calculateStreak = (completions: Record<string, boolean>): { current: numbe
     const [y, m, d] = ds.split('-').map(Number);
     const curr = new Date(y ?? 0, (m ?? 0) - 1, d ?? 1);
     if (prev) {
-      const diff = (curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24);
+      // Rounded: a day across a daylight-saving change is 23 or 25 hours long
+      const diff = Math.round((curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24));
       if (diff === 1) {
         temp++;
       } else {
@@ -60,6 +61,13 @@ const calculateStreak = (completions: Record<string, boolean>): { current: numbe
 
   return { current, best };
 };
+
+const dayKey = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+
+const countDone = (completions: Record<string, boolean>, days: Date[]) =>
+  days.reduce((count, date) => count + (completions[dayKey(date)] ? 1 : 0), 0);
 
 const getTotalCompleted = (completions: Record<string, boolean>): number => {
   return Object.values(completions).filter(v => v).length;
@@ -127,21 +135,15 @@ const HabitsPage = memo(() => {
       totalCompletions += getTotalCompleted(habit.completions as Record<string, boolean>);
     }
 
-    // Count completions in the selected week
-    let weekCompleted = 0;
-    let weekTotal = 0;
-    for (const date of weekDays) {
-      const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-      const isFuture = date > today && !isCurrentWeek;
-      if (!isFuture) {
-        weekTotal += displayHabits.length;
-        for (const habit of displayHabits) {
-          if ((habit.completions as Record<string, boolean>)?.[dateKey]) weekCompleted++;
-        }
-      }
-    }
-
-    const weekCompletionRate = weekTotal > 0 ? Math.round((weekCompleted / weekTotal) * 100) : 0;
+    // Completion rate over the days of a week that have already started (future days don't count)
+    const endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+    const rateFor = (days: Date[]) => {
+      const elapsed = days.filter(date => date < endOfToday);
+      const possible = elapsed.length * displayHabits.length;
+      const done = displayHabits.reduce((sum, habit) => sum + countDone(habit.completions as Record<string, boolean>, elapsed), 0);
+      return { done, possible, rate: possible > 0 ? Math.round((done / possible) * 100) : 0 };
+    };
+    const { done: weekCompleted, possible: weekTotal, rate: weekCompletionRate } = rateFor(weekDays);
 
     return {
       bestStreak,
@@ -152,7 +154,7 @@ const HabitsPage = memo(() => {
       weekCompleted,
       weekTotal,
     };
-  }, [displayHabits, weekDays, isCurrentWeek, today]);
+  }, [displayHabits, weekDays, today]);
 
   const handleStartEditHabit = (habit: Habit) => {
     setEditingHabit(habit);
@@ -233,9 +235,9 @@ const HabitsPage = memo(() => {
     }
   };
 
-  const handleToggleHabitForMonth = async (habitId: string, year: number, month: number, day: number) => {
-    const date = new Date(year, month, day);
-    await toggleHabitCompletion(habitId, date);
+  // Fire and forget: the hook updates the screen first and saves in the background
+  const handleToggleHabitForMonth = (habitId: string, year: number, month: number, day: number) => {
+    void toggleHabitCompletion(habitId, new Date(year, month, day));
   };
 
   // Save pending notes when component unmounts
@@ -269,11 +271,11 @@ const HabitsPage = memo(() => {
       <div className="w-full py-4" aria-label={t('habits.loadingAria')}>
         <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="h-16 sm:h-20 animate-pulse rounded-xl border-2 border-(--border-primary) bg-(--bg-secondary)" />
+            <div key={index} className="h-16 sm:h-20 animate-pulse rounded-xl border border-(--border-primary) bg-(--bg-secondary)" />
           ))}
         </div>
         <div className="mb-4 h-9 w-full animate-pulse rounded-lg bg-(--bg-secondary)" />
-        <div className="h-72 animate-pulse rounded-xl border-2 border-(--border-primary) bg-(--bg-secondary)" />
+        <div className="h-72 animate-pulse rounded-xl border border-(--border-primary) bg-(--bg-secondary)" />
       </div>
     );
   }
@@ -314,7 +316,7 @@ const HabitsPage = memo(() => {
       <div className="w-full pb-24 sm:pb-8 overflow-hidden">
       {/* Week navigation + stats + New Habit */}
       <div className="flex items-center justify-between gap-3 mb-4">
-        <div className="flex items-center gap-0.5 rounded-full border-2 border-(--border-primary) bg-(--bg-primary) px-1.5 py-1 shadow-sm">
+        <div className="flex items-center gap-0.5 rounded-full border border-(--border-primary) bg-(--bg-primary) px-1.5 py-1 shadow-sm">
           <button
             onClick={() => setWeekOffset(o => o - 1)}
             className="p-1.5 rounded-full text-(--text-secondary) hover:text-(--accent-primary) hover:bg-(--accent-primary)/10 transition-colors"
@@ -344,7 +346,7 @@ const HabitsPage = memo(() => {
 
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3.5 sm:py-2 border-2 border-(--accent-primary) text-(--accent-primary) bg-transparent rounded-full hover:bg-(--accent-primary)/10 transition-colors text-sm font-semibold"
+          className="flex items-center justify-center gap-1.5 w-10 h-10 sm:w-auto sm:h-auto sm:px-3.5 sm:py-2 border border-(--accent-primary) text-(--accent-primary) bg-transparent rounded-full hover:bg-(--accent-primary)/10 transition-colors text-sm font-semibold"
         >
           <Plus size={16} />
           <span className="hidden sm:inline">{t('habits.newHabit')}</span>
@@ -360,7 +362,7 @@ const HabitsPage = memo(() => {
             { icon: Target, value: `${stats.weekCompletionRate}%`, label: t('habits.thisWeek') },
             { icon: Check, value: stats.totalCompletions, label: t('habits.totalCompletions') },
           ].map(({ icon: Icon, value, label }) => (
-            <div key={label} className="flex items-center gap-3 rounded-xl border-2 border-(--border-primary) bg-(--bg-primary) px-3 py-2.5 sm:px-4 sm:py-3">
+            <div key={label} className="flex items-center gap-3 rounded-xl border border-(--border-primary) bg-(--bg-primary) px-3 py-2.5 sm:px-4 sm:py-3">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-(--accent-primary)/10 text-(--accent-primary)">
                 <Icon size={18} />
               </span>
@@ -395,29 +397,27 @@ const HabitsPage = memo(() => {
               {displayHabits.map((habit) => {
                 const completions = habit.completions as Record<string, boolean>;
                 const { current, best } = calculateStreak(completions);
-                const total = getTotalCompleted(completions);
-                const weekDone = weekDays.reduce((count, date) => {
-                  const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                  return count + (completions[key] ? 1 : 0);
-                }, 0);
+                const weekDone = countDone(completions, weekDays);
 
                 return (
                   <div
                     key={habit.id}
-                    className="p-4 rounded-xl border-2 border-(--border-primary) bg-(--bg-primary) shadow-sm"
+                    className="p-4 rounded-xl border border-(--border-primary) bg-(--bg-primary) shadow-sm"
                   >
                     {/* Habit name + streak */}
-                    <button
-                      onClick={() => handleStartEditHabit(habit as Habit)}
-                      className="w-full text-left min-w-0"
-                    >
-                      <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <button
+                        onClick={() => handleStartEditHabit(habit as Habit)}
+                        className="group flex min-w-0 items-center gap-2 text-left"
+                        title={t('habits.editHabit', { name: habit.name })}
+                        aria-label={t('habits.editHabit', { name: habit.name })}
+                      >
                         <span className="text-lg font-bold truncate text-(--text-primary)">{habit.name}</span>
-                        <span className="shrink-0 text-sm font-semibold tabular-nums text-(--text-secondary)">{weekDone}/7</span>
-                      </div>
-                      <div className="mt-2 h-1.5 w-full rounded-full bg-(--bg-secondary) overflow-hidden">
-                        <div className="h-full rounded-full bg-(--accent-primary) transition-all duration-500 ease-out" style={{ width: `${Math.round((weekDone / 7) * 100)}%` }} />
-                      </div>
+                        <Pencil size={14} className="shrink-0 text-(--text-secondary) transition-colors group-hover:text-(--accent-primary)" aria-hidden="true" />
+                      </button>
+                      <span className="shrink-0 text-sm font-semibold tabular-nums text-(--text-secondary)">{weekDone}/7</span>
+                    </div>
+                      {(current > 0 || best > 0) && (
                       <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-2 text-sm text-(--text-secondary)">
                         {current > 0 && (
                           <span className="flex items-center gap-1">
@@ -431,10 +431,8 @@ const HabitsPage = memo(() => {
                             {t('habits.daysBest', { count: best })}
                           </span>
                         )}
-                        <span>{t('habits.thisWeekCount', { done: weekDone })}</span>
-                        <span>{t('habits.totalCount', { count: total })}</span>
                       </div>
-                    </button>
+                      )}
 
                     {/* Horizontal 7-day row */}
                     <div className="mt-3 grid grid-cols-7 gap-1.5">
@@ -464,7 +462,7 @@ const HabitsPage = memo(() => {
                             <button
                               onClick={() => !isFuture && handleToggleHabitForMonth(habit.id, y, m, d)}
                               disabled={isFuture}
-                              className={`relative w-full max-w-14 aspect-square rounded-lg border-2 transition-all flex items-center justify-center ${
+                              className={`relative w-full max-w-14 aspect-square rounded-lg border transition-[transform,border-color,background-color] duration-150 ease-out select-none touch-manipulation flex items-center justify-center ${
                                 isFuture
                                   ? 'border-dashed border-(--border-primary) bg-(--bg-secondary) opacity-50 cursor-not-allowed'
                                   : isCompleted
@@ -486,9 +484,11 @@ const HabitsPage = memo(() => {
                               >
                                 {d}
                               </span>
-                              {isCompleted && (
-                                <Check size={12} strokeWidth={3.5} className="absolute right-1 top-1 text-(--accent-primary)" aria-hidden="true" />
-                              )}
+                              {/* Strike-through line, drawn left to right when the day is done */}
+                              <span
+                                aria-hidden="true"
+                                className={`pointer-events-none absolute h-0.5 w-1/2 rounded-full bg-(--accent-primary) origin-left transition-transform duration-200 ease-out ${isCompleted ? 'scale-x-100' : 'scale-x-0'}`}
+                              />
                             </button>
                           </div>
                         );
@@ -502,7 +502,7 @@ const HabitsPage = memo(() => {
 
             {/* Journal notes (top on mobile/md, left on desktop) */}
             <div className="space-y-2.5 pt-2 order-1">
-              <div className="flex items-center gap-2 px-1 mb-1">
+              <div className="flex items-center gap-2 px-1 mb-3">
                 <Notebook size={16} className="text-(--accent-primary)" />
                 <h3 className="text-sm font-bold uppercase tracking-wider text-(--text-secondary)">{t('habits.journalNotes')}</h3>
                 <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-(--accent-primary)/15 text-(--accent-primary)">
@@ -523,7 +523,7 @@ const HabitsPage = memo(() => {
                   return (
                     <div
                       key={`note-${dateKey}`}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 focus-within:border-(--accent-primary) transition-colors ${isToday ? 'bg-(--accent-primary)/5 border-(--accent-primary)' : `bg-(--bg-secondary) ${isFuture ? 'border-dashed border-(--border-primary)' : 'border-(--border-primary)'}`} ${isPast ? 'opacity-70' : ''}`}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border focus-within:border-(--accent-primary) transition-colors ${isToday ? 'bg-(--accent-primary)/5 border-(--accent-primary)' : `bg-(--bg-secondary) ${isFuture ? 'border-dashed border-(--border-primary)' : 'border-(--border-primary)'}`} ${isPast ? 'opacity-70' : ''}`}
                     >
                       <div className="flex flex-col items-center justify-center w-12 shrink-0 leading-tight">
                         <span className={`text-xs font-semibold uppercase tracking-wide ${isToday ? 'text-(--accent-primary)' : 'text-(--text-secondary)'}`}>
@@ -537,7 +537,7 @@ const HabitsPage = memo(() => {
                       <input
                         type="text"
                         placeholder={t('habits.addNote')}
-                        className="flex-1 min-w-0 rounded-lg px-2 py-1.5 text-base bg-transparent border-none outline-none! text-(--text-primary) placeholder-(--text-tertiary) disabled:cursor-not-allowed"
+                        className="flex-1 min-w-0 rounded-lg px-2 py-1.5 text-base bg-transparent border-none outline-none! focus:shadow-none text-(--text-primary) placeholder-(--text-tertiary) disabled:cursor-not-allowed"
                         defaultValue={journalNotes[dateKey] || ''}
                         onChange={(e) => handleNoteChangeForMonth(y, m, d, e.target.value)}
                         onKeyDown={(e) => handleNoteKeyDownForMonth(y, m, d, e)}

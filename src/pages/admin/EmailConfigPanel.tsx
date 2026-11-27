@@ -134,7 +134,7 @@ const EmailConfigPanel: React.FC = () => {
               type="text"
               value={config.appName}
               onChange={(e) => handleConfigChange('appName', e.target.value)}
-              className="w-full px-3 py-2 text-sm border-2 border-(--border-primary) rounded-lg bg-(--bg-primary) text-(--text-primary) focus:outline-none focus:ring-1 focus:ring-(--accent-primary)"
+              className="w-full px-3 py-2 text-sm border-2 border-(--border-primary) rounded-lg bg-(--bg-primary) text-(--text-primary) focus:outline-none"
             />
           </div>
           <div>
@@ -150,7 +150,7 @@ const EmailConfigPanel: React.FC = () => {
                 type="text"
                 value={config.primaryColor}
                 onChange={(e) => handleConfigChange('primaryColor', e.target.value)}
-                className="flex-1 px-3 py-2 text-sm border-2 border-(--border-primary) rounded-lg bg-(--bg-primary) text-(--text-primary) focus:outline-none focus:ring-1 focus:ring-(--accent-primary)"
+                className="flex-1 px-3 py-2 text-sm border-2 border-(--border-primary) rounded-lg bg-(--bg-primary) text-(--text-primary) focus:outline-none"
               />
             </div>
           </div>
@@ -161,7 +161,7 @@ const EmailConfigPanel: React.FC = () => {
               value={config.logoUrl || ''}
               onChange={(e) => handleConfigChange('logoUrl', e.target.value)}
               placeholder="https://..."
-              className="w-full px-3 py-2 text-sm border-2 border-(--border-primary) rounded-lg bg-(--bg-primary) text-(--text-primary) focus:outline-none focus:ring-1 focus:ring-(--accent-primary)"
+              className="w-full px-3 py-2 text-sm border-2 border-(--border-primary) rounded-lg bg-(--bg-primary) text-(--text-primary) focus:outline-none"
             />
           </div>
           <div>
@@ -170,7 +170,7 @@ const EmailConfigPanel: React.FC = () => {
               type="text"
               value={config.footerText}
               onChange={(e) => handleConfigChange('footerText', e.target.value)}
-              className="w-full px-3 py-2 text-sm border-2 border-(--border-primary) rounded-lg bg-(--bg-primary) text-(--text-primary) focus:outline-none focus:ring-1 focus:ring-(--accent-primary)"
+              className="w-full px-3 py-2 text-sm border-2 border-(--border-primary) rounded-lg bg-(--bg-primary) text-(--text-primary) focus:outline-none"
             />
           </div>
         </div>
@@ -206,7 +206,7 @@ const EmailConfigPanel: React.FC = () => {
               value={testEmail}
               onChange={(e) => setTestEmail(e.target.value)}
               placeholder="test@example.com"
-              className="flex-1 px-3 py-2 text-sm border-2 border-(--border-primary) rounded-lg bg-(--bg-primary) text-(--text-primary) focus:outline-none focus:ring-1 focus:ring-(--accent-primary)"
+              className="flex-1 px-3 py-2 text-sm border-2 border-(--border-primary) rounded-lg bg-(--bg-primary) text-(--text-primary) focus:outline-none"
             />
             <button
               onClick={handleSendTest}

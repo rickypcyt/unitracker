@@ -400,7 +400,7 @@ const TaskForm = ({
   };
   const renderDeadlinePicker = () => <div className="w-full">
       <div className="relative flex items-center w-full">
-        <input id="deadline" type="text" readOnly value={deadlineDisplayFull()} placeholder="None" onClick={openDeadlinePicker} className={`w-full pl-11 pr-3 py-2 bg-(--bg-primary) border-2 ${displayErrors.deadline ? 'border-red-500' : 'border-(--border-primary)'} rounded-lg text-(--text-primary) placeholder-(--text-secondary) cursor-pointer select-none focus:outline-none focus:ring-2 focus:ring-(--accent-primary)/30 focus:border-(--accent-primary) transition-all leading-6`} />
+        <input id="deadline" type="text" readOnly value={deadlineDisplayFull()} placeholder="None" onClick={openDeadlinePicker} className={`w-full pl-11 pr-3 py-2 bg-(--bg-primary) border-2 ${displayErrors.deadline ? 'border-red-500' : 'border-(--border-primary)'} rounded-lg text-(--text-primary) placeholder-(--text-secondary) cursor-pointer select-none focus:outline-none focus:border-(--accent-primary) transition-all leading-6`} />
         <input ref={hiddenDeadlineDateTimeRef} type="datetime-local" tabIndex={-1} aria-hidden="true" value={deadlineToLocal()} onChange={e => {
         const v = e.target.value; // YYYY-MM-DDTHH:MM
         if (v) {
@@ -541,7 +541,7 @@ const TaskForm = ({
           handleChange('start_at', v ? `${v}:00` : null);
           setDisplayStartTime(v ? to12Hour(v) : '');
           setTimeout(() => setIsManualTimeUpdate(false), 100);
-        }} className="w-full px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)/30 focus:border-(--accent-primary) transition-all leading-6" />
+        }} className="w-full px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:border-(--accent-primary) transition-all leading-6" />
         </div>
         {displayErrors.start_at && <p className="mt-1 text-base text-red-500">{displayErrors.start_at}</p>}
       </div>;
@@ -556,7 +556,7 @@ const TaskForm = ({
           handleChange('end_at', v ? `${v}:00` : null);
           setDisplayEndTime(v ? to12Hour(v) : '');
           setTimeout(() => setIsManualTimeUpdate(false), 100);
-        }} className="w-full px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)/30 focus:border-(--accent-primary) transition-all leading-6" />
+        }} className="w-full px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:border-(--accent-primary) transition-all leading-6" />
         </div>
         {displayErrors.end_at && <p className="mt-1 text-base text-red-500">{displayErrors.end_at}</p>}
       </div>;
@@ -590,7 +590,7 @@ const TaskForm = ({
               <label htmlFor="title" className="block text-sm font-medium text-(--text-secondary) mb-1">
                 Title:
               </label>
-              <textarea id="title" ref={titleRef} rows={1} value={formData.title} onChange={e => handleChange('title', e.target.value)} className={`w-full px-3 py-2 bg-(--bg-primary) border-2 ${displayErrors.title ? 'border-red-500' : 'border-(--border-primary)'} rounded-lg text-(--text-primary) placeholder-(--text-secondary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)/30 focus:border-(--accent-primary) transition-all resize-none overflow-hidden leading-6`} required placeholder="Enter task title" />
+              <textarea id="title" ref={titleRef} rows={1} value={formData.title} onChange={e => handleChange('title', e.target.value)} className={`w-full px-3 py-2 bg-(--bg-primary) border-2 ${displayErrors.title ? 'border-red-500' : 'border-(--border-primary)'} rounded-lg text-(--text-primary) placeholder-(--text-secondary) focus:outline-none focus:border-(--accent-primary) transition-all resize-none overflow-hidden leading-6`} required placeholder="Enter task title" />
               {displayErrors.title && <p className="mt-1 text-base text-red-500">{displayErrors.title}</p>}
             </div>
 
@@ -610,7 +610,7 @@ const TaskForm = ({
               <select id="workspace" value={selectedWorkspace?.id ?? ''} onChange={e => {
             const ws = selectableWorkspaces.find((w: any) => w.id === e.target.value);
             if (ws) setSelectedWorkspace(ws);
-          }} className="w-full px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)/30 focus:border-(--accent-primary) transition-all leading-6">
+          }} className="w-full px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:border-(--accent-primary) transition-all leading-6">
                 {selectableWorkspaces.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
               </select>
             </div>}

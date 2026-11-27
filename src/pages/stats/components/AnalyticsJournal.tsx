@@ -34,7 +34,7 @@ const AnalyticsJournal = () => {
           }`}
         >
           <Notebook size={16} />
-          <span>Journal</span>
+          <span>Habits</span>
         </button>
       </div>
 

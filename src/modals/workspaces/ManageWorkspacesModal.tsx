@@ -256,7 +256,7 @@ const ManageWorkspacesModal = ({ isOpen, onClose, workspaces, onWorkspaceUpdated
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
                       onKeyDown={(e) => handleKeyPress(e, workspace)}
-                      className="w-full px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)"
+                      className="w-full px-3 py-2 bg-(--bg-primary) border-2 border-(--border-primary) rounded-lg text-(--text-primary) focus:outline-none"
                       placeholder="Workspace name"
                       autoFocus
                     />
