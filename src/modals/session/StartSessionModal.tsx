@@ -28,7 +28,7 @@ const StartSessionModal = ({
   onClose,
   onStart
 }: StartSessionModalProps) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const {
     syncSettings
   } = useAppStore();
@@ -83,17 +83,27 @@ const StartSessionModal = ({
   // Reset to a ready-to-go form each time the modal opens: default title, focused and selected
   useEffect(() => {
     if (!isOpen) return;
-    const today = new Date().toLocaleDateString(i18n.language, { weekday: "short", day: "numeric" });
-    setSessionTitle(`${t("session.startSession.defaultTitle", { defaultValue: "Study session" })} · ${today}`);
+    setSessionTitle("");
     setSessionDescription("");
     setAssignment("");
     setTitleError("");
-    const id = requestAnimationFrame(() => {
-      const input = document.getElementById("session-title") as HTMLInputElement | null;
-      input?.focus();
-      input?.select();
-    });
-    return () => cancelAnimationFrame(id);
+    let cancelled = false;
+    let frame = requestAnimationFrame(() => document.getElementById("session-title")?.focus());
+    StudyService.getNextSessionNumber()
+      .catch(() => 1)
+      .then(number => {
+        if (cancelled) return;
+        // Don't overwrite anything typed while the number was loading
+        setSessionTitle(prev => prev || `#${number}`);
+        frame = requestAnimationFrame(() => {
+          const input = document.getElementById("session-title") as HTMLInputElement | null;
+          if (input?.value === `#${number}`) input.select();
+        });
+      });
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
