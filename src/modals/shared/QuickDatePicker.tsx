@@ -1,9 +1,10 @@
 import 'react-datepicker/dist/react-datepicker.css';
 
-import { Calendar, Clock, X } from 'lucide-react';
-import React, { KeyboardEvent, MouseEvent, useEffect, useRef, useState } from 'react';
+import { Clock } from 'lucide-react';
+import React, { useState } from 'react';
 import { decrementTime, incrementTime, to12Hour, to24Hour } from '@/utils/timeUtils';
 
+import BaseModal from '@/modals/shared/BaseModal';
 import DatePicker from 'react-datepicker';
 import { registerLocale } from 'react-datepicker';
 import { useDatePickerLocale, withMondayStart } from '@/hooks/useDatePickerLocale';
@@ -29,7 +30,6 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
   onClose,
   onSave
 }) => {
-  const menuRef = useRef<HTMLDivElement>(null);
   const datePickerLocale = useDatePickerLocale();
   const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
     if (!task.deadline) return null;
@@ -50,28 +50,6 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
     }
     return '9:00 AM';
   });
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside as unknown as EventListener);
-    document.addEventListener('keydown', handleEscape as unknown as EventListener);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside as unknown as EventListener);
-      document.removeEventListener('keydown', handleEscape as unknown as EventListener);
-    };
-  }, [onClose]);
 
   const handleSave = () => {
     const updatedTask = { ...task };
@@ -128,29 +106,7 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
   };
 
   return (
-    <div className="modal-animate fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div
-        ref={menuRef}
-        className="min-w-[320px] max-w-md rounded-lg bg-(--bg-primary) p-4 shadow-xl border-2 border-(--border-primary)"
-        style={{
-          maxHeight: '80vh',
-          overflowY: 'auto',
-        }}
-      >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Calendar size={20} className="text-(--text-primary)" />
-          <span className="font-medium text-(--text-primary)">Set Date & Time</span>
-        </div>
-        <button
-          onClick={onClose}
-          className="text-(--text-secondary) hover:text-(--text-primary) transition-colors"
-        >
-          <X size={16} />
-        </button>
-      </div>
-
+    <BaseModal isOpen onClose={onClose} title="Set Date & Time" maxWidth="max-w-md">
       {/* Calendar */}
       <div className="mb-4">
         <DatePicker
@@ -260,7 +216,6 @@ export const QuickDatePicker: React.FC<QuickDatePickerProps> = ({
           Save
         </button>
       </div>
-      </div>
-    </div>
+    </BaseModal>
   );
 };

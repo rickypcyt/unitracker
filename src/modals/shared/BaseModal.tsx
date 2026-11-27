@@ -37,6 +37,9 @@ const FOCUSABLE_SELECTOR = 'input, textarea, select, button, [tabindex="0"]';
 const AUTOFOCUS_SELECTOR = '[autofocus], [data-autofocus="true"]';
 const CONFIRM_MESSAGE = "You have unsaved changes. Are you sure you want to close?";
 
+// Open desktop modals, oldest first: only the last one reacts to Escape.
+const modalStack: symbol[] = [];
+
 // Utility functions
 const isTouch = () => "ontouchstart" in window || (navigator as any).maxTouchPoints > 0;
 
@@ -148,19 +151,26 @@ const BaseModal = ({
 
   // Modal lifecycle effects
   useEffect(() => {
-    if (asSheet) return; // vaul handles focus, Escape and scroll lock
-    if (isOpen) {
-      manageFocus();
-      document.addEventListener("keydown", handleKeyDown);
-      document.body.classList.add("overflow-hidden");
-    } else {
-      document.body.classList.remove("overflow-hidden");
-      restoreFocus();
-    }
+    if (asSheet || !isOpen) return; // vaul handles focus, Escape and scroll lock
+
+    const id = Symbol("modal");
+    modalStack.push(id);
+    const onKeyDown = (e: KeyboardEvent) => {
+      // defaultPrevented: a modal above already used this key press
+      if (e.defaultPrevented || modalStack[modalStack.length - 1] !== id) return;
+      if (e.key === "Escape") e.preventDefault();
+      handleKeyDown(e);
+    };
+
+    manageFocus();
+    document.addEventListener("keydown", onKeyDown);
+    document.body.classList.add("overflow-hidden");
 
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.classList.remove("overflow-hidden");
+      document.removeEventListener("keydown", onKeyDown);
+      modalStack.splice(modalStack.indexOf(id), 1);
+      if (modalStack.length === 0) document.body.classList.remove("overflow-hidden");
+      restoreFocus();
     };
   }, [asSheet, isOpen, handleKeyDown, manageFocus, restoreFocus]);
 

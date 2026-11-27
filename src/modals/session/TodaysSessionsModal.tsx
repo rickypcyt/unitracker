@@ -1,8 +1,8 @@
 import { AlertCircle, Calendar, Check, CheckCircle, Clock, Play, Trash2, TrendingUp, X } from 'lucide-react';
 import { formatDistanceToNowStrict, parseISO } from 'date-fns';
 import { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
 
+import BaseModal from '@/modals/shared/BaseModal';
 import DeleteSessionModal from './DeleteSessionModal';
 import { formatDurationHMS, formatHMS } from '@/utils/timeUtils';
 import { StudyService } from '@/services/StudyService';
@@ -144,8 +144,8 @@ const SessionsModal = ({
   if (!isOpen) return null;
   // Stay hidden until we know there is something to show (no flash of an empty modal)
   if (!ready) return null;
-  return createPortal(<div className="modal-animate fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-(--bg-primary) rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border-2 border-(--border-primary) relative">
+  return <BaseModal isOpen={isOpen} onClose={onClose} title="Sessions" showHeader={false} closeOnOverlayClick={false} maxWidth="max-w-2xl" maxHeight="max-h-[80vh]" padding="none">
+      <div className="relative">
         <button onClick={onClose} className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-(--bg-secondary) transition-colors z-20" aria-label="Close">
           <X size={18} />
         </button>
@@ -278,6 +278,6 @@ const SessionsModal = ({
         
       <DeleteSessionModal isOpen={sessionToDelete !== null} onClose={() => setSessionToDelete(null)} onConfirm={confirmDeleteHandler} />
       </div>
-    </div>, document.body);
+    </BaseModal>;
 };
 export default SessionsModal;

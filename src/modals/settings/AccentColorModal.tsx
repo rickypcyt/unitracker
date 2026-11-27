@@ -1,7 +1,8 @@
 import { Check, X } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import BaseModal from "@/modals/shared/BaseModal";
 import { accentColorDescI18nKey, accentColorI18nKey } from "@/utils/theme";
 
 interface AccentColorModalProps {
@@ -22,8 +23,6 @@ const ACCENT_COLORS = [
 
 const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentColorSelect }) => {
   const { t } = useTranslation();
-  const modalRef = useRef<HTMLDivElement>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
   const [originalColor] = useState(() => localStorage.getItem('accentPalette') || '#0A84FF');
   const [selectedColor, setSelectedColor] = useState(originalColor);
 
@@ -36,33 +35,24 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
     };
   }, [selectedColor, originalColor]);
 
-  // Close only on Escape — clicks outside must not dismiss onboarding modals
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', handleEsc);
-
-    // Trigger animation on mount
-    requestAnimationFrame(() => setIsAnimating(true));
-
-    return () => {
-      document.removeEventListener('keydown', handleEsc);
-    };
-  }, [onClose]);
-
   const handleColorSelect = (color: string) => {
     setSelectedColor(color);
   };
 
   return (
-    <div className="modal-animate fixed inset-0 z-99999 flex items-center justify-center bg-black/70 backdrop-blur-md p-3 sm:p-4 md:p-6 overflow-y-auto">
-      <div
-        ref={modalRef}
-        className={`bg-(--bg-primary) rounded-2xl sm:rounded-3xl border-2 border-(--accent-primary) w-full max-w-2xl mx-1 sm:mx-2 md:mx-4 p-4 sm:p-6 md:p-8 relative shadow-2xl overflow-hidden transition-all duration-150 transform ${
-          isAnimating ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'
-        } max-h-[95vh] sm:max-h-[90vh] md:max-h-[85vh] overflow-y-auto`}
-      >
+    // Clicks outside must not dismiss onboarding modals
+    <BaseModal
+      isOpen
+      onClose={onClose}
+      title={t('accentColors.title')}
+      showHeader={false}
+      closeOnOverlayClick={false}
+      zIndex="z-99999"
+      maxWidth="max-w-2xl"
+      padding="none"
+      className="overflow-hidden border-(--accent-primary)!"
+    >
+      <div className="relative p-4 sm:p-6 md:p-8">
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-linear-to-br from-(--accent-primary)/5 via-transparent to-(--accent-primary)/10 pointer-events-none" />
         
@@ -142,7 +132,7 @@ const AccentColorModal: React.FC<AccentColorModalProps> = ({ onClose, onAccentCo
           </button>
         </div>
       </div>
-    </div>
+    </BaseModal>
   );
 };
 

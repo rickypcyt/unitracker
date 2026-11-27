@@ -1,10 +1,9 @@
-import { useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
-
 import { LogIn } from 'lucide-react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+
+import BaseModal from '@/modals/shared/BaseModal';
 
 interface LoginPromptModalProps {
   isOpen: boolean;
@@ -14,32 +13,9 @@ interface LoginPromptModalProps {
 const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const modalRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleClick = (e: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('mousedown', handleClick);
-    document.addEventListener('keydown', handleEsc);
-    return () => {
-      document.removeEventListener('mousedown', handleClick);
-      document.removeEventListener('keydown', handleEsc);
-    };
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  return createPortal(
-    <div className="modal-animate fixed inset-0 bg-white/60 dark:bg-black/70 flex items-center justify-center z-10001 backdrop-blur-xl">
-      <div ref={modalRef} className="bg-(--bg-primary) rounded-lg p-6 max-w-md w-full mx-4 border-2 border-(--border-primary) shadow-xl">
-        <h2 className="text-xl font-semibold mb-4 text-center text-(--text-primary)">{t('auth.login.required')}</h2>
+  return (
+    <BaseModal isOpen={isOpen} onClose={onClose} title={t('auth.login.required')} showCloseButton={false}>
         <p className="text-(--text-secondary) mb-6 text-center">
           {t('auth.login.syncNote')}
         </p>
@@ -61,9 +37,7 @@ const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isOpen, onClose }) 
             {t('common.cancel')}
           </button>
         </div>
-      </div>
-    </div>,
-    document.body
+    </BaseModal>
   );
 };
 

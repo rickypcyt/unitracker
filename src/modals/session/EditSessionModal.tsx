@@ -1,8 +1,8 @@
-import { AlertCircle, CheckCircle, Loader2, Settings, X } from 'lucide-react';
+import { AlertCircle, CheckCircle, Loader2, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { useUi, useUiActions } from '@/store/appStore';
 
+import BaseModal from '@/modals/shared/BaseModal';
 import { Task } from '@/pages/tasks/task';
 import TaskForm from '@/pages/tasks/TaskForm';
 import { supabase } from '@/utils/supabaseClient';
@@ -20,6 +20,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
   const [activeTasks, setActiveTasks] = useState<Task[]>([]);
   const [availableTasks, setAvailableTasks] = useState<Task[]>([]);
   const [showTaskSelector, setShowTaskSelector] = useState(false);
+  const [showTaskForm, setShowTaskForm] = useState(false);
   const [lastAddedTaskId, setLastAddedTaskId] = useState<string | null>(null);
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
@@ -158,7 +159,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
   };
 
   const handleTaskFormClose = (newTaskId?: string) => {
-    setShowTaskSelector(false);
+    setShowTaskForm(false);
     if (newTaskId) {
       setLastAddedTaskId(newTaskId);
     }
@@ -198,19 +199,9 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
 
   if (!isOpen) return null;
 
-  return createPortal(
-    <div className="modal-animate fixed inset-0 bg-white/60 dark:bg-black/70 flex items-center justify-center z-10001 backdrop-blur-sm p-4">
-      <div className="bg-(--bg-primary) rounded-lg p-6 w-full max-w-3xl border-2 border-(--border-primary) shadow-xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-(--text-primary) flex items-center gap-2">
-            <Settings size={20} />
-            Edit Session
-          </h2>
-          <button onClick={onClose} className="text-(--text-secondary) hover:text-(--text-primary) transition-colors">
-            <X size={22} />
-          </button>
-        </div>
-
+  return (
+    <>
+    <BaseModal isOpen={isOpen} onClose={onClose} title="Edit Session" closeOnEsc={false} closeOnOverlayClick={false} maxWidth="max-w-3xl">
         {/* Error State */}
         {error && (
           <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-lg">
@@ -310,19 +301,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
 
         {/* Task Selector Modal */}
         {showTaskSelector && (
-          <div className="modal-animate fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-(--bg-primary) rounded-xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border-2 border-(--border-primary)">
-              <div className="p-4 border-b border-(--border-primary) flex justify-between items-center sticky top-0 bg-(--bg-primary) z-10">
-                <h2 className="text-xl font-semibold">Add Tasks to Session</h2>
-                <button 
-                  onClick={() => setShowTaskSelector(false)}
-                  className="p-1 rounded-full hover:bg-(--bg-secondary) transition-colors"
-                  aria-label="Close"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
+          <BaseModal isOpen onClose={() => setShowTaskSelector(false)} title="Add Tasks to Session" closeOnOverlayClick={false} maxWidth="max-w-2xl" maxHeight="max-h-[80vh]">
               <div className="p-4">
                 {availableTasks.length === 0 ? (
                   <div className="text-center py-8 text-(--text-secondary)">
@@ -352,8 +331,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
                 <button
                   onClick={() => {
                     setShowTaskSelector(false);
-                    // Handle new task creation
-                    handleTaskFormClose();
+                    setShowTaskForm(true);
                   }}
                   className="px-3 py-1 text-sm border-2 border-(--accent-primary) text-(--accent-primary) rounded-lg hover:bg-(--accent-primary)/10 transition-colors flex items-center gap-1"
                 >
@@ -367,8 +345,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
                   Done
                 </button>
               </div>
-            </div>
-          </div>
+        </BaseModal>
         )}
 
         {/* Action Buttons */}
@@ -396,10 +373,10 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
           </button>
         </div>
       </div>
-      </div>
+    </BaseModal>
 
       {/* Task Form Modal */}
-      {showTaskSelector && (
+      {showTaskForm && (
         <TaskForm
           onClose={handleTaskFormClose}
           onTaskCreated={(newTaskId: string) => {
@@ -408,8 +385,7 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({ isOpen, onClose, se
           }}
         />
       )}
-    </div>,
-    document.body
+    </>
   );
 };
 
