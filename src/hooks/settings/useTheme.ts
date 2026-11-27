@@ -12,7 +12,7 @@ declare global {
 }
 
 type Theme = 'light' | 'dark';
-type ThemePreference = 'light' | 'dark' | 'auto';
+type ThemePreference = Theme;
 
 const subscribeAccent = (onChange: () => void) => {
   window.addEventListener('accentPaletteChange', onChange);
@@ -28,37 +28,14 @@ const getAccentPalette = () => localStorage.getItem('accentPalette') || '#0A84FF
 const useTheme = () => {
   const { isLoggedIn, isAuthLoading } = useAuth();
 
-  // Función para detectar el tema del sistema
-  const getSystemTheme = (): Theme => {
-    if (typeof window === 'undefined') return 'light';
-
-    // Detectar tema del sistema en browser
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return "dark";
-    }
-
-    return "light";
-  };
-
-  // Función para obtener la preferencia de tema del usuario
+  // Dark unless the user chose light (also covers the old 'auto' value)
   const getThemePreference = (): ThemePreference => {
-    if (typeof window === 'undefined') return 'auto';
-
-    const savedPreference = localStorage.getItem("themePreference");
-    return (savedPreference as ThemePreference) || 'auto';
-  };
-
-  // Función para obtener el tema actual basado en la preferencia
-  const getCurrentTheme = (): Theme => {
-    const preference = getThemePreference();
-    if (preference === 'auto') {
-      return getSystemTheme();
-    }
-    return preference;
+    if (typeof window === 'undefined') return 'dark';
+    return localStorage.getItem("themePreference") === "light" ? "light" : "dark";
   };
 
   const [themePreference, setThemePreference] = useState<ThemePreference>(getThemePreference);
-  const [currentTheme, setCurrentTheme] = useState<Theme>(getCurrentTheme);
+  const [currentTheme, setCurrentTheme] = useState<Theme>(getThemePreference);
   const [showWelcomeModal, setShowWelcomeModal] = useState(
     typeof window !== 'undefined' ? !localStorage.getItem("hasSeenWelcomeModal") : false
   );
@@ -292,10 +269,8 @@ const useTheme = () => {
     setThemePreference(newPreference);
     localStorage.setItem("themePreference", newPreference);
 
-    // Calcular el tema actual basado en la nueva preferencia
-    const actualTheme = newPreference === 'auto' ? getSystemTheme() : newPreference;
-    setCurrentTheme(actualTheme);
-    applyTheme(actualTheme);
+    setCurrentTheme(newPreference);
+    applyTheme(newPreference);
   }, [applyTheme]);
 
   // Función para alternar entre light y dark (manteniendo compatibilidad)
@@ -313,46 +288,6 @@ const useTheme = () => {
   useEffect(() => {
     document.documentElement.style.setProperty("--accent-primary", accentPalette);
   }, [accentPalette]);
-
-  // Efecto para escuchar cambios en la preferencia del sistema
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
-      // Solo actualizar si la preferencia está en 'auto'
-      if (themePreference === 'auto') {
-        const newTheme = e.matches ? "dark" : "light";
-        setCurrentTheme(newTheme);
-        applyTheme(newTheme);
-      }
-    };
-
-    mediaQuery.addEventListener('change', handleSystemThemeChange);
-
-    // También escuchar cambios en Capacitor si está disponible
-    let capacitorListener: (() => void) | undefined;
-    if (window.Capacitor && window.Capacitor.isNativePlatform()) {
-      // Para dispositivos móviles, también podemos escuchar cambios del sistema
-      const checkSystemTheme = () => {
-        if (themePreference === 'auto') {
-          const systemTheme = getSystemTheme();
-          if (systemTheme !== currentTheme) {
-            setCurrentTheme(systemTheme);
-            applyTheme(systemTheme);
-          }
-        }
-      };
-
-      // Verificar cada vez que la app vuelve al foreground
-      document.addEventListener('resume', checkSystemTheme);
-      capacitorListener = () => document.removeEventListener('resume', checkSystemTheme);
-    }
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleSystemThemeChange);
-      if (capacitorListener) capacitorListener();
-    };
-  }, [themePreference, currentTheme, applyTheme]);
 
   return {
     currentTheme,

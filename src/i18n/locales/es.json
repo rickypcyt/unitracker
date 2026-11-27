@@ -306,7 +306,6 @@
     "theme": {
       "label": "Tema",
       "light": "Claro",
-      "system": "Sistema",
       "dark": "Oscuro"
     },
     "accentColor": "Color de acento",

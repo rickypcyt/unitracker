@@ -4,7 +4,7 @@ import { SettingsContent } from './Settings';
 
 const mocks = vi.hoisted(() => ({ seen: vi.fn() }));
 vi.mock('@/hooks/auth/useAuth', () => ({ useAuth: () => ({ user: null, isLoggedIn: false, loginWithGoogle: vi.fn(), logout: vi.fn() }) }));
-vi.mock('@/hooks/settings/useTheme', () => ({ default: () => ({ accentPalette: '#0A84FF', setAccentPalette: vi.fn(), themePreference: 'auto', handleThemeChange: vi.fn(), currentTheme: 'dark' }) }));
+vi.mock('@/hooks/settings/useTheme', () => ({ default: () => ({ accentPalette: '#0A84FF', setAccentPalette: vi.fn(), themePreference: 'dark', handleThemeChange: vi.fn(), currentTheme: 'dark' }) }));
 vi.mock('@/hooks/settings/useChangelog', () => ({ useChangelog: () => ({ hasNewChanges: true, markAsSeen: mocks.seen }) }));
 vi.mock('@/components/settings/TimezoneSelector', () => ({ default: () => <div>Timezone selector</div> }));
 vi.mock('@/components/settings/DataExportImportPanel', () => ({ default: () => <div>Export and import data</div> }));

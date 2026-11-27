@@ -143,7 +143,7 @@ export const AssignmentColumns: React.FC<AssignmentColumnsProps & { children?: R
   const renderColumn = (column: { id: string; title: string; tasks: any[]; assignmentName: string }) => (
           <div
             key={column.id}
-            className="mb-3 w-full break-inside-avoid rounded-2xl border border-(--border-primary) bg-(--bg-secondary)/40 p-2.5"
+            className="task-column mb-3 w-full break-inside-avoid rounded-2xl border border-(--border-primary) bg-(--bg-secondary)/40 p-2.5"
             onDoubleClick={() => onAssignmentDoubleClick?.(column.assignmentName)}
           >
             <AssignmentCard

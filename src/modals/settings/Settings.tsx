@@ -5,7 +5,6 @@ import {
   Info,
   Languages,
   List,
-  Monitor,
   Moon,
   Palette,
   Sparkles,
@@ -150,7 +149,7 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                 {/* Theme selector */}
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    {themePreference === "auto" ? <Monitor size={18} className="text-(--text-secondary)" /> : currentTheme === "dark" ? <Moon size={18} className="text-(--text-secondary)" /> : <Sun size={18} className="text-(--text-secondary)" />}
+                    {currentTheme === "dark" ? <Moon size={18} className="text-(--text-secondary)" /> : <Sun size={18} className="text-(--text-secondary)" />}
                     <span className="text-sm font-medium text-(--text-primary)">{t("settings.theme.label")}</span>
                   </div>
                   <div className="relative">
@@ -159,34 +158,21 @@ const SettingsContent: React.FC<SettingsContentProps> = ({
                         className="absolute top-1 bottom-1 rounded-md border-2 transition-all duration-300 ease-in-out"
                         style={{
                           borderColor: accentPalette,
-                          width: "calc(33.333% - 4px)",
-                          left:
-                            themePreference === "light"
-                              ? "2px"
-                              : themePreference === "auto"
-                                ? "calc(33.333% + 1px)"
-                                : "calc(66.666% + 0px)",
+                          width: "calc(50% - 4px)",
+                          left: themePreference === "light" ? "2px" : "calc(50% + 2px)",
                         }}
                       />
                       <button
                         onClick={() => handleThemeChange("light")}
-                        className="absolute left-0 top-0 w-1/3 h-full flex items-center justify-center gap-1.5 transition-colors"
+                        className="absolute left-0 top-0 w-1/2 h-full flex items-center justify-center gap-1.5 transition-colors"
                         aria-label="Light theme"
                       >
                         <Sun size={17} className={themePreference === "light" ? "text-(--accent-primary)" : "text-(--text-secondary)"} />
                         <span className={`text-sm ${themePreference === "light" ? "text-(--accent-primary)" : "text-(--text-secondary)"}`}>{t("settings.theme.light")}</span>
                       </button>
                       <button
-                        onClick={() => handleThemeChange("auto")}
-                        className="absolute left-1/3 top-0 w-1/3 h-full flex items-center justify-center gap-1.5 transition-colors"
-                        aria-label="System theme"
-                      >
-                        <Monitor size={17} className={themePreference === "auto" ? "text-(--accent-primary)" : "text-(--text-secondary)"} />
-                        <span className={`text-sm ${themePreference === "auto" ? "text-(--accent-primary)" : "text-(--text-secondary)"}`}>{t("settings.theme.system")}</span>
-                      </button>
-                      <button
                         onClick={() => handleThemeChange("dark")}
-                        className="absolute right-0 top-0 w-1/3 h-full flex items-center justify-center gap-1.5 transition-colors"
+                        className="absolute right-0 top-0 w-1/2 h-full flex items-center justify-center gap-1.5 transition-colors"
                         aria-label="Dark theme"
                       >
                         <Moon size={17} className={themePreference === "dark" ? "text-(--accent-primary)" : "text-(--text-secondary)"} />

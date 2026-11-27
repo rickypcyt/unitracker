@@ -306,7 +306,6 @@
     "theme": {
       "label": "थीम",
       "light": "लाइट",
-      "system": "सिस्टम",
       "dark": "डार्क"
     },
     "accentColor": "एक्सेंट कलर",

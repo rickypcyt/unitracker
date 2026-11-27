@@ -193,7 +193,7 @@ const SessionPage = memo(() => {
       </Helmet>
       <div className="w-full session-page pb-24 sm:pb-4" style={{ fontSize: 'clamp(0.875rem, 0.85rem + 0.15vw, 1rem)' }}>
         <div
-          className="animate-in fade-in slide-in-from-bottom-4 duration-300 w-full max-w-360 lg:max-w-none mx-auto flex flex-col gap-4"
+          className="session-sections w-full max-w-360 lg:max-w-none mx-auto flex flex-col gap-4"
         >
           {layout === "planning" ? (
             <>

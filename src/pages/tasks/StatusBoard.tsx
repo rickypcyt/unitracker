@@ -78,7 +78,7 @@ export const StatusBoard: React.FC<StatusBoardProps> = ({
           return (
             <div
               key={col.id}
-              className="w-full bg-(--bg-secondary) rounded-xl border-2 border-(--border-primary) p-3 shadow-md flex flex-col"
+              className="task-column w-full bg-(--bg-secondary) rounded-xl border-2 border-(--border-primary) p-3 shadow-md flex flex-col"
             >
               {/* Column header */}
               <div className="flex items-center justify-between mb-3 px-1">
@@ -101,7 +101,7 @@ export const StatusBoard: React.FC<StatusBoardProps> = ({
               </div>
 
               {/* Tasks */}
-              <div className="flex-1 min-h-0 space-y-1.5 overflow-y-auto hide-scrollbar pb-2">
+              <div className="task-list flex-1 min-h-0 space-y-1.5 overflow-y-auto hide-scrollbar pb-2">
                 {col.tasks.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
                     <Icon size={20} className={`mb-2 opacity-30 ${col.color}`} />

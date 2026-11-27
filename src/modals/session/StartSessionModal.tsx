@@ -28,7 +28,7 @@ const StartSessionModal = ({
   onClose,
   onStart
 }: StartSessionModalProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     syncSettings
   } = useAppStore();
@@ -94,10 +94,12 @@ const StartSessionModal = ({
       .then(number => {
         if (cancelled) return;
         // Don't overwrite anything typed while the number was loading
-        setSessionTitle(prev => prev || `#${number}`);
+        const date = new Date().toLocaleDateString(i18n.language, { day: "numeric", month: "short", year: "numeric" });
+        const defaultName = `${t("session.startSession.defaultTitle", { defaultValue: "Study Session" })} #${number} · ${date}`;
+        setSessionTitle(prev => prev || defaultName);
         frame = requestAnimationFrame(() => {
           const input = document.getElementById("session-title") as HTMLInputElement | null;
-          if (input?.value === `#${number}`) input.select();
+          if (input?.value === defaultName) input.select();
         });
       });
     return () => {

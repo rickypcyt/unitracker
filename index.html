@@ -282,10 +282,7 @@
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <script>
       try {
-        const theme = localStorage.getItem("theme");
-        const isDark = 
-          theme === "dark" ||
-          (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        const isDark = localStorage.getItem("themePreference") !== "light";
         
         if (isDark) {
           document.documentElement.classList.add("dark");

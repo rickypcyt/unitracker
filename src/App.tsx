@@ -159,7 +159,8 @@ const PageContent: FC = () => {
         <Suspense fallback={<PageLoader />}>
           {/* Navbar is in normal flow, so no top offset is needed to clear it.
               Pages get one uniform top gap here; full-bleed pages (notes) opt out. */}
-          <div className={`overflow-x-hidden ${activePage === 'notes' ? '' : 'page-gutter pt-6 pb-4'}`}>
+          {/* Keyed by page so the staggered reveal replays on every tab change */}
+          <div key={activePage} className={`page-reveal overflow-x-hidden ${activePage === 'notes' ? '' : 'page-gutter pt-6 pb-4'}`}>
             {activePage === 'session' && <SessionPage />}
 
             {activePage === 'tasks' && (

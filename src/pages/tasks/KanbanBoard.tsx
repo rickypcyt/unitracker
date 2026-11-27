@@ -15,6 +15,7 @@ import { QuickDatePicker } from '@/modals/shared/QuickDatePicker';
 import React from 'react';
 import { SortMenu } from '@/pages/tasks/SortMenu';
 import TaskFormManager from '@/pages/tasks/TaskFormManager';
+import { TasksSkeleton } from '@/pages/tasks/TasksSkeleton';
 import { TaskListMenu } from '@/modals/tasks/TaskListMenu';
 import WorkspaceSelectionModal from '@/modals/workspaces/WorkspaceSelectionModal';
 import { supabase } from '@/utils/supabaseClient';
@@ -188,7 +189,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
 
   const [isLoginPromptOpen, setIsLoginPromptOpen] = useState(false);
   const [showWorkspaceSelectionModal, setShowWorkspaceSelectionModal] = useState(false);
-  const [workspaceChanging] = useState(false);
 
   const handleSortClick = (assignmentId: string, position: { x: number; y: number }) => {
     // Calcular el ancho estimado del menú (aproximadamente 220px)
@@ -445,33 +445,15 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
     );
   }
 
-  // This should rarely show now due to fallback, but keeping as safety net
-  if (!activeWorkspace && workspaces && workspaces.length > 0) {
-    return (
-      <div className="flex items-center justify-center py-6 min-h-[20vh]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-(--accent-primary) mx-auto mb-4"></div>
-          <p className="text-(--text-secondary)">Selecting workspace...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show loading when tasks are loading or workspace is changing
-  if (tasksLoading || workspaceChanging) {
-    return (
-      <div className="flex items-center justify-center py-6 min-h-[20vh]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-(--accent-primary) mx-auto mb-4"></div>
-          <p className="text-(--text-secondary)">Loading tasks...</p>
-        </div>
-      </div>
-    );
+  // Skeleton only while there is nothing to show: refetches keep the current board on screen
+  const waitingForWorkspace = !activeWorkspace && !!workspaces && workspaces.length > 0;
+  if (waitingForWorkspace || (tasksLoading && filteredTasks.length === 0)) {
+    return <TasksSkeleton columnCount={viewMode === 'status' ? 3 : columnCount} />;
   }
 
   if (noTasks) {
     return (
-      <div data-tour="tasks-board" className="flex min-h-[50vh] flex-col items-center justify-center gap-6 px-4 py-6">
+      <div data-tour="tasks-board" className="animate-in fade-in zoom-in-95 duration-500 flex min-h-[50vh] flex-col items-center justify-center gap-6 px-4 py-6">
         <div className="max-w-sm text-center">
           <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-(--accent-primary)/10 flex items-center justify-center">
             <ClipboardCheck className="w-8 h-8 text-(--accent-primary)" />
@@ -537,7 +519,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ columnCount = 1, viewM
     <>
       <div className="flex flex-col kanban-board" data-tour="tasks-board">
         {/* Active Tasks */}
-        <div className="flex-1 min-h-0">
+        {/* Keyed so the entrance replays when the workspace or view changes */}
+        <div key={`${activeWorkspace?.id}-${viewMode}`} className="tasks-reveal flex-1 min-h-0">
           {viewMode === 'status' ? (
             <StatusBoard
               incompletedTasks={visibleIncompletedTasks}

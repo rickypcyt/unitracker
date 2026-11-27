@@ -230,7 +230,7 @@ export const AssignmentCard = ({
           zIndex: 1,
         }}
       >
-        <div ref={listRef} className="flex-1 min-h-0 h-full flex flex-col">
+        <div ref={listRef} className="task-list flex-1 min-h-0 h-full flex flex-col">
           {sortedTasks.length === 0 ? (
             <div
               onClick={onAddTask}

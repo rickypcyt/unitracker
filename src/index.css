@@ -3095,11 +3095,79 @@ input.no-spinners {
   }
 }
 
-/* Modal entrance: the overlay fades in and its panel rises and scales up. */
-.modal-animate { animation: modal-fade 0.2s ease-out; }
-.modal-animate > * { animation: modal-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+/* Modal entrance: the backdrop fades in, the panel comes into focus with a soft
+   spring, then its sections follow one after another.
+   "backwards" fill leaves no transform or filter behind once it ends. */
+.modal-animate { animation: modal-fade 0.3s ease-out; }
+.modal-animate > * {
+  transform-origin: 50% 100%;
+  animation: modal-reveal 0.5s cubic-bezier(0.22, 1.25, 0.36, 1) backwards;
+}
+.modal-animate > * > * { animation: modal-rise 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.08s backwards; }
+.modal-animate > * > * + * { animation-delay: 0.14s; }
 @keyframes modal-fade { from { opacity: 0; } }
-@keyframes modal-pop { from { opacity: 0; translate: 0 12px; scale: 0.96; } }
+@keyframes modal-reveal {
+  from { opacity: 0; filter: blur(10px); transform: perspective(900px) translateY(28px) rotateX(8deg) scale(0.94); }
+  60% { opacity: 1; filter: blur(0); }
+}
+@keyframes modal-rise { from { opacity: 0; translate: 0 10px; } }
+/* Reduced motion: a plain fade, without movement. */
 @media (prefers-reduced-motion: reduce) {
-  .modal-animate, .modal-animate > * { animation: none; }
+  .modal-animate > * { animation: modal-fade 0.3s ease-out; }
+  .modal-animate > * > * { animation: none; }
+}
+
+/* Task board: a ghost board while loading, then the real columns cascade in. */
+.skeleton-column {
+  animation: board-fade 0.45s ease-in-out backwards;
+  /* The first delay keeps very fast loads from flashing the skeleton */
+  animation-delay: calc(0.12s + var(--i, 0) * 0.08s);
+}
+.skeleton-bar {
+  background:
+    linear-gradient(100deg, transparent 30%, color-mix(in srgb, var(--accent-primary) 35%, transparent) 50%, transparent 70%)
+      0 0 / 300% 100% fixed,
+    var(--border-primary);
+  animation: skeleton-sweep 1.6s linear infinite;
+}
+/* Two clear steps, opacity only: first the cards, then the tasks inside them. */
+.tasks-reveal .task-column { animation: soft-in 0.35s ease-out backwards; }
+.tasks-reveal .task-column:nth-child(2) { animation-delay: 0.07s; }
+.tasks-reveal .task-column:nth-child(3) { animation-delay: 0.14s; }
+.tasks-reveal .task-column:nth-child(4) { animation-delay: 0.21s; }
+.tasks-reveal .task-column:nth-child(n + 5) { animation-delay: 0.28s; }
+/* Tasks wait until the cards are in (last card ends at 0.63s) */
+.tasks-reveal .task-list > * { animation: soft-in 0.35s ease-out var(--row-delay, 0.65s) backwards; }
+.tasks-reveal .task-list > :nth-child(2) { --row-delay: 0.72s; }
+.tasks-reveal .task-list > :nth-child(3) { --row-delay: 0.79s; }
+.tasks-reveal .task-list > :nth-child(4) { --row-delay: 0.86s; }
+.tasks-reveal .task-list > :nth-child(5) { --row-delay: 0.93s; }
+.tasks-reveal .task-list > :nth-child(n + 6) { --row-delay: 1s; }
+@keyframes soft-in { from { opacity: 0; } }
+@keyframes board-fade { from { opacity: 0; } }
+@keyframes skeleton-sweep { from { background-position: 150% 0, 0 0; } to { background-position: -150% 0, 0 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-column, .tasks-reveal .task-column, .tasks-reveal .task-list > * { animation-name: modal-fade; }
+  .skeleton-bar { animation: none; }
+}
+
+/* Tab change: each section of the page fades in, one after another.
+   Fixed elements are skipped: a transform or filter would move them while it runs.
+   The session page staggers its panels instead of its single wrapper. */
+.page-reveal > * > :not(.fixed, .session-sections, .kanban-board),
+.page-reveal .session-sections > *,
+.page-reveal .session-sections > .grid > * {
+  animation: soft-reveal 0.6s ease-in-out backwards;
+}
+.page-reveal .session-sections > .grid { animation: none; }
+:is(.page-reveal > * > :not(.fixed, .session-sections, .kanban-board), .page-reveal .session-sections > *, .page-reveal .session-sections > .grid > *):nth-child(2) { animation-delay: 0.08s; }
+:is(.page-reveal > * > :not(.fixed, .session-sections, .kanban-board), .page-reveal .session-sections > *, .page-reveal .session-sections > .grid > *):nth-child(3) { animation-delay: 0.16s; }
+:is(.page-reveal > * > :not(.fixed, .session-sections, .kanban-board), .page-reveal .session-sections > *, .page-reveal .session-sections > .grid > *):nth-child(4) { animation-delay: 0.24s; }
+:is(.page-reveal > * > :not(.fixed, .session-sections, .kanban-board), .page-reveal .session-sections > *, .page-reveal .session-sections > .grid > *):nth-child(5) { animation-delay: 0.32s; }
+:is(.page-reveal > * > :not(.fixed, .session-sections, .kanban-board), .page-reveal .session-sections > *, .page-reveal .session-sections > .grid > *):nth-child(n + 6) { animation-delay: 0.4s; }
+@keyframes soft-reveal { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .page-reveal > * > :not(.fixed, .session-sections, .kanban-board),
+  .page-reveal .session-sections > *,
+  .page-reveal .session-sections > .grid > * { animation-name: modal-fade; }
 }
